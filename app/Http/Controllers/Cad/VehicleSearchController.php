@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Call;
 use App\Models\CallVehicle;
 use App\Models\Civilian\Vehicle;
+use App\Support\Cad\CallActivityLogger;
 use Illuminate\Http\Request;
 
 class VehicleSearchController extends Controller
@@ -29,11 +30,15 @@ class VehicleSearchController extends Controller
             'type' => 'required',
         ]);
 
+        $targetCall = Call::findOrFail($validated['call_id']);
         CallVehicle::create([
             'call_id' => $validated['call_id'],
             'vehicle_id' => $vehicle->id,
             'type' => $validated['type'],
         ]);
+
+        CallActivityLogger::record($targetCall, 'VEHICLE',
+            'Vehicle ' . $vehicle->plate . ' linked as ' . $validated['type'] . '.');
 
         return redirect()->route('cad.vehicle.return', $vehicle->plate)->with('alerts', [['message' => 'Vehicle linked to call '.$call->id, 'level' => 'success']]);
     }
