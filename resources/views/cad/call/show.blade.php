@@ -1,6 +1,23 @@
 @extends('layouts.cad')
 
 @section('content')
+    {{-- Explicit incident layout CSS avoids runtime Tailwind class generation failures. --}}
+    <style>
+        .cad-incident-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+        }
+        .cad-incident-tabs { grid-column: 1 / -1; }
+        .cad-incident-main, .cad-incident-preview { min-width: 0; }
+        @media (min-width: 1024px) {
+            .cad-incident-grid {
+                grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
+            }
+            .cad-incident-main { grid-column: 1; }
+            .cad-incident-preview { grid-column: 2; }
+            .cad-incident-main.cad-incident-expanded { grid-column: 1 / -1; }
+        }
+    </style>
     <div class="sticky top-0 z-50">
         @include('inc.cad.mdt-nav')
     </div>
@@ -15,12 +32,12 @@
     @livewire('cad.incident-command-header', ['call' => $call])
 
     <div class="relative min-h-screen pb-10">
-        <div class="grid grid-cols-1 gap-3 lg:grid-cols-12 max-w-[1560px] mx-auto text-white h-max px-4" x-data="{
+        <div class="cad-incident-grid gap-3 max-w-[1560px] mx-auto text-white h-max px-4" x-data="{
             openTab: 1,
             activeClasses: 'border-indigo-400 bg-[#233650] text-white',
             inactiveClasses: 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white'
         }">
-            <nav class="lg:col-span-12 flex flex-wrap gap-1 rounded-lg border border-slate-700 bg-[#172232] p-1" aria-label="Incident sections">
+            <nav class="cad-incident-tabs flex flex-wrap gap-1 rounded-lg border border-slate-700 bg-[#172232] p-1" aria-label="Incident sections">
                 @foreach (['Overview', 'People', 'Vehicles', 'Reports', 'Units', 'Activity'] as $index => $tabName)
                     <button type="button" :class="openTab === {{ $index + 1 }} ? activeClasses : inactiveClasses"
                         @click="openTab = {{ $index + 1 }}"
@@ -30,7 +47,7 @@
                     </button>
                 @endforeach
             </nav>
-            <div class="min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4" :class="openTab === 6 ? 'lg:col-span-12' : 'lg:col-span-9'">
+            <div class="cad-incident-main min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4" :class="{ 'cad-incident-expanded': openTab === 6 }">
                 <div x-show="openTab !== 6" class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-semibold">Incident records</h2>
                     <div class="text-xs text-slate-400">Call #{{ $call->id }} · {{ $myUnit->unit_callsign }}</div>
@@ -483,7 +500,7 @@
                     @livewire('cad.call-chat', ['call' => $call])
                 </section>
             </div>
-            <div x-show="openTab !== 6" x-cloak class="min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3 lg:col-span-3">
+            <div x-show="openTab !== 6" x-cloak class="cad-incident-preview min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3">
                 @livewire('cad.incident-activity-preview', ['callId' => (int) $call->id])
                 <button type="button" @click="openTab = 6; window.scrollTo({ top: 190, behavior: 'smooth' })"
                     class="mt-3 w-full rounded-md border border-indigo-500/70 bg-indigo-900/50 px-3 py-3 text-sm font-semibold text-indigo-100 hover:bg-indigo-800">
