@@ -27,7 +27,7 @@
     @endif
 
     <div class="card settings-card">
-        <form action="{{ route('admin.settings.update') }}" id="mdeditor" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.settings.update', [], false) }}" id="mdeditor" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="pill p-3">
                 <p class="text-lg font-semibold">Community Name</p>
