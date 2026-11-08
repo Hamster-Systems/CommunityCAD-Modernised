@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Cad;
 
 use App\Http\Controllers\Controller;
 use App\Models\Call;
-use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\UnitResponseStatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -25,15 +25,7 @@ class UnitQuickStatusController extends Controller
         if ($data['status'] !== 'AVL') {
             abort_unless($call->attached_units()->whereKey($unit->id)->exists(), 403);
         }
-        if ($unit->status !== $data['status']) {
-            $priorStatus = $unit->status;
-            $unit->update([
-                'status' => $data['status'],
-                'description' => 'Status Set To: ' . $data['status'],
-            ]);
-            CallActivityLogger::record($call, 'UNIT',
-                'Unit ' . $unit->unit_callsign . ' status changed from ' . $priorStatus . ' to ' . $data['status'] . '.');
-        }
+        app(UnitResponseStatusService::class)->change($unit, $data['status'], $call);
 
         return redirect()->route('cad.call.show', $call->id);
     }
