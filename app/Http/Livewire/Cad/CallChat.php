@@ -61,7 +61,26 @@ class CallChat extends Component
         if ($this->filter === 'NOTE') {
             $query->where(function ($q) {
                 $q->where('text', 'like', '[NOTE] %')
-                    ->orWhere('text', 'not like', '[%');
+                    ->orWhere(function ($legacy) {
+                        $legacy->where('text', 'not like', '[%')
+                            ->where('text', 'not like', '%ASSIGN%')
+                            ->where('text', 'not like', '%STATUS SET TO%')
+                            ->where('text', 'not like', 'Call Status%')
+                            ->where('text', 'not like', 'Call Priority%');
+                    });
+            });
+        } elseif ($this->filter === 'UNIT') {
+            $query->where(function ($q) {
+                $q->where('text', 'like', '[UNIT] %')
+                    ->orWhere('text', 'like', 'Officer%assign%')
+                    ->orWhere('text', 'like', '%STATUS SET TO%');
+            });
+        } elseif ($this->filter === 'CALL') {
+            $query->where(function ($q) {
+                $q->where('text', 'like', '[CALL] %')
+                    ->orWhere('text', 'like', 'Call Status%')
+                    ->orWhere('text', 'like', 'Call Priority%')
+                    ->orWhere('text', 'like', 'Call Nature%');
             });
         } elseif ($this->filter !== 'ALL') {
             $query->where('text', 'like', '[' . $this->filter . '] %');
