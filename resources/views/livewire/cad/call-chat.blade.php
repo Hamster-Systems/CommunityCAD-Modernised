@@ -17,6 +17,10 @@
                     maxlength="100" placeholder="Search messages, callsigns or people…"
                     class="w-full rounded-md border border-slate-500 bg-slate-800 px-3 py-2.5 text-sm text-white">
             </div>
+            <button type="button" wire:click="$refresh"
+                class="rounded-md border border-slate-600 bg-slate-800 px-3 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700">
+                Refresh activity
+            </button>
             <span class="pb-2 text-xs text-slate-400">
                 @if ($entries->total())
                     Showing {{ $entries->firstItem() }}–{{ $entries->lastItem() }} of {{ $entries->total() }}
