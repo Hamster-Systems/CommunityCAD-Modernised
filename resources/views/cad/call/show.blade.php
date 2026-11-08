@@ -476,7 +476,7 @@
                 </div>
                 <section class="p-4 text-base leading-relaxed" x-show="openTab === 5" x-cloak>
                     <h2 class="mb-3 text-lg font-semibold">Units assigned to this incident</h2>
-                    <p class="mb-4 text-sm text-slate-400">View current assignments. Attach or detach your own unit using the action bar above.</p>
+
                     @livewire('cad.incident-units-list', ['callId' => (int) $call->id])
                 </section>
                 <section class="p-4 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
