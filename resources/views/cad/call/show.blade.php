@@ -13,210 +13,103 @@
     @endphp
 
     <div class="mx-auto max-w-[1560px] px-4 pt-4 text-white">
-        {{-- Operational strip stays identifiable as CommunityCAD, but adds direct MDT actions. --}}
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-700 bg-[#172232] px-4 py-3">
-            <div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                <div class="font-semibold uppercase tracking-wide text-slate-300">
-                    {{ $myUnit->user_department?->department?->initials ?? 'CAD' }} / {{ $myUnit->unit_callsign }}
+        <div class="mb-3 overflow-hidden rounded-lg border border-slate-600 bg-[#15202e]">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700 px-5 py-4">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <a href="{{ route('cad.mdt') }}" class="hover:text-white">← MDT / CALL QUEUE</a>
+                        <span>/</span><span>INCIDENT {{ $call->id }}</span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap items-center gap-3">
+                        <h1 class="text-xl font-bold md:text-2xl">#{{ $call->id }} · {{ $natureLabel }}</h1>
+                        <span class="rounded border border-amber-600/70 bg-amber-950 px-2 py-1 text-xs font-bold text-amber-200">PRIORITY {{ $call->priority }}</span>
+                        <span class="rounded border border-slate-500 px-2 py-1 text-xs font-bold">{{ $statusLabel }}</span>
+                    </div>
+                    <p class="mt-2 text-sm text-slate-300">{{ $call->location ?: 'Location not supplied' }} · {{ $call->city ?: 'City unknown' }}</p>
                 </div>
-                <div class="text-slate-300">{{ $myUnit->officer_name }} · {{ $myUnit->unit_rank }}</div>
-                <div class="rounded-md border border-slate-600 bg-slate-900 px-2 py-1">
-                    UNIT STATUS: <span class="font-semibold text-emerald-300">{{ $myUnit->status }}</span>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('cad.mdt') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">← Call queue</a>
-                <a href="{{ route('cad.name.search') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">Person search</a>
-                <a href="{{ route('cad.vehicle.search') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">Plate lookup</a>
-                <form method="POST" action="{{ route('cad.call.my_status', $call->id) }}" class="flex items-center gap-2">
-                    @csrf
-                    <label for="quick_unit_status" class="sr-only">Set my unit status</label>
-                    <select id="quick_unit_status" name="status" class="rounded-md border border-slate-600 bg-slate-900 px-2 py-2 text-sm text-white">
-                        <option value="AVL" @selected($myUnit->status === 'AVL')>Available</option>
-                        @if ($attached)
-                            <option value="ENRUTE" @selected($myUnit->status === 'ENRUTE')>En route</option>
-                            <option value="ONSCN" @selected($myUnit->status === 'ONSCN')>On scene</option>
-                            <option value="BRK" @selected($myUnit->status === 'BRK')>Break</option>
-                        @endif
-                    </select>
-                    <button type="submit" class="rounded-md bg-indigo-700 px-3 py-2 text-sm font-semibold hover:bg-indigo-600">Set status</button>
-                </form>
-                @if ((int) $myUnit->department_type !== 2)
-                    <form method="POST" action="{{ route('cad.call.my_unit', $call->id) }}">
-                        @csrf
-                        <input type="hidden" name="action" value="{{ $attached ? 'detach' : 'attach' }}">
-                        <button type="submit" class="rounded-md px-4 py-2 text-sm font-semibold {{ $attached ? 'bg-rose-700 hover:bg-rose-600' : 'bg-emerald-700 hover:bg-emerald-600' }}">
-                            {{ $attached ? 'Detach my unit' : 'Attach my unit' }}
-                        </button>
-                    </form>
-                @endif
-            </div>
-        </div>
-        <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
-            <div>
-                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">CommunityCAD / Incident Workspace</div>
-                <h1 class="mt-1 text-2xl font-bold">Call #{{ $call->id }}</h1>
-                <p class="mt-1 text-sm text-slate-300">{{ $call->nature }} — {{ $natureLabel }}</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 text-sm">
-                <span class="rounded-md border border-slate-600 bg-slate-800 px-3 py-2">Priority {{ $call->priority }}</span>
-                <span class="rounded-md border border-indigo-700 bg-indigo-950 px-3 py-2">{{ $call->status }} — {{ $statusLabel }}</span>
-                <span class="rounded-md border {{ $attached ? 'border-emerald-600 bg-emerald-950 text-emerald-200' : 'border-slate-600 bg-slate-800 text-slate-300' }} px-3 py-2">
-                    {{ $attached ? 'Attached to this call' : 'Viewing only · Not attached' }}
-                </span>
-            </div>
-        </div>
-        <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
-                <p class="text-xs uppercase tracking-wider text-slate-400">Incident location</p>
-                <p class="mt-2 text-base font-semibold">{{ $call->location ?: 'Not provided' }}</p>
-                <p class="text-sm text-slate-400">{{ $call->city }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
-                <p class="text-xs uppercase tracking-wider text-slate-400">Units assigned · {{ $call->attached_units->count() }}</p>
-                <div class="mt-2 flex flex-wrap gap-2">
-                    @forelse ($call->attached_units as $unit)
-                        <span class="rounded-md border border-sky-700 bg-sky-950 px-2 py-1 text-sm">
-                            {{ $unit->unit_callsign }} · {{ $unit->status }}
-                        </span>
-                    @empty
-                        <span class="text-sm text-slate-400">No units assigned yet</span>
-                    @endforelse
+                <div class="flex items-center gap-2">
+                    <span class="rounded-md border px-3 py-2 text-xs font-bold {{ $attached ? 'border-emerald-600 bg-emerald-950 text-emerald-200' : 'border-slate-500 bg-slate-800 text-slate-300' }}">
+                        {{ $attached ? 'YOUR UNIT ASSIGNED' : 'VIEW ONLY · NOT ASSIGNED' }}
+                    </span>
+                    @if ((int) $myUnit->department_type !== 2)
+                        <form method="POST" action="{{ route('cad.call.my_unit', $call->id) }}">
+                            @csrf
+                            <input type="hidden" name="action" value="{{ $attached ? 'detach' : 'attach' }}">
+                            <button class="rounded-md px-4 py-2 text-sm font-semibold {{ $attached ? 'bg-rose-700 hover:bg-rose-600' : 'bg-emerald-700 hover:bg-emerald-600' }}" type="submit">
+                                {{ $attached ? 'Detach unit' : 'Attach my unit' }}
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
-            <div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
-                <p class="text-xs uppercase tracking-wider text-slate-400">Incident timeline</p>
-                <p class="mt-2 text-sm">Received: {{ $call->created_at->format('d M Y H:i') }}</p>
-                <p class="mt-1 text-sm text-slate-400">Updated: {{ $call->updated_at->format('d M Y H:i') }}</p>
+            <div class="grid grid-cols-2 divide-x divide-y divide-slate-700 text-sm md:grid-cols-4 md:divide-y-0">
+                <div class="px-4 py-3">
+                    <div class="text-xs uppercase tracking-wide text-slate-400">Incident type</div>
+                    <div class="mt-1 font-semibold">{{ $call->type_name }} · {{ $call->source }}</div>
+                </div>
+                <div class="px-4 py-3">
+                    <div class="text-xs uppercase tracking-wide text-slate-400">Assigned units · {{ $call->attached_units->count() }}</div>
+                    <div class="mt-1 flex flex-wrap gap-1">
+                        @forelse ($call->attached_units as $unit)
+                            <span class="rounded border border-sky-700 bg-sky-950 px-2 py-0.5 font-semibold">{{ $unit->unit_callsign }} <span class="font-normal text-sky-200">{{ $unit->status }}</span></span>
+                        @empty
+                            <span class="text-slate-400">No units assigned</span>
+                        @endforelse
+                    </div>
+                </div>
+                <div class="px-4 py-3">
+                    <div class="text-xs uppercase tracking-wide text-slate-400">Call received</div>
+                    <div class="mt-1 font-semibold">{{ $call->created_at->format('d M Y · H:i') }}</div>
+                </div>
+                <div class="px-4 py-3">
+                    <div class="text-xs uppercase tracking-wide text-slate-400">Last updated</div>
+                    <div class="mt-1 font-semibold">{{ $call->updated_at->format('d M Y · H:i') }}</div>
+                </div>
             </div>
-        </div>
-        <div class="mb-4 flex flex-wrap gap-2 border-b border-slate-700 pb-3 text-xs uppercase tracking-wide text-slate-400">
-            <span>Incident #{{ $call->id }}</span><span>·</span>
-            <span>{{ $call->type_name }}</span><span>·</span>
-            <span>{{ $call->source }}</span><span>·</span>
-            <span>Viewing a call never assigns a unit automatically</span>
         </div>
     </div>
 
     <div class="relative min-h-screen pb-10">
-        <div class="grid grid-cols-1 lg:grid-cols-12 max-w-[1560px] mx-auto text-white h-max gap-3 px-4" x-data="{
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-12 max-w-[1560px] mx-auto text-white h-max px-4" x-data="{
             openTab: 1,
-            activeClasses: 'bg-[#131c23] text-white border-b-4 border-b-black z-20',
-            inactiveClasses: 'bg-[#2e3547] hover:bg-[#131c23] hover:text-white',
+            activeClasses: 'border-indigo-400 bg-[#233650] text-white',
+            inactiveClasses: 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white'
         }">
-            <div class="lg:col-span-2 flex flex-wrap lg:flex-col items-stretch bg-[#1c2939] divide-x lg:divide-x-0 lg:divide-y divide-slate-600 rounded-xl overflow-hidden">
-                <a :class="openTab === 1 ? activeClasses : inactiveClasses" @click="openTab = 1" class="block py-3"
-                    href="#">
-                    <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    INFO
-                </a>
-                <a :class="openTab === 2 ? activeClasses : inactiveClasses" @click="openTab = 2" class="block py-3"
-                    href="#">
-                    <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Civilians
-                </a>
-                <a :class="openTab === 3 ? activeClasses : inactiveClasses" @click="openTab = 3" class="block py-3"
-                    href="#">
-                    <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Vehicles
-                </a>
-                <a :class="openTab === 4 ? activeClasses : inactiveClasses" @click="openTab = 4" class="block py-3"
-                    href="#">
-                    <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Reports
-                </a>
-                {{-- <a :class="openTab === 5 ? activeClasses : inactiveClasses" @click="openTab = 5" class="block py-3"
-                    href="#">
-                    <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Evidence
-                </a>
+            <nav class="lg:col-span-12 flex flex-wrap gap-1 rounded-lg border border-slate-700 bg-[#172232] p-1" aria-label="Incident sections">
+                @foreach (['Overview', 'People', 'Vehicles', 'Reports', 'Units', 'Activity'] as $index => $tabName)
+                    <button type="button" :class="openTab === {{ $index + 1 }} ? activeClasses : inactiveClasses"
+                        @click="openTab = {{ $index + 1 }}"
+                        class="rounded-md border-b-2 px-4 py-3 text-sm font-semibold transition" :aria-selected="openTab === {{ $index + 1 }}">
+                        {{ $tabName }}
+                        @if ($index === 4) <span class="text-xs">({{ $call->attached_units->count() }})</span> @endif
+                    </button>
+                @endforeach
+            </nav>
+            <div class="lg:col-span-9 min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4">
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
+                    <h2 class="text-lg font-semibold">Incident records</h2>
+                    <div class="text-xs text-slate-400">Call #{{ $call->id }} · {{ $myUnit->unit_callsign }}</div>
+                </div>
 
-                <a :class="openTab === 6 ? activeClasses : inactiveClasses" @click="openTab = 6" class="block py-3"
-                    href="#">
-                    <svg class="w-8 h-8 mx-auto" fill="#ffffff" id="Layer_1" stroke="#ffffff" version="1.1"
-                        viewBox="0 0 508.053 508.053" width="200px" xml:space="preserve"
-                        xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                        <g id="SVGRepo_iconCarrier">
-                            <g>
-                                <g>
-                                    <path
-                                        d="M475.897,76.703l-62.1-64.6c-4.5-4.6-11.5-5.7-17.1-2.5c-54.4,30.8-123.5-1.5-135.1-7.4c-3.7-2.4-8.5-2.9-12.7-1.2 c-0.9,0.3-1.7,0.8-2.5,1.3c-12,6.1-80.8,38-135,7.4c-5.6-3.2-12.6-2.1-17.1,2.5l-62.2,64.5c-3.3,3.5-4.7,8.4-3.6,13.1 c0.3,1.2,28.4,120.5,10.3,181.6c-0.1,0.3-0.2,0.6-0.2,0.9c-1.5,6.2-31.6,153.7,210.8,235c3.1,1,6.2,1,9.1,0 c242.5-81.3,212.4-228.8,211-235c-0.1-0.3-0.2-0.6-0.2-0.9c-18.1-61.1,10-180.4,10.3-181.6 C480.597,85.103,479.297,80.103,475.897,76.703z M441.997,278.803c1.3,7.2,20.5,128.6-188,200.2 c-208.8-71.8-189.7-191.5-188-200.2c17.3-59.6-2.2-159.6-8.3-188l49.6-51.6c58.7,26.5,125,0.7,146.7-9.3 c21.7,10,88,35.8,146.7,9.3l49.6,51.6C444.097,119.203,424.697,219.203,441.997,278.803z">
-                                    </path>
-                                </g>
-                            </g>
-                            <g>
-                                <g>
-                                    <path
-                                        d="M390.197,187.003l-93.6-0.3l-29.2-88.9c-4.3-12.9-22.6-12.9-26.8,0l-29.2,88.9l-93.6,0.3c-13.6,0-19.3,17.5-8.3,25.5 l75.6,55.3l-28.7,89.1c-4.2,13,10.6,23.7,21.7,15.8l75.9-54.8l75.9,54.8c11,8,25.9-2.8,21.7-15.8l-28.7-89.1l75.6-55.3 C409.497,204.503,403.797,187.103,390.197,187.003z M297.997,251.003c-4.9,3.6-7,9.9-5.1,15.7l18.6,57.9l-49.2-35.6 c-4.9-3.6-11.6-3.6-16.5,0l-49.3,35.6l18.6-57.9c1.9-5.8-0.2-12.1-5.1-15.7l-49.1-35.9l60.8-0.2c6.1,0,11.5-3.9,13.4-9.7l19-57.8 l19,57.8c1.9,5.8,7.3,9.7,13.4,9.7l60.8,0.2L297.997,251.003z">
-                                    </path>
-                                </g>
-                            </g>
-                        </g>
-                    </svg>
-                    Officers
-                </a> --}}
-
-                <button type="button" :class="openTab === 5 ? activeClasses : inactiveClasses"
-                    @click="openTab = 5" class="flex-1 lg:flex-none px-3 py-4 text-sm font-semibold hover:bg-slate-800">
-                    UNITS ({{ $call->attached_units->count() }})
-                </button>
-                <button type="button" :class="openTab === 6 ? activeClasses : inactiveClasses"
-                    @click="openTab = 6" class="flex-1 lg:flex-none px-3 py-4 text-sm font-semibold hover:bg-slate-800">
-                    ACTIVITY
-                </button>
-            </div>
-
-            <div class="lg:col-span-7 min-w-0 rounded-xl border border-slate-700 bg-[#101a27] p-3">
-                <h1 class="text-xl text-center font-bold text-white">Call {{ $call->id }} - ({{ $call->nature }})
-                    {{ $natureLabel }}</h1>
-                <p class="text-lg text-center font-bold text-white">Status - ({{ $call->status }})
-                    {{ $statusLabel }}</p>
-
-                <div class="p-2 text-base leading-relaxed" x-show="openTab === 1">
-                    <div class="max-w-7xl mx-auto p-2">
+                <div class="text-base leading-relaxed" x-show="openTab === 1">
+                    <div class="w-full">
                         <form action="{{ route('cad.call.update', $call->id) }}"
-                            class="p-2 mt-5 space-y-2 text-white border border-white rounded cursor-default" method="POST">
+                            class="space-y-4 rounded-md border border-slate-700 bg-[#162234] p-4 text-white" method="POST">
                             @csrf
                             @method('PUT')
-                            <h1 class="text-xl font-semibold">Location</h1>
+                            <h3 class="text-sm font-bold uppercase tracking-wide text-sky-300">Location and response</h3>
                             <div class="flex items-center">
                                 <div class="w-3/5">
                                     <p class="block mr-2">Incident Address:</p>
-                                    <p class="bg-gray-700 w-full px-1 py-1 rounded-sm">{{ $call->location }}</p>
+                                    <p class="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm">{{ $call->location }}</p>
                                 </div>
                                 <div class="w-2/5 ml-3">
                                     <p class="block mr-2">City:</p>
-                                    <p class="bg-gray-700 w-full px-1 py-1 rounded-sm">{{ $call->city }}</p>
+                                    <p class="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm">{{ $call->city }}</p>
                                 </div>
                             </div>
                             <hr>
-                            <h1 class="text-xl font-semibold">Caller Info</h1>
+                            <h3 class="text-sm font-bold uppercase tracking-wide text-sky-300">Caller information</h3>
                             <hr>
                             @foreach ($rps as $call_civilian)
                                 <div class="bg-gray-200 rounded-lg p-2 text-black text-sm">
@@ -279,11 +172,11 @@
                                     </div>
                                 </div>
                             @endforeach
-                            <h1 class="text-xl font-semibold">CAD Incident</h1>
+                            <h3 class="text-sm font-bold uppercase tracking-wide text-sky-300">Incident details</h3>
                             <div class="flex items-center">
                                 <div class="w-3/5">
                                     <p class="block mr-2">Nature:</p>
-                                    <select class="select-input-sm" name="nature">
+                                    <select class="w-full rounded-md border border-slate-600 bg-slate-100 px-3 py-2 text-sm text-black" name="nature">
                                         @foreach ($call_natures as $code => $props)
                                             <option @selected($call->nature == $code) value="{{ $code }}">
                                                 {{ $code }} -
@@ -295,14 +188,14 @@
                                 </div>
                                 <div class="w-2/5 ml-3">
                                     <p class="block mr-2">Received via:</p>
-                                    <p class="bg-gray-700 w-full px-1 py-1 rounded-sm">{{ $call->source }}</p>
+                                    <p class="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm">{{ $call->source }}</p>
                                 </div>
                             </div>
 
                             <div class="flex items-center">
                                 <div class="w-1/3">
                                     <label class="block mr-2">Priority:</label>
-                                    <select class="select-input-sm" name="priority">
+                                    <select class="w-full rounded-md border border-slate-600 bg-slate-100 px-3 py-2 text-sm text-black" name="priority">
                                         <option @selected($call->priority == 1) value="1">1</option>
                                         <option @selected($call->priority == 2) value="2">2</option>
                                         <option @selected($call->priority == 3) value="3">3</option>
@@ -312,11 +205,11 @@
                                 </div>
                                 <div class="w-1/3 ml-3">
                                     <p class="block mr-2">Type:</p>
-                                    <p class="bg-gray-700 w-full px-1 py-1 rounded-sm">{{ $call->type_name }}</p>
+                                    <p class="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm">{{ $call->type_name }}</p>
                                 </div>
                                 <div class="w-1/3 ml-3">
                                     <label class="block mr-2">Status:</label>
-                                    <select class="select-input-sm" name="status">
+                                    <select class="w-full rounded-md border border-slate-600 bg-slate-100 px-3 py-2 text-sm text-black" name="status">
                                         @foreach ($call_statuses as $code => $props)
                                             <option @selected($call->status == $code) value="{{ $code }}">
                                                 {{ $code }} -
@@ -330,10 +223,10 @@
                             <div class="flex items-center">
                                 <div class="w-full">
                                     <label class="block mr-2">Narrative:</label>
-                                    <p class="bg-gray-700 w-full px-1 py-1 rounded-sm">{{ $call->narrative }}</p>
+                                    <p class="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm">{{ $call->narrative }}</p>
                                 </div>
                             </div>
-                            <button class="button-md bg-gray-600 hover:bg-gray-500 text-white" type="submit">Update
+                            <button class="rounded-md bg-indigo-700 px-4 py-2 text-sm font-semibold hover:bg-indigo-600 text-white" type="submit">Update
                                 CALL</button>
                         </form>
                     </div>
@@ -619,7 +512,7 @@
                     </div>
                 </section>
             </div>
-            <div class="lg:col-span-3 min-w-0 rounded-xl border border-slate-700 bg-slate-900 p-3">
+            <div class="lg:col-span-3 min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3">
                 <h2 class="mb-3 border-b border-slate-700 pb-2 text-base font-semibold">Call Activity</h2>
                 <div>
                     @livewire('cad.call-chat', ['call' => $call])
