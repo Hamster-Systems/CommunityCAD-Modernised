@@ -3,7 +3,7 @@
 namespace App\Http\Livewire\Cad;
 
 use App\Models\Call;
-use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\UnitResponseStatusService;
 use Livewire\Component;
 
 class UnitStatusStrip extends Component
@@ -24,15 +24,7 @@ class UnitStatusStrip extends Component
             abort_unless($call, 403);
         }
 
-        $previous = $unit->status;
-        if ($previous === $status) return;
-
-        $unit->update(['status' => $status, 'description' => 'Status Set To: ' . $status]);
-
-        if ($call) {
-            CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign .
-                ' status changed from ' . $previous . ' to ' . $status . '.');
-        }
+        app(UnitResponseStatusService::class)->change($unit, $status, $call);
 
         $this->emit('incidentUpdated');
     }
