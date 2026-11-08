@@ -72,8 +72,8 @@ class CadController extends Controller
 
     public function message_center()
     {
-        $stolen_vehicles = Vehicle::where('vehicle_status', 2)->get();
-        $bolos = Bolo::all();
+        $stolen_vehicles = Vehicle::with(['civilian', 'business'])->where('vehicle_status', 2)->latest()->get();
+        $bolos = Bolo::with(['civilian', 'vehicle.civilian', 'vehicle.business', 'call'])->latest()->get();
         return view('cad.message_center', compact('stolen_vehicles', 'bolos'));
     }
 
