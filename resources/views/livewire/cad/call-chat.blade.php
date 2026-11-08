@@ -17,6 +17,14 @@
                     maxlength="100" placeholder="Search messages, callsigns or people…"
                     class="w-full rounded-md border border-slate-500 bg-slate-800 px-3 py-2.5 text-sm text-white">
             </div>
+            <div>
+                <label for="cad_activity_order_{{ $call->id }}" class="mb-1 block text-xs font-semibold uppercase text-slate-300">Order</label>
+                <select id="cad_activity_order_{{ $call->id }}" wire:change="setSort($event.target.value)"
+                    class="rounded-md border border-slate-500 bg-slate-800 px-3 py-2.5 text-xs text-white">
+                    <option value="newest" @selected($sort === 'newest')>Newest first</option>
+                    <option value="oldest" @selected($sort === 'oldest')>Oldest first</option>
+                </select>
+            </div>
             <button type="button" wire:click="$refresh"
                 class="rounded-md border border-slate-600 bg-slate-800 px-3 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700">
                 Refresh activity
@@ -75,7 +83,7 @@
     </form>
 
     <div wire:loading.delay wire:target="search,setFilter" class="text-sm text-sky-300">Updating results…</div>
-    <div class="space-y-3" aria-live="polite" aria-label="Incident events">
+    <div class="space-y-3 border-l-2 border-slate-700 pl-3 md:pl-5" aria-live="polite" aria-label="Incident events">
         @forelse ($entries as $entry)
             @php
                 $raw = $entry->text ?? '';
@@ -102,7 +110,8 @@
                     'SYSTEM' => 'border-slate-600 bg-slate-800 text-slate-200',
                 ];
             @endphp
-            <article wire:key="incident-event-{{ $entry->id }}" class="rounded-lg border border-slate-700 bg-[#182639] px-4 py-3">
+            <article wire:key="incident-event-{{ $entry->id }}" class="relative rounded-lg border border-slate-700 bg-[#182639] px-4 py-4 shadow-sm">
+                <span aria-hidden="true" class="absolute -left-[21px] top-6 h-2.5 w-2.5 rounded-full border-2 border-sky-400 bg-[#182639] md:-left-[29px]"></span>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <span class="rounded-md border px-2.5 py-1 text-xs font-bold tracking-wide {{ $styles[$category] ?? $styles['NOTE'] }}">
                         {{ $category === 'SITUATION' ? 'SITUATION UPDATE' : ($category === 'WITNESS' ? 'WITNESS STATEMENT' : ($category === 'DISPATCH' ? 'DISPATCH UPDATE' : $category)) }}
