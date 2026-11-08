@@ -65,6 +65,5 @@ Route::get('settings/generate_api_key', [SettingsController::class, 'generate_ap
 Route::get('settings/discord_roles', [SettingsController::class, 'discord_roles'])->name('settings.discord_roles')->middleware('can:cad_settings');
 Route::get('settings/cad', [SettingsController::class, 'cad'])->name('settings.cad')->middleware('can:cad_settings');
 
-Route::post('settings/community-logo', [SettingsController::class, 'upload_community_logo'])->name('settings.community_logo.upload')->middleware('can:cad_settings');
 Route::post('settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('can:cad_settings');
 Route::post('settings/update_discord', [SettingsController::class, 'update_discord'])->name('settings.update_discord')->middleware('can:cad_settings');
