@@ -1,21 +1,44 @@
 @extends('layouts.cad')
 
 @section('content')
-    {{-- Explicit incident layout CSS avoids runtime Tailwind class generation failures. --}}
+    {{-- Self-contained incident layout: never rely on dynamically generated Tailwind grid columns. --}}
     <style>
-        .cad-incident-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
+        .cad-incident-workspace {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 12px;
+            width: 100%;
+            max-width: 1560px;
+            margin-inline: auto;
+            padding-inline: 16px;
+            box-sizing: border-box;
         }
-        .cad-incident-tabs { grid-column: 1 / -1; }
-        .cad-incident-main, .cad-incident-preview { min-width: 0; }
-        @media (min-width: 1024px) {
-            .cad-incident-grid {
-                grid-template-columns: minmax(0, 3fr) minmax(280px, 1fr);
+        .cad-incident-workspace > .cad-incident-tabs {
+            flex: 0 0 100%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .cad-incident-workspace > .cad-incident-main {
+            flex: 1 1 0;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+        }
+        .cad-incident-workspace > .cad-incident-preview {
+            flex: 0 0 290px;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-wrap: anywhere;
+        }
+        .cad-incident-workspace > .cad-incident-main.cad-incident-expanded {
+            flex: 0 0 100%;
+        }
+        @media (max-width: 800px) {
+            .cad-incident-workspace > .cad-incident-main,
+            .cad-incident-workspace > .cad-incident-preview {
+                flex: 0 0 100%;
             }
-            .cad-incident-main { grid-column: 1; }
-            .cad-incident-preview { grid-column: 2; }
-            .cad-incident-main.cad-incident-expanded { grid-column: 1 / -1; }
         }
     </style>
     <div class="sticky top-0 z-50">
@@ -32,7 +55,7 @@
     @livewire('cad.incident-command-header', ['call' => $call])
 
     <div class="relative min-h-screen pb-10">
-        <div class="cad-incident-grid gap-3 max-w-[1560px] mx-auto text-white h-max px-4" x-data="{
+        <div class="cad-incident-workspace text-white" x-data="{
             openTab: 1,
             activeClasses: 'border-indigo-400 bg-[#233650] text-white',
             inactiveClasses: 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white'
