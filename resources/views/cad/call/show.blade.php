@@ -12,57 +12,86 @@
         $statusLabel = $call->status_info['name'] ?? $call->status;
     @endphp
 
-    <div class="max-w-7xl mx-auto px-3 pt-5 pb-4 text-white">
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <p class="text-xs tracking-widest text-slate-400">CAD / INCIDENT DETAILS</p>
-                <h1 class="text-2xl font-bold tracking-tight">Call #{{ $call->id }}</h1>
-                <p class="mt-1 text-sm text-slate-300">{{ $call->nature }} — {{ $natureLabel }}</p>
+    <div class="mx-auto max-w-[1560px] px-4 pt-4 text-white">
+        {{-- Operational strip stays identifiable as CommunityCAD, but adds direct MDT actions. --}}
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-700 bg-[#172232] px-4 py-3">
+            <div class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                <div class="font-semibold uppercase tracking-wide text-slate-300">
+                    {{ $myUnit->user_department?->department?->initials ?? 'CAD' }} / {{ $myUnit->unit_callsign }}
+                </div>
+                <div class="text-slate-300">{{ $myUnit->officer_name }} · {{ $myUnit->unit_rank }}</div>
+                <div class="rounded-md border border-slate-600 bg-slate-900 px-2 py-1">
+                    UNIT STATUS: <span class="font-semibold text-emerald-300">{{ $myUnit->status }}</span>
+                </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a class="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700" href="{{ route('cad.mdt') }}">← Back to MDT</a>
-                <span class="rounded-lg border {{ $attached ? 'border-emerald-600 bg-emerald-950 text-emerald-200' : 'border-slate-600 bg-slate-800 text-slate-300' }} px-4 py-2 text-sm">
-                    {{ $attached ? 'Your unit is attached' : 'Viewing — not attached' }}
+                <a href="{{ route('cad.mdt') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">← Call queue</a>
+                <a href="{{ route('cad.name.search') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">Person search</a>
+                <a href="{{ route('cad.vehicle.search') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">Plate lookup</a>
+                @if ((int) $myUnit->department_type !== 2)
+                    <form method="POST" action="{{ route('cad.call.my_unit', $call->id) }}">
+                        @csrf
+                        <input type="hidden" name="action" value="{{ $attached ? 'detach' : 'attach' }}">
+                        <button type="submit" class="rounded-md px-4 py-2 text-sm font-semibold {{ $attached ? 'bg-rose-700 hover:bg-rose-600' : 'bg-emerald-700 hover:bg-emerald-600' }}">
+                            {{ $attached ? 'Detach my unit' : 'Attach my unit' }}
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </div>
+        <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">CommunityCAD / Incident Workspace</div>
+                <h1 class="mt-1 text-2xl font-bold">Call #{{ $call->id }}</h1>
+                <p class="mt-1 text-sm text-slate-300">{{ $call->nature }} — {{ $natureLabel }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-sm">
+                <span class="rounded-md border border-slate-600 bg-slate-800 px-3 py-2">Priority {{ $call->priority }}</span>
+                <span class="rounded-md border border-indigo-700 bg-indigo-950 px-3 py-2">{{ $call->status }} — {{ $statusLabel }}</span>
+                <span class="rounded-md border {{ $attached ? 'border-emerald-600 bg-emerald-950 text-emerald-200' : 'border-slate-600 bg-slate-800 text-slate-300' }} px-3 py-2">
+                    {{ $attached ? 'Attached to this call' : 'Viewing only · Not attached' }}
                 </span>
             </div>
         </div>
-        <div class="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
-                <p class="text-xs text-slate-400">Call status</p>
-                <p class="mt-2 font-semibold">{{ $call->status }} — {{ $statusLabel }}</p>
+        <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-slate-400">Incident location</p>
+                <p class="mt-2 text-base font-semibold">{{ $call->location ?: 'Not provided' }}</p>
+                <p class="text-sm text-slate-400">{{ $call->city }}</p>
             </div>
-            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
-                <p class="text-xs text-slate-400">Priority / Type</p>
-                <p class="mt-2 font-semibold">P{{ $call->priority }} · {{ $call->type_name }}</p>
+            <div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-slate-400">Units assigned · {{ $call->attached_units->count() }}</p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                    @forelse ($call->attached_units as $unit)
+                        <span class="rounded-md border border-sky-700 bg-sky-950 px-2 py-1 text-sm">
+                            {{ $unit->unit_callsign }} · {{ $unit->status }}
+                        </span>
+                    @empty
+                        <span class="text-sm text-slate-400">No units assigned yet</span>
+                    @endforelse
+                </div>
             </div>
-            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
-                <p class="text-xs text-slate-400">Location</p>
-                <p class="mt-2 font-semibold">{{ $call->location ?: 'Not provided' }}</p>
-                <p class="text-xs text-slate-400">{{ $call->city }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
-                <p class="text-xs text-slate-400">Assigned units ({{ $call->attached_units->count() }})</p>
-                @forelse ($call->attached_units as $unit)
-                    <p class="mt-1 text-sm font-semibold">{{ $unit->unit_callsign }} <span class="font-normal text-slate-400">{{ $unit->status }}</span></p>
-                @empty
-                    <p class="mt-2 text-sm text-slate-400">No units assigned</p>
-                @endforelse
+            <div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-slate-400">Incident timeline</p>
+                <p class="mt-2 text-sm">Received: {{ $call->created_at->format('d M Y H:i') }}</p>
+                <p class="mt-1 text-sm text-slate-400">Updated: {{ $call->updated_at->format('d M Y H:i') }}</p>
             </div>
         </div>
-        <div class="mb-2 flex flex-wrap gap-4 text-xs text-slate-400">
-            <span>Created: {{ $call->created_at->format('d M Y H:i') }}</span>
-            <span>Last updated: {{ $call->updated_at->format('d M Y H:i') }}</span>
-            <span>Viewing a call does not join it. Use MDT call actions to attach.</span>
+        <div class="mb-4 flex flex-wrap gap-2 border-b border-slate-700 pb-3 text-xs uppercase tracking-wide text-slate-400">
+            <span>Incident #{{ $call->id }}</span><span>·</span>
+            <span>{{ $call->type_name }}</span><span>·</span>
+            <span>{{ $call->source }}</span><span>·</span>
+            <span>Viewing a call never assigns a unit automatically</span>
         </div>
     </div>
 
-    <div class="relative min-h-screen">
-        <div class="grid-cols-12 grid max-w-7xl mx-auto text-white h-max gap-3 px-3" x-data="{
+    <div class="relative min-h-screen pb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 max-w-[1560px] mx-auto text-white h-max gap-3 px-4" x-data="{
             openTab: 1,
             activeClasses: 'bg-[#131c23] text-white border-b-4 border-b-black z-20',
             inactiveClasses: 'bg-[#2e3547] hover:bg-[#131c23] hover:text-white',
         }">
-            <div class="text-center bg-[#2e3547] divide-y divide-slate-600 rounded-lg overflow-hidden">
+            <div class="lg:col-span-2 flex flex-wrap lg:flex-col items-stretch bg-[#1c2939] divide-x lg:divide-x-0 lg:divide-y divide-slate-600 rounded-xl overflow-hidden">
                 <a :class="openTab === 1 ? activeClasses : inactiveClasses" @click="openTab = 1" class="block py-3"
                     href="#">
                     <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
@@ -140,9 +169,17 @@
                     Officers
                 </a> --}}
 
+                <button type="button" :class="openTab === 5 ? activeClasses : inactiveClasses"
+                    @click="openTab = 5" class="flex-1 lg:flex-none px-3 py-4 text-sm font-semibold hover:bg-slate-800">
+                    UNITS ({{ $call->attached_units->count() }})
+                </button>
+                <button type="button" :class="openTab === 6 ? activeClasses : inactiveClasses"
+                    @click="openTab = 6" class="flex-1 lg:flex-none px-3 py-4 text-sm font-semibold hover:bg-slate-800">
+                    ACTIVITY
+                </button>
             </div>
 
-            <div class="col-span-8">
+            <div class="lg:col-span-7 min-w-0 rounded-xl border border-slate-700 bg-[#101a27] p-3">
                 <h1 class="text-xl text-center font-bold text-white">Call {{ $call->id }} - ({{ $call->nature }})
                     {{ $natureLabel }}</h1>
                 <p class="text-lg text-center font-bold text-white">Status - ({{ $call->status }})
@@ -534,14 +571,32 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="p-6 text-base leading-relaxed" x-show="openTab === 5">
-                    Evidence
-                </div>
-                <div class="p-6 text-base leading-relaxed" x-show="openTab === 6">
-                    Officers
-                </div>
+                <section class="p-4 text-base leading-relaxed" x-show="openTab === 5" x-cloak>
+                    <h2 class="mb-3 text-lg font-semibold">Units assigned to this incident</h2>
+                    <p class="mb-4 text-sm text-slate-400">View current assignments. Attach or detach your own unit using the action bar above.</p>
+                    <div class="space-y-2">
+                        @forelse ($call->attached_units as $unit)
+                            <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-900 p-3">
+                                <div>
+                                    <p class="font-semibold text-sky-300">{{ $unit->unit_callsign }}</p>
+                                    <p class="text-xs text-slate-400">{{ $unit->officer_name }} · {{ $unit->user_department?->department?->name ?? 'Agency' }}</p>
+                                </div>
+                                <span class="rounded-md border border-slate-600 bg-slate-800 px-3 py-1 text-sm">{{ $unit->status }}</span>
+                            </div>
+                        @empty
+                            <div class="rounded-lg border border-dashed border-slate-600 p-5 text-sm text-slate-400">No units have been assigned to this call.</div>
+                        @endforelse
+                    </div>
+                </section>
+                <section class="p-4 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
+                    <h2 class="mb-2 text-lg font-semibold">Incident activity</h2>
+                    <p class="mb-4 text-sm text-slate-400">Unit assignments, operational updates and notes are shown here. New notes can be entered in the activity panel.</p>
+                    <div class="rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm">
+                        The live activity feed and note composer are alongside the incident information.
+                    </div>
+                </section>
             </div>
-            <div class="col-span-3 rounded-lg border border-slate-700 bg-slate-900 p-3">
+            <div class="lg:col-span-3 min-w-0 rounded-xl border border-slate-700 bg-slate-900 p-3">
                 <h2 class="mb-3 border-b border-slate-700 pb-2 text-base font-semibold">Call Activity</h2>
                 <div>
                     @livewire('cad.call-chat', ['call' => $call])
