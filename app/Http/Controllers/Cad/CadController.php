@@ -60,7 +60,14 @@ class CadController extends Controller
 
         $call_count = Call::where('status', '!=', 'CLO')->where('status', 'not like', 'CLO-%')->count();
 
-        return view('cad.home', compact('call_count'));
+        $activeUnit = auth()->user()->active_unit;
+        $myCalls = $activeUnit->calls()
+            ->where('status', '!=', 'CLO')
+            ->where('status', 'not like', 'CLO-%')
+            ->orderByDesc('calls.created_at')
+            ->get();
+
+        return view('cad.home', compact('call_count', 'myCalls'));
     }
 
     public function message_center()
