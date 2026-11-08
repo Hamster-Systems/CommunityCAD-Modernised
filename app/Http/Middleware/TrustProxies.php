@@ -14,6 +14,13 @@ class TrustProxies extends Middleware
      */
     protected $proxies;
 
+    public function __construct()
+    {
+        // Set TRUSTED_PROXIES to the exact proxy address(es), or '*' only
+        // when direct access to the application is restricted to a proxy.
+        $this->proxies = config('cad.trusted_proxies');
+    }
+
     /**
      * The headers that should be used to detect proxies.
      *
