@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('landing', [CadController::class, 'landing'])->name('landing');
 Route::post('add_unit', AddUnitController::class)->name('add_unit');
 Route::post('identities', [MdtIdentityController::class, 'store'])->name('identities.store');
+Route::get('identities/edit', [MdtIdentityController::class, 'edit'])->name('identities.edit');
+Route::put('identities/{identity}', [MdtIdentityController::class, 'update'])->name('identities.update');
 
 Route::middleware('cad.active_unit_check')->group(function () {
 
