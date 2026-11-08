@@ -1,5 +1,5 @@
 @php
-    $editing = isset($identity);
+    $editing = (bool) ($editing ?? false);
     $selectedSubdivisions = old('subdivisions', $editing ? ($identity->subdivisions ?? ($identity->subdivision ? [$identity->subdivision] : [])) : []);
     $selectedCivilian = old('civilian_id', $editing ? $identity->civilian_id : null);
     $manualName = $editing && $identity->civilian
