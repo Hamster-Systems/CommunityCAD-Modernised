@@ -97,7 +97,7 @@ class CallController extends Controller
 
         if ($call->status != $validated['status']) {
             CallLog::create([
-                'from' => $name.' '.auth()->user()->active_unit->user_department->badge_number,
+                'from' => $name.' '.auth()->user()->active_unit->unit_callsign,
                 'text' => 'Call Status Updated to: '.$validated['status'],
                 'call_id' => $call->id,
             ]);
@@ -112,7 +112,7 @@ class CallController extends Controller
                 $call->attached_units()->detach();
 
                 CallLog::create([
-                    'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->badge_number.')',
+                    'from' => auth()->user()->active_unit->log_identity,
                     'text' => 'Call '.$call->id.' has been closed and all units removed from call.',
                     'call_id' => $call->id,
                 ]);
@@ -121,7 +121,7 @@ class CallController extends Controller
 
         if ($call->nature != $validated['nature']) {
             CallLog::create([
-                'from' => $name.' '.auth()->user()->active_unit->user_department->badge_number,
+                'from' => $name.' '.auth()->user()->active_unit->unit_callsign,
                 'text' => 'Call Nature Updated to: '.$validated['nature'],
                 'call_id' => $call->id,
             ]);
@@ -129,7 +129,7 @@ class CallController extends Controller
 
         if ($call->nature != $validated['priority']) {
             CallLog::create([
-                'from' => $name.' '.auth()->user()->active_unit->user_department->badge_number,
+                'from' => $name.' '.auth()->user()->active_unit->unit_callsign,
                 'text' => 'Call Priority Updated to: P'.$validated['priority'],
                 'call_id' => $call->id,
             ]);
