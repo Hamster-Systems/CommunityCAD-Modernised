@@ -6,7 +6,7 @@ use App\Models\Cad\ActiveUnit;
 use App\Models\Cad\CallNatures;
 use App\Models\Cad\CallStatuses;
 use App\Models\Call;
-use App\Models\CallLog;
+use App\Support\Cad\CallActivityLogger;
 use App\Notifications\DiscordNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
@@ -58,6 +58,9 @@ class MdtScreen extends Component
 
     public function set_call_status(Call $call, $status)
     {
+        abort_unless(array_key_exists($status, CallStatuses::STATUSCODES), 422);
+        $oldStatus = $call->status;
+        if ($oldStatus === $status) return;
         $call->update(['status' => $status]);
 
         $status_array = explode('-', $status);
@@ -65,23 +68,17 @@ class MdtScreen extends Component
             $this->close_call($call);
         }
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Call Status Updated To '.$status,
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::changes($call, ['Status' => [$oldStatus, $status]]);
         $this->emit('updated-page');
     }
 
     public function set_call_priority(Call $call, $priority)
     {
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Call Priority Updated To '.$priority,
-            'call_id' => $call->id,
-        ]);
-
+        abort_unless(in_array((string) $priority, ['1', '2', '3', '4', '5'], true), 422);
+        $oldPriority = $call->priority;
+        if ((string) $oldPriority === (string) $priority) return;
         $call->update(['priority' => $priority]);
+        CallActivityLogger::changes($call, ['Priority' => [$oldPriority, $priority]]);
         $this->emit('updated-page');
     }
 
@@ -91,11 +88,7 @@ class MdtScreen extends Component
 
         $call->attached_units()->detach($activeUnit->id);
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Officer '.$activeUnit->unit_callsign.' has been unassigned.',
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' detached from the call.');
 
         $activeUnit->update(['description' => 'Removed from call: '.$call->id]);
 
@@ -109,11 +102,7 @@ class MdtScreen extends Component
         abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
         $call->attached_units()->syncWithoutDetaching([$activeUnit->id]);
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Officer '.$activeUnit->unit_callsign.' has been assigned.',
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' attached to the call.');
 
         $activeUnit->update(['description' => 'Added to call: '.$call->id]);
 
@@ -131,11 +120,7 @@ class MdtScreen extends Component
 
         $call->attached_units()->detach();
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Call '.$call->id.' has been closed and all units removed from call.',
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::record($call, 'CALL', 'Incident closed and all units released.');
         $this->emit('updated-page');
     }
 
