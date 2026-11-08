@@ -62,7 +62,7 @@ class CallController extends Controller
 
     public function show(Call $call): View
     {
-        $call->with('call_civilians');
+        $call->load(['attached_units.mdtIdentity', 'attached_units.user_department.department', 'call_civilians']);
         $call_natures = CallNatures::NATURECODES;
         $call_statuses = CallStatuses::STATUSCODES;
         $rps = CallCivilian::where('call_id', $call->id)->where('type', 'RP')->get();
@@ -127,7 +127,7 @@ class CallController extends Controller
             ]);
         }
 
-        if ($call->nature != $validated['priority']) {
+        if ((string) $call->priority !== (string) $validated['priority']) {
             CallLog::create([
                 'from' => $name.' '.auth()->user()->active_unit->unit_callsign,
                 'text' => 'Call Priority Updated to: P'.$validated['priority'],
