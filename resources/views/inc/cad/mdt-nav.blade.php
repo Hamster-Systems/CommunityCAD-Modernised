@@ -1,7 +1,7 @@
     <header class="z-10 shadow-md  bg-[#717377] uppercase">
         <div class="text-black text-center flex items-center justify-between max-w-7xl mx-auto">
             <p class="font-bold text-center">{{ auth()->user()->active_unit->user_department->department->name }}
-                Public Safety System - {{ auth()->user()->active_unit->officer->name }}
+                Public Safety System - {{ auth()->user()->active_unit->officer_name }} @if(auth()->user()->active_unit->mdtIdentity) — {{ auth()->user()->active_unit->mdtIdentity->callsign }} @endif
             </p>
 
             <a class="flex items-centerhover:underline text-xl" href="{{ route('cad.offduty.create') }}">
