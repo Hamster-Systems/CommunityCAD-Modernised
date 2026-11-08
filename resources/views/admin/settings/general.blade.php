@@ -13,6 +13,26 @@
                 </svg>
             </a></p>
     </header>
+    {{-- Standalone upload form: do not nest this inside the general settings form. --}}
+    <div class="card mb-4">
+        <form action="{{ route('admin.settings.community_logo.upload') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="pill p-3">
+                <h2 class="text-lg font-semibold">Upload Community Logo</h2>
+                <p class="mb-3 text-sm text-gray-300">Upload a PNG, JPG or WebP image (maximum 2 MB). It will be stored on this server.</p>
+                <div class="flex flex-wrap items-center gap-4">
+                    <img src="{{ get_setting('community_logo') }}" class="w-16 h-16 object-contain rounded border border-gray-600" alt="Current community logo">
+                    <div class="flex-1 min-w-0">
+                        <label for="community_logo_file" class="block mb-1">Choose an image</label>
+                        <input id="community_logo_file" name="community_logo_file" type="file" accept="image/png,image/jpeg,image/webp" required class="block w-full text-sm">
+                        <x-input-error :messages="$errors->get('community_logo_file')" class="mt-2" />
+                    </div>
+                    <button class="secondary-button-md" type="submit">Upload Logo</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="card">
         <form action="{{ route('admin.settings.update') }}" id="mdeditor" method="POST">
             @csrf
@@ -27,7 +47,7 @@
                 <div class="flex justify-between">
                     <div>
                         <p class="text-lg font-semibold">Community Logo</p>
-                        <p>The logo of your community. Must be a url.</p>
+                        <p>Use the upload form above to host your logo locally, or enter an existing image URL below.</p>
                     </div>
                     <img alt="" class="w-16 h-16" src="{{ get_setting('community_logo') }}">
                 </div>
