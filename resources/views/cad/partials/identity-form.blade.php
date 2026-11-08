@@ -42,18 +42,25 @@
         </div>
     </div>
     <fieldset>
-        <legend class="block text-sm mb-2">Subdivisions (select multiple, optional)</legend>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-md border border-gray-600 p-3">
-            @foreach ($subdivisions as $subdivision)
-                <label class="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-gray-700 cursor-pointer">
-                    <input type="checkbox" name="subdivisions[]" value="{{ $subdivision }}"
-                           @checked(in_array($subdivision, (array) $selectedSubdivisions, true))
-                           class="h-4 w-4">
-                    <span>{{ $subdivision }}</span>
-                </label>
-            @endforeach
-        </div>
-        <p class="mt-1 text-xs text-gray-400">You can select more than one subdivision for the same identifier.</p>
+        <legend class="block text-sm mb-2">Subdivisions (optional)</legend>
+        <details class="relative w-full" data-subdivision-dropdown>
+            <summary class="flex cursor-pointer select-none items-center justify-between gap-3 rounded-md border border-gray-400 bg-gray-200 px-3 py-2 text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
+                     aria-label="Choose one or more subdivisions">
+                <span data-subdivision-summary>{{ count((array) $selectedSubdivisions) ? implode(', ', (array) $selectedSubdivisions) : 'None / General' }}</span>
+                <span aria-hidden="true" class="text-xs">&#9662;</span>
+            </summary>
+            <div class="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-400 bg-gray-100 p-2 text-black shadow-xl">
+                @foreach ($subdivisions as $subdivision)
+                    <label class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 hover:bg-gray-300">
+                        <input type="checkbox" name="subdivisions[]" value="{{ $subdivision }}"
+                               @checked(in_array($subdivision, (array) $selectedSubdivisions, true))
+                               class="h-4 w-4">
+                        <span>{{ $subdivision }}</span>
+                    </label>
+                @endforeach
+            </div>
+        </details>
+        <p class="mt-1 text-xs text-gray-400">Click to choose multiple options; click the dropdown again to close.</p>
     </fieldset>
     <div>
         <label for="identity_civilian" class="block text-sm mb-1">Link civilian (optional)</label>
