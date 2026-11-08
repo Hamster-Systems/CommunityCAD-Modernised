@@ -34,16 +34,16 @@ Route::middleware('cad.active_unit_check')->group(function () {
     Route::get('home', [CadController::class, 'home'])->name('home');
     Route::post('my-status', GlobalUnitStatusController::class)->name('my_status');
 
-    Route::get('stop_panic', [CadController::class, 'stop_panic'])->name('stop_panic');
-    Route::get('clear_panic', [CadController::class, 'clear_panic'])->name('clear_panic');
-    Route::get('panic', [CadController::class, 'panic'])->name('panic');
+    Route::post('stop_panic', [CadController::class, 'stop_panic'])->name('stop_panic');
+    Route::post('clear_panic', [CadController::class, 'clear_panic'])->name('clear_panic');
+    Route::post('panic', [CadController::class, 'panic'])->name('panic');
 
     Route::post('call/{call}/update_call_log', [CallLogController::class, 'store'])->name('call_log.store');
     Route::post('call/{call}/add_civilian/{civilian}', [CallCivilianController::class, 'add_civilian'])->name('call.add_civilian');
-    Route::get('call/{call}/remove_civilian/{civilian}', [CallCivilianController::class, 'remove_civilian'])->name('call.remove_civilian');
+    Route::delete('call/{call}/remove_civilian/{civilian}', [CallCivilianController::class, 'remove_civilian'])->name('call.remove_civilian');
 
     Route::post('call/{call}/add_vehicle/{vehicle}', [CallVehicleController::class, 'add_vehicle'])->name('call.add_vehicle');
-    Route::get('call/{call}/remove_vehicle/{vehicle}', [CallVehicleController::class, 'remove_vehicle'])->name('call.remove_vehicle');
+    Route::delete('call/{call}/remove_vehicle/{vehicle}', [CallVehicleController::class, 'remove_vehicle'])->name('call.remove_vehicle');
 
     Route::post('call/{call}/my-unit', CallUnitActionController::class)->name('call.my_unit');
     Route::post('call/{call}/my-status', UnitQuickStatusController::class)->name('call.my_status');
@@ -66,14 +66,14 @@ Route::middleware('cad.active_unit_check')->group(function () {
     Route::get('penal_code', PenalCodeController::class)->name('penal_code');
     Route::get('ten_codes', [TenCodeController::class, 'index'])->name('ten_code.index');
     Route::get('stolen_vehicles', [StolenVehicleController::class, 'index'])->name('stolen_vehicles.index');
-    Route::get('stolen_vehicle/clear/{vehicle}', [StolenVehicleController::class, 'clear'])->name('stolen_vehicles.clear');
+    Route::post('stolen_vehicle/clear/{vehicle}', [StolenVehicleController::class, 'clear'])->name('stolen_vehicles.clear');
 
 
     Route::get('civilan/{civilian}/ticket/create', [TicketController::class, 'create'])->name('ticket.create');
     Route::post('civilan/{civilian}/ticket', [TicketController::class, 'store'])->name('ticket.store');
     Route::get('ticket/{ticket}/add_charges', [TicketController::class, 'add_charges'])->name('ticket.add_charges');
     Route::post('ticket/{ticket}/add_charges', [TicketController::class, 'add_charges_store'])->name('ticket.add_charges_store');
-    Route::get('ticket/{ticket}/sign_ticket', [TicketController::class, 'sign_ticket'])->name('ticket.sign_ticket');
+    Route::post('ticket/{ticket}/sign_ticket', [TicketController::class, 'sign_ticket'])->name('ticket.sign_ticket');
     Route::get('ticket/{ticket}', [TicketController::class, 'show'])->name('ticket.show');
 
     Route::get('mdt/home', [CadController::class, 'mdt_home'])->name('mdt.home');
