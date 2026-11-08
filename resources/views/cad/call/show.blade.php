@@ -28,6 +28,19 @@
                 <a href="{{ route('cad.mdt') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">← Call queue</a>
                 <a href="{{ route('cad.name.search') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">Person search</a>
                 <a href="{{ route('cad.vehicle.search') }}" class="rounded-md border border-slate-600 px-3 py-2 text-sm hover:bg-slate-700">Plate lookup</a>
+                <form method="POST" action="{{ route('cad.call.my_status', $call->id) }}" class="flex items-center gap-2">
+                    @csrf
+                    <label for="quick_unit_status" class="sr-only">Set my unit status</label>
+                    <select id="quick_unit_status" name="status" class="rounded-md border border-slate-600 bg-slate-900 px-2 py-2 text-sm text-white">
+                        <option value="AVL" @selected($myUnit->status === 'AVL')>Available</option>
+                        @if ($attached)
+                            <option value="ENRUTE" @selected($myUnit->status === 'ENRUTE')>En route</option>
+                            <option value="ONSCN" @selected($myUnit->status === 'ONSCN')>On scene</option>
+                            <option value="BRK" @selected($myUnit->status === 'BRK')>Break</option>
+                        @endif
+                    </select>
+                    <button type="submit" class="rounded-md bg-indigo-700 px-3 py-2 text-sm font-semibold hover:bg-indigo-600">Set status</button>
+                </form>
                 @if ((int) $myUnit->department_type !== 2)
                     <form method="POST" action="{{ route('cad.call.my_unit', $call->id) }}">
                         @csrf
