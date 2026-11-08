@@ -8,6 +8,7 @@ use App\Models\DiscordChannel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -79,6 +80,40 @@ class SettingsController extends Controller
         Cache::forget('cad_settings');
 
         return redirect()->route('admin.settings.api_key')->with('alerts', [['message' => 'API Key Generated.', 'level' => 'success']]);
+    }
+
+    /**
+     * Upload a community logo to the public media disk.
+     *
+     * Kept separate from the generic settings form so uploaded file objects
+     * are never passed to the settings update loop.
+     */
+    public function upload_community_logo(Request $request)
+    {
+        $validated = $request->validate([
+            'community_logo_file' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $path = $validated['community_logo_file']->store('branding', 'public');
+
+        if (!$path) {
+            return back()->with('alerts', [
+                ['message' => 'Unable to store the uploaded logo.', 'level' => 'error'],
+            ]);
+        }
+
+        $url = Storage::disk('public')->url($path);
+
+        CadSetting::updateOrCreate(
+            ['name' => 'community_logo'],
+            ['value' => $url, 'type' => 'text']
+        );
+
+        Cache::forget('cad_settings');
+
+        return redirect()->route('admin.settings.general')->with('alerts', [
+            ['message' => 'Community logo uploaded.', 'level' => 'success'],
+        ]);
     }
 
     public function update(Request $request)
