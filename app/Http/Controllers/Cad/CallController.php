@@ -80,7 +80,7 @@ class CallController extends Controller
         return view('calls.edit', compact('calls'));
     }
 
-    public function update(Request $request, Call $call): RedirectResponse
+    public function update(Request $request, Call $call)
     {
         $validated = $request->validate([
             'status' => 'required',
@@ -109,6 +109,14 @@ class CallController extends Controller
                 CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' released on call closure.');
             }
             CallActivityLogger::record($call, 'CALL', 'Incident closed; assigned units released.');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'Incident saved successfully.',
+                'updated_at' => $call->updated_at?->toIso8601String(),
+            ]);
         }
 
         return redirect()->route('cad.call.show', $call->id);
