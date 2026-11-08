@@ -480,7 +480,6 @@
                 </section>
             </div>
             <div class="lg:col-span-3 min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3">
-                <h2 class="mb-3 border-b border-slate-700 pb-2 text-base font-semibold">Call Activity</h2>
                 <div>
                     @livewire('cad.call-chat', ['call' => $call])
                 </div>
