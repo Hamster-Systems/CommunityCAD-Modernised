@@ -168,9 +168,9 @@
                                         <div class="ml-3">
                                             <p>{{ $vehicle->civilian->postal }} {{ $vehicle->civilian->street }}
                                                 {{ $vehicle->civilian->city }}</p>
-                                            <p>12345</p>
+                                            <p>Not recorded</p>
                                             <p>{{ $vehicle->civilian->s_n_n }}</p>
-                                            <p>123-345-9834</p>
+                                            <p>{{ $vehicle->civilian->phone_number ?? "Not recorded" }}</p>
                                             <p>INDIV - Individual</p>
                                             <p>{{ $vehicle->civilian->occupation }}</p>
                                         </div>
