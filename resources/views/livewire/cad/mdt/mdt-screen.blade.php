@@ -14,22 +14,7 @@
                     <a class="delete-button-md" href="{{ route('cad.offduty.create') }}">
                         {{ strtoupper(get_setting('off_duty_button_text', 'OFF DUTY')) }}</a>
                 @else
-                    <a class="new-button-md" href="#"
-                        wire:click="set_status({{ auth()->user()->active_unit->id }}, 'AVL')">
-                        {{ strtoupper(get_setting('available_button_text', 'AVAILABLE')) }}
-                    </a>
-                    <a class="bg-yellow-600 hover:bg-yellow-500 button-md" href="#"
-                        wire:click="set_status({{ auth()->user()->active_unit->id }}, 'ENRUTE')">
-                        {{ strtoupper(get_setting('enroute_button_text', 'ENROUTE')) }}
-                    </a>
-                    <a class="bg-yellow-600 hover:bg-yellow-500 button-md" href="#"
-                        wire:click="set_status({{ auth()->user()->active_unit->id }}, 'ONSCN')">
-                        {{ strtoupper(get_setting('on_scene_button_text', 'ON SCENE')) }}
-                    </a>
-                    <a class="delete-button-md" href="#"
-                        wire:click="set_status({{ auth()->user()->active_unit->id }}, 'BRK')">
-                        {{ strtoupper(get_setting('break_button_text', 'BREAK')) }}
-                    </a>
+                    <span class="text-xs text-slate-400">Unit status is now managed in the top toolbar.</span>
                     <a class="delete-button-md" href="{{ route('cad.offduty.create') }}">
                         {{ strtoupper(get_setting('off_duty_button_text', 'OFF DUTY')) }}
                     </a>
