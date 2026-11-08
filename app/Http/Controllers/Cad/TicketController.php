@@ -106,6 +106,8 @@ class TicketController extends Controller
 
     public function sign_ticket(Ticket $ticket)
     {
+        abort_unless($ticket->charges()->exists(), 422, 'Add at least one charge before signing.');
+        abort_unless((int) $ticket->user_id === (int) auth()->id() || auth()->user()->can('admin_access'), 403);
         $ticket->touch('updated_at');
         return redirect()->route('cad.ticket.show', $ticket->id);
     }
