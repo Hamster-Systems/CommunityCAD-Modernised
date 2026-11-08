@@ -30,7 +30,7 @@
                     </button>
                 @endforeach
             </nav>
-            <div class="lg:col-span-12 min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4">
+            <div class="min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4" :class="openTab === 6 ? 'lg:col-span-12' : 'lg:col-span-9'">
                 <div x-show="openTab !== 6" class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-semibold">Incident records</h2>
                     <div class="text-xs text-slate-400">Call #{{ $call->id }} · {{ $myUnit->unit_callsign }}</div>
@@ -482,6 +482,13 @@
                 <section class="p-2 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
                     @livewire('cad.call-chat', ['call' => $call])
                 </section>
+            </div>
+            <div x-show="openTab !== 6" x-cloak class="min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3 lg:col-span-3">
+                @livewire('cad.incident-activity-preview', ['callId' => (int) $call->id])
+                <button type="button" @click="openTab = 6; window.scrollTo({ top: 190, behavior: 'smooth' })"
+                    class="mt-3 w-full rounded-md border border-indigo-500/70 bg-indigo-900/50 px-3 py-3 text-sm font-semibold text-indigo-100 hover:bg-indigo-800">
+                    Open full activity &amp; submit update
+                </button>
             </div>
         </div>
     </div>
