@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Cad;
 
 use App\Http\Controllers\Controller;
-use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\UnitResponseStatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -29,16 +29,7 @@ class GlobalUnitStatusController extends Controller
             abort_unless($assignedCall, 403, 'Attach to an open call before selecting this status.');
         }
 
-        if ($unit->status !== $data['status']) {
-            $unit->update([
-                'status' => $data['status'],
-                'description' => 'Unit status changed to ' . $data['status'],
-            ]);
-            if ($assignedCall) {
-                CallActivityLogger::record($assignedCall, 'UNIT', 'Unit ' . $unit->unit_callsign . ' status changed to ' . $data['status'] . '.');
-
-            }
-        }
+        app(UnitResponseStatusService::class)->change($unit, $data['status'], $assignedCall);
 
         return redirect()->back();
     }
