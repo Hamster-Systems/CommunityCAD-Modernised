@@ -85,6 +85,7 @@ class TicketController extends Controller
 
     public function add_charges(Ticket $ticket): View
     {
+        abort_unless((int) $ticket->user_id === (int) auth()->id() || auth()->user()->can('admin_access'), 403);
         // dd($ticket->charges->penal_code_id);
         $allow_sign = true;
         if ($ticket->charges()->count() == 0) {
@@ -96,6 +97,7 @@ class TicketController extends Controller
 
     public function add_charges_store(Ticket $ticket, Request $request)
     {
+        abort_unless((int) $ticket->user_id === (int) auth()->id() || auth()->user()->can('admin_access'), 403);
         if ($request->penal_code_id == 0) {
             return redirect()->route('cad.ticket.add_charges', $ticket->id)->with('alerts', [['message' => 'You must choose a charge.', 'level' => 'error']]);
         }
@@ -105,7 +107,7 @@ class TicketController extends Controller
             'fine' => 'required|numeric',
             'cad_jail_time' => 'required|numeric',
             'description' => 'required',
-            'penal_code_id' => 'required|numeric',
+            'penal_code_id' => ['required', 'integer', 'exists:penal_codes,id'],
             'counts' => 'required|numeric',
         ]);
 
