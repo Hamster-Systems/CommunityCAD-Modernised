@@ -23,10 +23,15 @@
         let s = today.getSeconds();
         m = checkTime(m);
         s = checkTime(s);
-        document.getElementById("running_clock_date").innerHTML =
-            mo + "/" + d + "/" + y;
-        document.getElementById("running_clock_time").innerHTML =
-            h + ":" + m + ":" + s;
+        // The CAD landing page has no clock; avoid a null dereference and
+        // don't schedule a timer until the clock is actually present.
+        const dateEl = document.getElementById("running_clock_date");
+        const timeEl = document.getElementById("running_clock_time");
+        if (!dateEl || !timeEl) {
+            return;
+        }
+        dateEl.textContent = mo + "/" + d + "/" + y;
+        timeEl.textContent = h + ":" + m + ":" + s;
         setTimeout(startTime, 1000);
     }
 
