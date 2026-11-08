@@ -18,6 +18,7 @@ class CallChat extends Component
     public string $entryType = 'NOTE';
     public string $note = '';
     public int $perPage = 20;
+    public string $sort = 'newest';
 
     protected $listeners = ['incidentUpdated' => '$refresh'];
 
@@ -31,6 +32,13 @@ class CallChat extends Component
         abort_unless(in_array($filter, ['ALL', 'CALL', 'UNIT', 'PERSON', 'VEHICLE', 'REPORT', 'NOTE', 'SITUATION', 'DISPATCH', 'WITNESS'], true), 422);
 
         $this->filter = $filter;
+        $this->resetPage();
+    }
+
+    public function setSort(string $sort): void
+    {
+        abort_unless(in_array($sort, ['newest', 'oldest'], true), 422);
+        $this->sort = $sort;
         $this->resetPage();
     }
 
@@ -96,7 +104,10 @@ class CallChat extends Component
             });
         }
 
-        $entries = $query->orderByDesc('created_at')->orderByDesc('id')->paginate($this->perPage);
+        $entries = $query
+            ->orderBy('created_at', $this->sort === 'oldest' ? 'asc' : 'desc')
+            ->orderBy('id', $this->sort === 'oldest' ? 'asc' : 'desc')
+            ->paginate($this->perPage);
 
         return view('livewire.cad.call-chat', ['entries' => $entries]);
     }
