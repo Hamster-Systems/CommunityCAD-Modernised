@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Call;
 use App\Models\CallCivilian;
 use App\Models\Civilian;
+use App\Support\Cad\CallActivityLogger;
 use Illuminate\Http\Request;
 
 class CivilianSearchController extends Controller
@@ -29,11 +30,15 @@ class CivilianSearchController extends Controller
             'type' => 'required',
         ]);
 
+        $targetCall = Call::findOrFail($validated['call_id']);
         CallCivilian::create([
             'call_id' => $validated['call_id'],
             'civilian_id' => $civilian->id,
             'type' => $validated['type'],
         ]);
+
+        CallActivityLogger::record($targetCall, 'PERSON',
+            'Person ' . trim($civilian->first_name . ' ' . $civilian->last_name) . ' linked as ' . $validated['type'] . '.');
 
         return redirect()->route('cad.name.return', $civilian->id)->with('alerts', [['message' => 'Civilian linked to call '.$call->id, 'level' => 'success']]);
     }
