@@ -7,6 +7,7 @@ use App\Http\Controllers\Cad\CallCivilianController;
 use App\Http\Controllers\Cad\CallController;
 use App\Http\Controllers\Cad\CallUnitActionController;
 use App\Http\Controllers\Cad\UnitQuickStatusController;
+use App\Http\Controllers\Cad\GlobalUnitStatusController;
 use App\Http\Controllers\Cad\CallLogController;
 use App\Http\Controllers\Cad\CallVehicleController;
 use App\Http\Controllers\Cad\CivilianSearchController;
@@ -31,6 +32,7 @@ Route::put('identities/{identity}', [MdtIdentityController::class, 'update'])->n
 Route::middleware('cad.active_unit_check')->group(function () {
 
     Route::get('home', [CadController::class, 'home'])->name('home');
+    Route::post('my-status', GlobalUnitStatusController::class)->name('my_status');
 
     Route::get('stop_panic', [CadController::class, 'stop_panic'])->name('stop_panic');
     Route::get('clear_panic', [CadController::class, 'clear_panic'])->name('clear_panic');
