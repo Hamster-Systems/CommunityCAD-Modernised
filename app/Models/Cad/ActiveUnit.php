@@ -37,6 +37,23 @@ class ActiveUnit extends Model
         return $age;
     }
 
+    public function getUnitCallsignAttribute()
+    {
+        return $this->mdtIdentity?->callsign
+            ?? $this->user_department?->badge_number
+            ?? 'UNIT-' . $this->id;
+    }
+
+    public function getUnitRankAttribute()
+    {
+        return $this->mdtIdentity?->rank ?? $this->user_department?->rank ?? '';
+    }
+
+    public function getLogIdentityAttribute()
+    {
+        return $this->officer_name . ' (' . $this->unit_callsign . ')';
+    }
+
     public function getDisplayNameAttribute()
     {
         if ($this->mdtIdentity) {
