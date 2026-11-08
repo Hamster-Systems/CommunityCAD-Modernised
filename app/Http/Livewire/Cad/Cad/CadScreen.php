@@ -41,7 +41,7 @@ class CadScreen extends Component
     public function render()
     {
 
-        $this->active_units = ActiveUnit::with(['officer', 'user_department', 'calls'])->get()->sortBy('user_department.department.type')->sortBy('user_department.department.initials');
+        $this->active_units = ActiveUnit::with(['officer', 'mdtIdentity', 'user_department', 'calls'])->get()->sortBy('user_department.department.type')->sortBy('user_department.department.initials');
         $this->calls = Call::where('status', '!=', 'CLO')->where('status', 'not like', 'CLO-%')->orderBy('priority', 'desc')
             ->when(! empty($this->type_filters), fn (Builder $query) => $query->whereIn('type', $this->type_filters))
             ->when(! empty($this->nature_filter), fn (Builder $query) => $query->where('nature', $this->nature_filter))
@@ -69,7 +69,7 @@ class CadScreen extends Component
         }
 
         CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
+            'from' => auth()->user()->active_unit->log_identity,
             'text' => 'Call Status Updated To '.$status,
             'call_id' => $call->id,
         ]);
@@ -79,7 +79,7 @@ class CadScreen extends Component
     public function set_call_priority(Call $call, $priority)
     {
         CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
+            'from' => auth()->user()->active_unit->log_identity,
             'text' => 'Call Priority Updated To '.$priority,
             'call_id' => $call->id,
         ]);
@@ -94,8 +94,8 @@ class CadScreen extends Component
         $call->attached_units()->detach($activeUnit->id);
 
         CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Officer '.$activeUnit->badge_number.' has been unassigned.',
+            'from' => auth()->user()->active_unit->log_identity,
+            'text' => 'Officer '.$activeUnit->unit_callsign.' has been unassigned.',
             'call_id' => $call->id,
         ]);
 
@@ -111,8 +111,8 @@ class CadScreen extends Component
         $call->attached_units()->attach($activeUnit->id);
 
         CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Officer '.$activeUnit->badge_number.' has been assigned.',
+            'from' => auth()->user()->active_unit->log_identity,
+            'text' => 'Officer '.$activeUnit->unit_callsign.' has been assigned.',
             'call_id' => $call->id,
         ]);
 
@@ -132,7 +132,7 @@ class CadScreen extends Component
         $call->attached_units()->detach();
 
         CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
+            'from' => auth()->user()->active_unit->log_identity,
             'text' => 'Call '.$call->id.' has been closed and all units removed from call.',
             'call_id' => $call->id,
         ]);
