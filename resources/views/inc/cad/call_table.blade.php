@@ -84,8 +84,8 @@
                 class="{{ $call->status_info['color'] }} cursor-pointer hover:bg-slate-800/80"
                 x-data="{ contextOpen: false, contextX: 0, contextY: 0,
                     openContext(event) {
-                        this.contextX = Math.max(8, Math.min(event.clientX, window.innerWidth - 218));
-                        this.contextY = Math.max(8, Math.min(event.clientY, window.innerHeight - 156));
+                        this.contextX = Math.max(8, Math.min(event.clientX, window.innerWidth - 258));
+                        this.contextY = Math.max(8, Math.min(event.clientY, window.innerHeight - 190));
                         this.contextOpen = true;
                     }
                 }"
@@ -97,7 +97,7 @@
                 <td class="p-1 border border-slate-400">
                     <div class="flex items-center justify-between gap-1">
                         <a class="hover:underline" href="{{ route('cad.call.show', $call->id) }}">{{ $call->id }}</a>
-                        <button type="button" class="text-xs rounded border border-slate-600 px-1 hover:bg-slate-700"
+                        <button type="button" class="rounded-md border border-slate-500 bg-slate-800 px-2 py-1 text-sm font-bold text-white hover:bg-slate-600"
                             aria-label="Actions for call {{ $call->id }}" aria-haspopup="menu"
                             :aria-expanded="contextOpen.toString()"
                             @click.stop="openContext($event); contextX = Math.max(8, Math.min($event.clientX, window.innerWidth - 218)); contextY = Math.max(8, Math.min($event.clientY, window.innerHeight - 156))">
@@ -108,18 +108,19 @@
                     <div x-show="contextOpen" x-cloak @click.stop>
                         <div class="fixed inset-0 z-[80]" @click.stop="contextOpen = false"
                              @contextmenu.prevent.stop="contextOpen = false"></div>
-                        <div class="fixed z-[90] min-w-[195px] rounded-lg border border-slate-600 bg-slate-900 p-1 text-sm text-white shadow-xl"
+                        <div class="fixed z-[90] w-[244px] rounded-xl border border-slate-500 bg-[#162235] p-2 text-sm normal-case text-white shadow-2xl"
                             role="menu" aria-label="Call {{ $call->id }} actions"
                             :style="`left: ${contextX}px; top: ${contextY}px;`">
+                            <div class="mb-2 border-b border-slate-600 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Call #{{ $call->id }} · P{{ $call->priority }}</div>
                             <a role="menuitem" href="{{ route('cad.call.show', $call->id) }}"
-                                class="block rounded px-3 py-2 hover:bg-slate-700">View call details</a>
+                                class="block rounded-lg px-3 py-3 hover:bg-slate-700 focus:bg-slate-700">View call details</a>
                             @if (auth()->user()->active_unit->department_type != 2)
                                 @if ($call->attached_units->contains('id', auth()->user()->active_unit->id))
-                                    <button type="button" role="menuitem" class="block w-full rounded px-3 py-2 text-left hover:bg-slate-700"
+                                    <button type="button" role="menuitem" class="block w-full rounded-lg px-3 py-3 text-left hover:bg-slate-700 focus:bg-slate-700"
                                         wire:click="remove_unit_from_call({{ auth()->user()->active_unit->id }}, {{ $call->id }})"
                                         @click.stop="contextOpen = false">Detach my unit</button>
                                 @else
-                                    <button type="button" role="menuitem" class="block w-full rounded px-3 py-2 text-left hover:bg-slate-700"
+                                    <button type="button" role="menuitem" class="block w-full rounded-lg px-3 py-3 text-left hover:bg-slate-700 focus:bg-slate-700"
                                         wire:click="add_unit_to_call({{ auth()->user()->active_unit->id }}, {{ $call->id }})"
                                         @click.stop="contextOpen = false">Attach my unit</button>
                                 @endif
