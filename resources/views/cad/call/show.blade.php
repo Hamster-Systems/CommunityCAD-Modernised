@@ -39,7 +39,46 @@
                 <div class="text-base leading-relaxed" x-show="openTab === 1">
                     <div class="w-full">
                         <form action="{{ route('cad.call.update', $call->id) }}"
-                            class="space-y-4 rounded-md border border-slate-700 bg-[#162234] p-4 text-white" method="POST">
+                            class="space-y-4 rounded-md border border-slate-700 bg-[#162234] p-4 text-white" method="POST"
+                            x-data="{
+                                saving: false,
+                                feedback: '',
+                                failed: false,
+                                async save(event) {
+                                    if (this.saving) return;
+                                    this.saving = true;
+                                    this.feedback = '';
+                                    this.failed = false;
+                                    try {
+                                        const response = await fetch(event.target.action, {
+                                            method: 'POST',
+                                            credentials: 'same-origin',
+                                            headers: {
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                            },
+                                            body: new FormData(event.target),
+                                        });
+                                        if (!response.ok) {
+                                            const result = await response.json().catch(() => ({}));
+                                            const message = result.errors
+                                                ? Object.values(result.errors).flat().join(' ')
+                                                : (result.message || 'Could not save the incident.');
+                                            throw new Error(message);
+                                        }
+                                        this.feedback = 'Incident saved — the live workspace is updating.';
+                                        if (window.Livewire && typeof window.Livewire.emit === 'function') {
+                                            window.Livewire.emit('incidentUpdated');
+                                        }
+                                    } catch (error) {
+                                        this.failed = true;
+                                        this.feedback = error.message || 'Unable to save. Try again.';
+                                    } finally {
+                                        this.saving = false;
+                                    }
+                                }
+                            }"
+                            @submit.prevent="save($event)">
                             @csrf
                             @method('PUT')
                             <h3 class="text-sm font-bold uppercase tracking-wide text-sky-300">Location and response</h3>
@@ -171,8 +210,15 @@
                                     <p class="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm">{{ $call->narrative }}</p>
                                 </div>
                             </div>
-                            <button class="rounded-md bg-indigo-700 px-4 py-2 text-sm font-semibold hover:bg-indigo-600 text-white" type="submit">Update
-                                CALL</button>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button class="rounded-md bg-indigo-700 px-4 py-2 text-sm font-semibold hover:bg-indigo-600 text-white disabled:opacity-50"
+                                    :disabled="saving" type="submit">
+                                    <span x-show="!saving">Update call</span>
+                                    <span x-show="saving">Saving…</span>
+                                </button>
+                                <p role="status" aria-live="polite" x-show="feedback" x-text="feedback"
+                                    :class="failed ? 'text-rose-300' : 'text-emerald-300'" class="text-sm"></p>
+                            </div>
                         </form>
                     </div>
                 </div>
