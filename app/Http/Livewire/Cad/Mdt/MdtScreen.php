@@ -7,6 +7,7 @@ use App\Models\Cad\CallNatures;
 use App\Models\Cad\CallStatuses;
 use App\Models\Call;
 use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\UnitResponseStatusService;
 use App\Notifications\DiscordNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
@@ -52,8 +53,12 @@ class MdtScreen extends Component
     public function set_status(ActiveUnit $activeUnit, $status)
     {
         abort_unless((int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
-        $activeUnit->update(['status' => $status, 'description' => 'Status Set To: '.$status]);
+        abort_unless(in_array($status, ['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS'], true), 422);
+        abort_if($activeUnit->is_panic || $activeUnit->status === 'OFFDTY', 409);
+
+        app(UnitResponseStatusService::class)->change($activeUnit, $status);
         $this->emit('updated-page');
+        $this->emit('incidentUpdated');
     }
 
     public function set_call_status(Call $call, $status)
