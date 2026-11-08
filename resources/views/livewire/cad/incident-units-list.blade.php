@@ -1,5 +1,5 @@
 <div wire:poll.4s class="space-y-2">
-    <p class="mb-4 text-sm text-slate-400">Current unit assignments refresh automatically. Attach or detach using the incident header.</p>
+
     @forelse ($units as $unit)
         <article wire:key="incident-unit-{{ $unit->id }}" class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-900 p-4">
             <div>
