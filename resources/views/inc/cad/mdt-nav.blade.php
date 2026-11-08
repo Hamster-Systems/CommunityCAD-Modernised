@@ -92,6 +92,51 @@
                 </div>
             </div>
         </div>
+        @php
+            $statusUnit = auth()->user()->active_unit;
+            $unitStatusOptions = [
+                'AVL' => ['Available', 'bg-emerald-700'],
+                'BUSY' => ['Busy', 'bg-amber-700'],
+                'ENRUTE' => ['En Route', 'bg-sky-700'],
+                'ONSCN' => ['On Scene', 'bg-blue-700'],
+                'TRANS' => ['Transporting', 'bg-violet-700'],
+                'BRK' => ['Break', 'bg-slate-600'],
+            ];
+            $hasOpenCall = $statusUnit->calls()->where('status', '!=', 'CLO')
+                ->where('status', 'not like', 'CLO-%')->exists();
+        @endphp
+        <div class="max-w-7xl mx-auto border-t border-slate-500/50 px-2 py-2 flex flex-wrap items-center gap-2 text-white normal-case">
+            <span class="mr-1 text-xs font-bold uppercase tracking-wide text-slate-300">
+                {{ $statusUnit->unit_callsign }} · UNIT STATUS
+            </span>
+            @foreach ($unitStatusOptions as $code => $settings)
+                @php
+                    $responseOnly = in_array($code, ['ENRUTE', 'ONSCN', 'TRANS'], true);
+                    $blocked = $statusUnit->status === 'OFFDTY' || $statusUnit->is_panic
+                        || ($responseOnly && !$hasOpenCall);
+                    $selected = $statusUnit->status === $code;
+                @endphp
+                <form method="POST" action="{{ route('cad.my_status') }}">
+                    @csrf
+                    <input type="hidden" name="status" value="{{ $code }}">
+                    <button type="submit" @disabled($blocked)
+                        title="{{ $blocked && $responseOnly ? 'Attach to an open call first' : $settings[0] }}"
+                        aria-pressed="{{ $selected ? 'true' : 'false' }}"
+                        class="rounded-md border px-3 py-2 text-xs font-semibold transition
+                            {{ $selected ? $settings[1] . ' border-white ring-1 ring-white/70' : 'border-slate-500 bg-slate-800 hover:bg-slate-700' }}
+                            disabled:cursor-not-allowed disabled:opacity-40">
+                        {{ $settings[0] }}
+                    </button>
+                </form>
+            @endforeach
+            <span class="ml-auto text-xs text-slate-300">
+                @if ($hasOpenCall)
+                    Assigned to a call
+                @else
+                    No active assignment
+                @endif
+            </span>
+        </div>
         <div class="flex justify-between max-w-7xl mx-auto mt-2">
             <div class="flex items-center text-gray-300 space-x-4">
                 {{-- <a class="hover:underline" href="#">Firearm Database</a> --}}
