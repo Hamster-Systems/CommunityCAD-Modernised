@@ -591,8 +591,18 @@
                 <section class="p-4 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
                     <h2 class="mb-2 text-lg font-semibold">Incident activity</h2>
                     <p class="mb-4 text-sm text-slate-400">Unit assignments, operational updates and notes are shown here. New notes can be entered in the activity panel.</p>
-                    <div class="rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm">
-                        The live activity feed and note composer are alongside the incident information.
+                    <div class="space-y-2">
+                        @forelse ($recentActivity as $entry)
+                            <div class="rounded-lg border border-slate-700 bg-slate-900 p-3 text-sm">
+                                <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+                                    <strong class="text-sky-200">{{ $entry->from }}</strong>
+                                    <time class="text-xs text-slate-400">{{ $entry->created_at->format('d M Y H:i:s') }}</time>
+                                </div>
+                                <p class="whitespace-pre-wrap break-words text-slate-200">{{ $entry->text }}</p>
+                            </div>
+                        @empty
+                            <p class="rounded-lg border border-dashed border-slate-600 p-5 text-sm text-slate-400">No incident activity yet.</p>
+                        @endforelse
                     </div>
                 </section>
             </div>
