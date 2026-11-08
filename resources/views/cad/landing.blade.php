@@ -71,7 +71,7 @@
             <div class="card">
                 <h1 class="text-2xl font-semibold">Create an MDT identifier</h1>
                 <p class="mt-2 mb-4 text-sm text-gray-300">Choose your department, callsign and rank. Linking a civilian is optional.</p>
-                    <form action="{{ route('cad.identities.store', [], false) }}" method="POST" class="space-y-4">
+                    <form action="{{ route('cad.identities.store', [], false) }}" method="POST" class="space-y-4" data-identifier-form>
                         @csrf
                         <div>
                             <label for="identity_department" class="block text-sm mb-1">Department</label>
@@ -82,8 +82,9 @@
                             </select>
                         </div>
                         <div>
-                            <label for="identity_name" class="block text-sm mb-1">Display name</label>
-                            <input id="identity_name" name="display_name" maxlength="100" required value="{{ old('display_name', auth()->user()->preferred_name) }}" class="text-input w-full" placeholder="Officer name">
+                            <label for="identity_name" class="block text-sm mb-1">First Last Name</label>
+                            <input id="identity_name" name="display_name" maxlength="100" required value="{{ old('display_name') }}" class="text-input w-full" placeholder="John Smith" autocomplete="name">
+                            <p class="mt-1 text-xs text-gray-400" data-name-hint>Enter a first and last name, or link a civilian below to use their name automatically.</p>
                         </div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
@@ -96,11 +97,20 @@
                             </div>
                         </div>
                         <div>
+                            <label for="identity_subdivision" class="block text-sm mb-1">Subdivision (optional)</label>
+                            <select id="identity_subdivision" name="subdivision" class="text-input w-full">
+                                <option value="">None / General</option>
+                                @foreach ($subdivisions as $subdivision)
+                                    <option value="{{ $subdivision }}" @selected(old('subdivision') === $subdivision)>{{ $subdivision }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label for="identity_civilian" class="block text-sm mb-1">Link civilian (optional)</label>
                             <select id="identity_civilian" name="civilian_id" class="text-input w-full">
                                 <option value="">None — MDT identity only</option>
                                 @foreach ($civilians as $civilian)
-                                    <option value="{{ $civilian->id }}" @selected(old('civilian_id') == $civilian->id)>{{ $civilian->first_name }} {{ $civilian->last_name }}</option>
+                                    <option value="{{ $civilian->id }}" @selected(old('civilian_id') == $civilian->id) data-full-name="{{ $civilian->first_name }} {{ $civilian->last_name }}" data-short-name="{{ mb_substr($civilian->first_name, 0, 1) }}. {{ $civilian->last_name }}">{{ $civilian->first_name }} {{ $civilian->last_name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -132,7 +142,7 @@
                         <div class="mt-5 border-t border-gray-700 pt-5">
                             <h2 class="text-xl font-semibold mb-2">New MDT identifier</h2>
                             <p class="text-sm text-gray-300 mb-4">Create another identifier for an authorised department. A civilian is not required.</p>
-                    <form action="{{ route('cad.identities.store', [], false) }}" method="POST" class="space-y-4">
+                    <form action="{{ route('cad.identities.store', [], false) }}" method="POST" class="space-y-4" data-identifier-form>
                         @csrf
                         <div>
                             <label for="identity_department" class="block text-sm mb-1">Department</label>
@@ -143,8 +153,9 @@
                             </select>
                         </div>
                         <div>
-                            <label for="identity_name" class="block text-sm mb-1">Display name</label>
-                            <input id="identity_name" name="display_name" maxlength="100" required value="{{ old('display_name', auth()->user()->preferred_name) }}" class="text-input w-full" placeholder="Officer name">
+                            <label for="identity_name" class="block text-sm mb-1">First Last Name</label>
+                            <input id="identity_name" name="display_name" maxlength="100" required value="{{ old('display_name') }}" class="text-input w-full" placeholder="John Smith" autocomplete="name">
+                            <p class="mt-1 text-xs text-gray-400" data-name-hint>Enter a first and last name, or link a civilian below to use their name automatically.</p>
                         </div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
@@ -157,11 +168,20 @@
                             </div>
                         </div>
                         <div>
+                            <label for="identity_subdivision" class="block text-sm mb-1">Subdivision (optional)</label>
+                            <select id="identity_subdivision" name="subdivision" class="text-input w-full">
+                                <option value="">None / General</option>
+                                @foreach ($subdivisions as $subdivision)
+                                    <option value="{{ $subdivision }}" @selected(old('subdivision') === $subdivision)>{{ $subdivision }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label for="identity_civilian" class="block text-sm mb-1">Link civilian (optional)</label>
                             <select id="identity_civilian" name="civilian_id" class="text-input w-full">
                                 <option value="">None — MDT identity only</option>
                                 @foreach ($civilians as $civilian)
-                                    <option value="{{ $civilian->id }}" @selected(old('civilian_id') == $civilian->id)>{{ $civilian->first_name }} {{ $civilian->last_name }}</option>
+                                    <option value="{{ $civilian->id }}" @selected(old('civilian_id') == $civilian->id) data-full-name="{{ $civilian->first_name }} {{ $civilian->last_name }}" data-short-name="{{ mb_substr($civilian->first_name, 0, 1) }}. {{ $civilian->last_name }}">{{ $civilian->first_name }} {{ $civilian->last_name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -174,3 +194,37 @@
         </div>
     </section>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-identifier-form]').forEach(function (form) {
+            const civilianSelect = form.querySelector('[name="civilian_id"]');
+            const nameField = form.querySelector('[name="display_name"]');
+            const hint = form.querySelector('[data-name-hint]');
+            if (!civilianSelect || !nameField) return;
+
+            let typedName = nameField.value;
+            function updateNameFromCivilian() {
+                const option = civilianSelect.selectedOptions[0];
+                const fullName = option && option.dataset.fullName;
+                const shortName = option && option.dataset.shortName;
+                if (fullName) {
+                    nameField.value = fullName;
+                    nameField.readOnly = true;
+                    nameField.required = false;
+                    hint.textContent = 'MDT display name: ' + shortName + ' (automatically derived from this civilian).';
+                } else {
+                    nameField.readOnly = false;
+                    nameField.required = true;
+                    nameField.value = typedName;
+                    hint.textContent = 'Enter a first and last name, or link a civilian to use their name automatically.';
+                }
+            }
+            nameField.addEventListener('input', function () {
+                if (!nameField.readOnly) typedName = nameField.value;
+            });
+            civilianSelect.addEventListener('change', updateNameFromCivilian);
+            updateNameFromCivilian();
+        });
+    });
+</script>
