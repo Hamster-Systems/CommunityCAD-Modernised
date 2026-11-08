@@ -1,24 +1,31 @@
 import "./bootstrap";
 
 import Editor from "@toast-ui/editor";
-// import 'codemirror/lib/codemirror.css';
 import "@toast-ui/editor/dist/toastui-editor.css";
 
-const editor = new Editor({
-    el: document.querySelector("#editor"),
-    height: "400px",
-    initialEditType: "markdown",
-    placeholder: "",
-    initialValue: document.querySelector("#mdcontent").value,
-    toolbarItems: [
-        ["heading", "bold", "italic", "strike"],
-        ["hr", "quote"],
-        ["ul", "ol"],
-    ],
-});
+// The shared app bundle runs on every page, including pages without the
+// Markdown editor. Only initialise it when all required elements exist.
+const editorElement = document.querySelector("#editor");
+const markdownContent = document.querySelector("#mdcontent");
+const editorForm = document.querySelector("#mdeditor");
 
-document.querySelector("#mdeditor").addEventListener("submit", (e) => {
-    e.preventDefault();
-    document.querySelector("#mdcontent").value = editor.getMarkdown();
-    e.target.submit();
-});
+if (editorElement && markdownContent && editorForm) {
+    const editor = new Editor({
+        el: editorElement,
+        height: "400px",
+        initialEditType: "markdown",
+        placeholder: "",
+        initialValue: markdownContent.value,
+        toolbarItems: [
+            ["heading", "bold", "italic", "strike"],
+            ["hr", "quote"],
+            ["ul", "ol"],
+        ],
+    });
+
+    editorForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        markdownContent.value = editor.getMarkdown();
+        editorForm.submit();
+    });
+}
