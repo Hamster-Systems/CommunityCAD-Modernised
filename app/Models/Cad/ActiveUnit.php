@@ -106,6 +106,10 @@ class ActiveUnit extends Model
 
             case 'BRK':
                 return 'text-gray-500';
+            case 'BUSY':
+                return 'text-amber-500';
+            case 'TRANS':
+                return 'text-violet-400';
                 break;
 
             case 'ENRUTE':
