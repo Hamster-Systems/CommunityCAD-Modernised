@@ -17,6 +17,7 @@ class UnitQuickStatusController extends Controller
 
         $unit = $request->user()->active_unit;
         abort_unless($unit && (int) $unit->user_id === (int) $request->user()->id, 403);
+        abort_if($unit->is_panic, 409, 'Clear the active panic before changing unit status.');
 
         // Changing response status from an incident is only possible when
         // attached to that incident; 'available' remains a general status.
