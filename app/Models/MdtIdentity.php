@@ -11,6 +11,8 @@ class MdtIdentity extends Model
 
     protected $guarded = [];
 
+    protected $casts = ['subdivisions' => 'array'];
+
     public function userDepartment()
     {
         return $this->belongsTo(UserDepartment::class, 'user_department_id');
