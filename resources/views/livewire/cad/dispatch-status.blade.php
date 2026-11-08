@@ -65,8 +65,8 @@
 
     @if (auth()->user()->active_unit->status != 'OFFDTY' && auth()->user()->active_unit->department_type != 2)
         @if (auth()->user()->active_unit->is_panic)
-            <a class="flex items-center py-1 px-5 text-black font-bold animate-pulse bg-red-600 hover:bg-red-700 h-10"
-                href="{{ route('cad.stop_panic') }}">
+            <form method="POST" action="{{ route('cad.stop_panic') }}" class="flex">@csrf
+            <button type="submit"  class="flex items-center py-1 px-5 text-black font-bold animate-pulse bg-red-600 hover:bg-red-700 h-10">
                 <svg class="w-6 h-6 mr-2" fill="#000000" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                     <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -77,10 +77,11 @@
                     </g>
                 </svg>
                 <p>Stop <br> Panic</p>
-            </a>
+            </button>
+        </form>
         @else
-            <a class="flex items-center py-1 px-5 text-black bg-red-600 hover:bg-red-700 h-10"
-                href="{{ route('cad.panic') }}">
+            <form method="POST" action="{{ route('cad.panic') }}" class="flex">@csrf
+            <button type="submit"  class="flex items-center py-1 px-5 text-black bg-red-600 hover:bg-red-700 h-10">
                 <svg class="w-5 h-5 mr-2" fill="#000000" version="1.1" viewBox="-1 0 30 30"
                     xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" xmlns:xlink="http://www.w3.org/1999/xlink"
                     xmlns="http://www.w3.org/2000/svg">
@@ -102,13 +103,14 @@
                     </g>
                 </svg>
                 <p>Panic</p>
-            </a>
+            </button>
+        </form>
         @endif
     @endif
 
     @if (auth()->user()->active_unit->status != 'OFFDTY' && auth()->user()->active_unit->department_type == 2)
-        <a class="flex items-center py-1 px-5 text-black font-bold bg-red-600 hover:bg-red-700 h-10"
-            href="{{ route('cad.clear_panic') }}">
+        <form method="POST" action="{{ route('cad.clear_panic') }}" class="flex">@csrf
+            <button type="submit"  class="flex items-center py-1 px-5 text-black font-bold bg-red-600 hover:bg-red-700 h-10">
             <svg class="w-6 h-6 mr-2" fill="#000000" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -119,6 +121,7 @@
                 </g>
             </svg>
             <p>Clear <br> Panics</p>
-        </a>
+        </button>
+        </form>
     @endif
 </div>
