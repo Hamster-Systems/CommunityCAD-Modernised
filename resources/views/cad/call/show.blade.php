@@ -131,17 +131,19 @@
                                         <div>
                                             <p><span class="text-blue-500 text-xs">SEX</span>
                                                 {{ $call_civilian->civilian->gender }}</p>
-                                            <p><span class="text-blue-500 text-xs">HGT</span> 5'-09"</p>
-                                            <p><span class="text-blue-500 text-xs">WGT</span> 150lb</p>
+                                            <p><span class="text-blue-500 text-xs">HGT</span> {{ $call_civilian->civilian->height ? floor($call_civilian->civilian->height / 12) . "' " . ($call_civilian->civilian->height % 12) . '"' : 'Unknown' }}</p>
+                                            <p><span class="text-blue-500 text-xs">WGT</span> {{ $call_civilian->civilian->weight ? $call_civilian->civilian->weight . ' lb' : 'Unknown' }}</p>
                                         </div>
                                     </div>
                                     <div class="border-t-2 border-black flex justify-between">
                                         <p class=""><span class="text-blue-500 text-xs">ROLE</span>
                                             {{ $call_civilian->type }}</p>
 
-                                        <a class="text-red-600 hover:underline"
-                                            href="{{ route('cad.call.remove_civilian', [$call->id, $call_civilian->civilian->id]) }}">Remove
-                                        </a>
+                                        <form method="POST" action="{{ route('cad.call.remove_civilian', [$call->id, $call_civilian->civilian->id]) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline">Remove</button>
+                                    </form>
 
                                         <a class="text-blue-600 hover:underline flex items-center"
                                             href="{{ route('cad.name.return', $call_civilian->civilian->id) }}">RUN
@@ -261,17 +263,19 @@
                                     <div>
                                         <p><span class="text-blue-500 text-xs">SEX</span>
                                             {{ $call_civilian->civilian->gender }}</p>
-                                        <p><span class="text-blue-500 text-xs">HGT</span> 5'-09"</p>
-                                        <p><span class="text-blue-500 text-xs">WGT</span> 150lb</p>
+                                        <p><span class="text-blue-500 text-xs">HGT</span> {{ $call_civilian->civilian->height ? floor($call_civilian->civilian->height / 12) . "' " . ($call_civilian->civilian->height % 12) . '"' : 'Unknown' }}</p>
+                                        <p><span class="text-blue-500 text-xs">WGT</span> {{ $call_civilian->civilian->weight ? $call_civilian->civilian->weight . ' lb' : 'Unknown' }}</p>
                                     </div>
                                 </div>
                                 <div class="border-t-2 border-black flex justify-between">
                                     <p class=""><span class="text-blue-500 text-xs">ROLE</span>
                                         {{ $call_civilian->type }}</p>
 
-                                    <a class="text-red-600 hover:underline"
-                                        href="{{ route('cad.call.remove_civilian', [$call->id, $call_civilian->civilian->id]) }}">Remove
-                                    </a>
+                                    <form method="POST" action="{{ route('cad.call.remove_civilian', [$call->id, $call_civilian->civilian->id]) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline">Remove</button>
+                                    </form>
 
                                     <a class="text-blue-600 hover:underline flex items-center"
                                         href="{{ route('cad.name.return', $call_civilian->civilian->id) }}">RUN
@@ -312,9 +316,11 @@
                                         {{ $call_vehicle->type }}
                                     </p>
 
-                                    <a class="text-red-600 hover:underline"
-                                        href="{{ route('cad.call.remove_vehicle', [$call->id, $call_vehicle->vehicle->id]) }}">Remove
-                                    </a>
+                                    <form method="POST" action="{{ route('cad.call.remove_vehicle', [$call->id, $call_vehicle->vehicle->id]) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline">Remove</button>
+                                    </form>
 
                                     <a class="text-blue-600 hover:underline flex items-center"
                                         href="{{ route('cad.vehicle.return', $call_vehicle->vehicle->plate) }}">RUN
