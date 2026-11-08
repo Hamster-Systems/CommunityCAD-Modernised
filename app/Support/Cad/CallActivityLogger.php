@@ -7,7 +7,7 @@ use App\Models\CallLog;
 
 class CallActivityLogger
 {
-    private const CATEGORIES = ['CALL', 'UNIT', 'PERSON', 'VEHICLE', 'REPORT', 'NOTE', 'SYSTEM'];
+    private const CATEGORIES = ['CALL', 'UNIT', 'PERSON', 'VEHICLE', 'REPORT', 'NOTE', 'SYSTEM', 'SITUATION', 'DISPATCH', 'WITNESS'];
 
     public static function actor(): string
     {
