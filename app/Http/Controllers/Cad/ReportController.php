@@ -53,6 +53,7 @@ class ReportController extends Controller
 
     public function edit(Report $report): View
     {
+        abort_unless((int) $report->user_id === (int) auth()->id() || auth()->user()->can('admin_access'), 403);
         $report_types = ReportType::all();
         $calls = Call::where('updated_at', '>', Carbon::now()->subDays(30)->format('Y-m-d 00:00:00'))->get();
 
@@ -61,6 +62,7 @@ class ReportController extends Controller
 
     public function update(Request $request, Report $report): RedirectResponse
     {
+        abort_unless((int) $report->user_id === (int) auth()->id() || auth()->user()->can('admin_access'), 403);
         $validated = $request->validate([
             'mdcontent' => 'required',
             'title' => 'required',
