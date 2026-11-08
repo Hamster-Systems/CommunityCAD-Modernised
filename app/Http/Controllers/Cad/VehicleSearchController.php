@@ -40,6 +40,6 @@ class VehicleSearchController extends Controller
         CallActivityLogger::record($targetCall, 'VEHICLE',
             'Vehicle ' . $vehicle->plate . ' linked as ' . $validated['type'] . '.');
 
-        return redirect()->route('cad.vehicle.return', $vehicle->plate)->with('alerts', [['message' => 'Vehicle linked to call '.$call->id, 'level' => 'success']]);
+        return redirect()->route('cad.vehicle.return', $vehicle->plate)->with('alerts', [['message' => 'Vehicle linked to call '.$targetCall->id, 'level' => 'success']]);
     }
 }
