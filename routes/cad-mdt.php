@@ -9,6 +9,7 @@ use App\Http\Controllers\Cad\CallLogController;
 use App\Http\Controllers\Cad\CallVehicleController;
 use App\Http\Controllers\Cad\CivilianSearchController;
 use App\Http\Controllers\Cad\Mdt\MdtController;
+use App\Http\Controllers\Cad\MdtIdentityController;
 use App\Http\Controllers\Cad\OffDutyController;
 use App\Http\Controllers\Cad\PenalCodeController;
 use App\Http\Controllers\Cad\ReportController;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('landing', [CadController::class, 'landing'])->name('landing');
 Route::post('add_unit', AddUnitController::class)->name('add_unit');
+Route::post('identities', [MdtIdentityController::class, 'store'])->name('identities.store');
 
 Route::middleware('cad.active_unit_check')->group(function () {
 
