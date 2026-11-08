@@ -51,6 +51,7 @@ class MdtScreen extends Component
 
     public function set_status(ActiveUnit $activeUnit, $status)
     {
+        abort_unless((int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
         $activeUnit->update(['status' => $status, 'description' => 'Status Set To: '.$status]);
         $this->emit('updated-page');
     }
@@ -86,6 +87,7 @@ class MdtScreen extends Component
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
     {
+        abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
 
         $call->attached_units()->detach($activeUnit->id);
 
@@ -104,7 +106,8 @@ class MdtScreen extends Component
 
     public function add_unit_to_call(ActiveUnit $activeUnit, Call $call)
     {
-        $call->attached_units()->attach($activeUnit->id);
+        abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
+        $call->attached_units()->syncWithoutDetaching([$activeUnit->id]);
 
         CallLog::create([
             'from' => auth()->user()->active_unit->log_identity,
@@ -138,6 +141,7 @@ class MdtScreen extends Component
 
     public function on_duty(ActiveUnit $activeUnit)
     {
+        abort_unless((int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
         $activeUnit->update(['status' => 'AVL', 'description' => 'Status Set To: AVL', 'first_on_duty_at' => now()]);
 
         DiscordNotification::send(
