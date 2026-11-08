@@ -47,7 +47,9 @@ class CadController extends Controller
             ->orderBy('first_name')->orderBy('last_name')
             ->get(['id', 'first_name', 'last_name']);
 
-        return view('cad.landing', compact('available_departments', 'identities', 'civilians'));
+        $subdivisions = config('cad.mdt_subdivisions', []);
+
+        return view('cad.landing', compact('available_departments', 'identities', 'civilians', 'subdivisions'));
     }
 
     public function home()
