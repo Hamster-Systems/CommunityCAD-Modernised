@@ -20,7 +20,7 @@
                 @endforeach
             </div>
         @endif
-        @include('cad.partials.identity-form')
+        @include('cad.partials.identity-form', ['editing' => true])
     </div>
     @include('cad.partials.identity-form-script')
 </section>
