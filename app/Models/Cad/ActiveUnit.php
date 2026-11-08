@@ -4,6 +4,7 @@ namespace App\Models\Cad;
 
 use App\Models\Call;
 use App\Models\Officer;
+use App\Models\MdtIdentity;
 use App\Models\User;
 use App\Models\UserDepartment;
 use Carbon\Carbon;
@@ -38,12 +39,25 @@ class ActiveUnit extends Model
 
     public function getDisplayNameAttribute()
     {
+        if ($this->mdtIdentity) {
+            return $this->mdtIdentity->display_name;
+        }
+
         return $this->formatName($this->getOfficerNameAttribute());
     }
 
     public function getOfficerNameAttribute()
     {
-        return isset($this->officer->name) ? $this->officer->name : auth()->user()->preferred_name;
+        if ($this->mdtIdentity) {
+            return $this->mdtIdentity->display_name;
+        }
+
+        return $this->officer ? $this->officer->name : ($this->user ? $this->user->preferred_name : 'Unknown unit');
+    }
+
+    public function mdtIdentity()
+    {
+        return $this->belongsTo(MdtIdentity::class, 'mdt_identity_id');
     }
 
     public function officer()
