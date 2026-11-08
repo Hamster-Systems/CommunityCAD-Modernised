@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Call;
 use App\Models\Report;
 use App\Models\ReportType;
+use App\Support\Cad\CallActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +39,10 @@ class ReportController extends Controller
 
         $report = Report::create($data);
 
+        if ($report->call_id && ($linkedCall = Call::find($report->call_id))) {
+            CallActivityLogger::record($linkedCall, 'REPORT', 'Report #' . $report->id . ' linked: ' . $report->title . '.');
+        }
+
         return redirect()->route('cad.report.show', $report->id);
     }
 
@@ -67,7 +72,21 @@ class ReportController extends Controller
         $data['text'] = $data['mdcontent'];
         unset($data['mdcontent']);
 
+        $previousCallId = $report->call_id;
+        $previousTitle = $report->title;
         $report->update($data);
+
+        if ((string) ($previousCallId ?? '') !== (string) ($report->call_id ?? '')) {
+            if ($previousCallId && ($previousCall = Call::find($previousCallId))) {
+                CallActivityLogger::record($previousCall, 'REPORT', 'Report #' . $report->id . ' unlinked.');
+            }
+            if ($report->call_id && ($currentCall = Call::find($report->call_id))) {
+                CallActivityLogger::record($currentCall, 'REPORT', 'Report #' . $report->id . ' linked: ' . $report->title . '.');
+            }
+        } elseif ($report->call_id && ($linkedCall = Call::find($report->call_id))) {
+            CallActivityLogger::record($linkedCall, 'REPORT',
+                'Linked report #' . $report->id . ($previousTitle !== $report->title ? ' renamed to ' . $report->title : ' updated') . '.');
+        }
 
         return redirect()->route('cad.report.show', $report->id);
     }
