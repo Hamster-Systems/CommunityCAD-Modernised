@@ -80,9 +80,9 @@
                                                                 <p>{{ $vehicle->civilian->postal }}
                                                                     {{ $vehicle->civilian->street }}
                                                                     {{ $vehicle->civilian->city }}</p>
-                                                                <p>12345</p>
+                                                                <p>Not recorded</p>
                                                                 <p>{{ $vehicle->civilian->s_n_n }}</p>
-                                                                <p>123-345-9834</p>
+                                                                <p>Not recorded</p>
                                                                 <p>INDIV - Individual</p>
                                                                 <p>{{ $vehicle->civilian->occupation }}</p>
                                                             </div>
@@ -129,8 +129,10 @@
                                                         href="{{ route('cad.name.return', $vehicle->civilian->id) }}">Run
                                                         Name</a>
                                                     <div class="">
-                                                        <a class="delete-button-md"
-                                                            href="{{ route('cad.stolen_vehicles.clear', $vehicle->id) }}">Clear</a>
+                                                        <form method="POST" action="{{ route('cad.stolen_vehicles.clear', $vehicle->id) }}">
+                                                            @csrf
+                                                            <button type="submit" class="delete-button-md">Clear stolen status</button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>
@@ -242,9 +244,9 @@
                                                                         <p>{{ $bolo->civilian->postal }}
                                                                             {{ $bolo->civilian->street }}
                                                                             {{ $bolo->civilian->city }}</p>
-                                                                        <p>12345</p>
+                                                                        <p>Not recorded</p>
                                                                         <p>{{ $bolo->civilian->s_n_n }}</p>
-                                                                        <p>123-345-9834</p>
+                                                                        <p>Not recorded</p>
                                                                         <p>INDIV - Individual</p>
                                                                         <p>{{ $bolo->civilian->occupation }}</p>
                                                                     </div>
