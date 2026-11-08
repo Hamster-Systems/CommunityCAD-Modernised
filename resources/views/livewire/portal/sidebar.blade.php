@@ -119,7 +119,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M3 8.25V18a2.25 2.25 0 002.25 2.25h13.5A2.25 2.25 0 0021 18V8.25m-18 0V6a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6zM7.5 6h.008v.008H7.5V6zm2.25 0h.008v.008H9.75V6z" />
                         </svg> --}}
-                        <img alt="" class="w-4 h-4" src="{{ $department->logo }}">
+                        {{-- Civilian Operations uses the community identity; other departments keep their own logos. --}}
+                        <img alt="{{ $department->name }} logo" class="w-4 h-4 object-contain"
+                            src="{{ $department->slug === 'civilian-operations' ? get_setting('community_logo') : $department->logo }}">
                         <span class="ml-4">{{ $department->name }}</span>
                     </a>
                 </li>
