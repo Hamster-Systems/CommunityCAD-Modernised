@@ -18,13 +18,13 @@
     @livewireStyles
 </head>
 
-<body class="bg-[#101825] text-white" x-data="{ sideMenu: false }">
+<body class="settings-shell bg-[#101825] text-white" x-data="{ sideMenu: false }">
     <div :class="{ 'overflow-hidden': sideMenu }" class="flex h-screen">
         @include('inc.admin.settings-sidebar')
         <div class="flex flex-col flex-1">
             @include('inc.portal.navbar')
             <main class="h-full pb-16 overflow-y-auto">
-                <div class="container px-6 py-3">
+                <div class="settings-content-container">
                     @yield('content')
                 </div>
             </main>
