@@ -66,8 +66,9 @@ class CallController extends Controller
         $call_natures = CallNatures::NATURECODES;
         $call_statuses = CallStatuses::STATUSCODES;
         $rps = CallCivilian::where('call_id', $call->id)->where('type', 'RP')->get();
+        $recentActivity = $call->call_log()->orderByDesc('created_at')->limit(50)->get();
 
-        return view('cad.call.show', compact('call', 'call_natures', 'call_statuses', 'rps'));
+        return view('cad.call.show', compact('call', 'call_natures', 'call_statuses', 'rps', 'recentActivity'));
     }
 
     public function edit(Call $call): View
