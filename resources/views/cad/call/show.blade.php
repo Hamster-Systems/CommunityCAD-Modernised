@@ -30,8 +30,8 @@
                     </button>
                 @endforeach
             </nav>
-            <div class="lg:col-span-9 min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4">
-                <div class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
+            <div class="lg:col-span-12 min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4">
+                <div x-show="openTab !== 6" class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-semibold">Incident records</h2>
                     <div class="text-xs text-slate-400">Call #{{ $call->id }} · {{ $myUnit->unit_callsign }}</div>
                 </div>
@@ -479,16 +479,9 @@
 
                     @livewire('cad.incident-units-list', ['callId' => (int) $call->id])
                 </section>
-                <section class="p-4 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
-                    <h2 class="mb-2 text-lg font-semibold">Incident activity</h2>
-                    <p class="mb-4 text-sm text-slate-400">Unit assignments, operational updates and notes are shown here. New notes can be entered in the activity panel.</p>
-                    @livewire('cad.incident-activity-history', ['callId' => (int) $call->id])
-                </section>
-            </div>
-            <div class="lg:col-span-3 min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3">
-                <div>
+                <section class="p-2 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
                     @livewire('cad.call-chat', ['call' => $call])
-                </div>
+                </section>
             </div>
         </div>
     </div>
