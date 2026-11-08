@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Cad;
 
 use App\Http\Controllers\Controller;
-use App\Models\CallLog;
+use App\Support\Cad\CallActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,12 +35,8 @@ class GlobalUnitStatusController extends Controller
                 'description' => 'Unit status changed to ' . $data['status'],
             ]);
             if ($assignedCall) {
-                CallLog::create([
-                    'from' => $unit->log_identity,
-                    'text' => 'Unit status changed to ' . $data['status'],
-                    'call_id' => $assignedCall->id,
-                ]);
-                $assignedCall->touch();
+                CallActivityLogger::record($assignedCall, 'UNIT', 'Unit ' . $unit->unit_callsign . ' status changed to ' . $data['status'] . '.');
+
             }
         }
 
