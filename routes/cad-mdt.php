@@ -5,6 +5,7 @@ use App\Http\Controllers\Cad\BoloController;
 use App\Http\Controllers\Cad\CadController;
 use App\Http\Controllers\Cad\CallCivilianController;
 use App\Http\Controllers\Cad\CallController;
+use App\Http\Controllers\Cad\CallUnitActionController;
 use App\Http\Controllers\Cad\CallLogController;
 use App\Http\Controllers\Cad\CallVehicleController;
 use App\Http\Controllers\Cad\CivilianSearchController;
@@ -41,6 +42,7 @@ Route::middleware('cad.active_unit_check')->group(function () {
     Route::post('call/{call}/add_vehicle/{vehicle}', [CallVehicleController::class, 'add_vehicle'])->name('call.add_vehicle');
     Route::get('call/{call}/remove_vehicle/{vehicle}', [CallVehicleController::class, 'remove_vehicle'])->name('call.remove_vehicle');
 
+    Route::post('call/{call}/my-unit', CallUnitActionController::class)->name('call.my_unit');
     Route::resource('call', CallController::class);
 
     Route::get('offduty', [OffDutyController::class, 'create'])->name('offduty.create');
