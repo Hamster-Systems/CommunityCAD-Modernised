@@ -19,14 +19,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
 
     <style>
-        @font-face {
-            font-family: 'digital-clock-font';
-            src: url('{{ asset('fonts/DIGITALDREAM.ttf') }}');
-        }
-
+        /* DIGITALDREAM.ttf has malformed table metadata and Firefox rejects it.
+           Use the already-loaded Orbitron font without requesting the broken file. */
         #running_clock_date,
         #running_clock_time {
-            font-family: "digital-clock-font" !important;
+            font-family: 'Orbitron', ui-monospace, SFMono-Regular, Consolas, monospace !important;
+            font-variant-numeric: tabular-nums;
         }
     </style>
 
