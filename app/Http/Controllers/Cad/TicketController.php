@@ -46,6 +46,15 @@ class TicketController extends Controller
         $data = $request->validated();
 
 
+        if (!empty($data['license_was_suspended'])) {
+            abort_unless(!empty($data['license_id']), 422, 'Select a licence before suspending it.');
+            License::whereKey($data['license_id'])->where('civilian_id', $civilian->id)->firstOrFail();
+        }
+        if (!empty($data['vehicle_was_impounded'])) {
+            abort_unless(!empty($data['vehicle_id']), 422, 'Select a vehicle before impounding it.');
+            Vehicle::whereKey($data['vehicle_id'])->firstOrFail();
+        }
+
         $data['user_id'] = auth()->user()->id;
         $data['officer_id'] = auth()->user()->active_unit->officer_id;
         $data['civilian_id'] = $civilian->id;
@@ -58,12 +67,15 @@ class TicketController extends Controller
         $ticket = Ticket::create($data);
 
         if ($data['license_was_suspended']) {
-            $license = License::where('id', $data['license_id']);
+            abort_unless(!empty($data['license_id']), 422, 'Select a licence before suspending it.');
+            $license = License::whereKey($data['license_id'])
+                ->where('civilian_id', $civilian->id)->firstOrFail();
             $license->update(['license_status' => 3, 'suspend_ticket_id' => $ticket->id]);
         }
 
         if ($data['vehicle_was_impounded']) {
-            $vehicle = Vehicle::where('id', $data['vehicle_id']);
+            abort_unless(!empty($data['vehicle_id']), 422, 'Select a vehicle before impounding it.');
+            $vehicle = Vehicle::whereKey($data['vehicle_id'])->firstOrFail();
             $vehicle->update(['vehicle_status' => 3, 'impound_ticket_id' => $ticket->id]);
         }
 
