@@ -5,7 +5,58 @@
         @include('inc.cad.mdt-nav')
     </div>
 
-    <div class="relative h-screen">
+    @php
+        $myUnit = auth()->user()->active_unit;
+        $attached = $myUnit && $call->attached_units->contains('id', $myUnit->id);
+        $natureLabel = $call->nature_info['name'] ?? 'Custom nature';
+        $statusLabel = $call->status_info['name'] ?? $call->status;
+    @endphp
+
+    <div class="max-w-7xl mx-auto px-3 pt-5 pb-4 text-white">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-xs tracking-widest text-slate-400">CAD / INCIDENT DETAILS</p>
+                <h1 class="text-2xl font-bold tracking-tight">Call #{{ $call->id }}</h1>
+                <p class="mt-1 text-sm text-slate-300">{{ $call->nature }} — {{ $natureLabel }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a class="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700" href="{{ route('cad.mdt') }}">← Back to MDT</a>
+                <span class="rounded-lg border {{ $attached ? 'border-emerald-600 bg-emerald-950 text-emerald-200' : 'border-slate-600 bg-slate-800 text-slate-300' }} px-4 py-2 text-sm">
+                    {{ $attached ? 'Your unit is attached' : 'Viewing — not attached' }}
+                </span>
+            </div>
+        </div>
+        <div class="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
+                <p class="text-xs text-slate-400">Call status</p>
+                <p class="mt-2 font-semibold">{{ $call->status }} — {{ $statusLabel }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
+                <p class="text-xs text-slate-400">Priority / Type</p>
+                <p class="mt-2 font-semibold">P{{ $call->priority }} · {{ $call->type_name }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
+                <p class="text-xs text-slate-400">Location</p>
+                <p class="mt-2 font-semibold">{{ $call->location ?: 'Not provided' }}</p>
+                <p class="text-xs text-slate-400">{{ $call->city }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-700 bg-slate-900 p-4">
+                <p class="text-xs text-slate-400">Assigned units ({{ $call->attached_units->count() }})</p>
+                @forelse ($call->attached_units as $unit)
+                    <p class="mt-1 text-sm font-semibold">{{ $unit->unit_callsign }} <span class="font-normal text-slate-400">{{ $unit->status }}</span></p>
+                @empty
+                    <p class="mt-2 text-sm text-slate-400">No units assigned</p>
+                @endforelse
+            </div>
+        </div>
+        <div class="mb-2 flex flex-wrap gap-4 text-xs text-slate-400">
+            <span>Created: {{ $call->created_at->format('d M Y H:i') }}</span>
+            <span>Last updated: {{ $call->updated_at->format('d M Y H:i') }}</span>
+            <span>Viewing a call does not join it. Use MDT call actions to attach.</span>
+        </div>
+    </div>
+
+    <div class="relative min-h-screen">
         <div class="bg-gray-800 mb-3">
             <div class="max-w-7xl mx-auto flex justify-between text-white">
                 <p>ID: {{ $call->id }}</p>
@@ -14,12 +65,12 @@
                 <p>Last Update: {{ $call->updated_at->format('H:i:s m/d/Y') }}</p>
             </div>
         </div>
-        <div class="grid-cols-12 grid max-w-7xl mx-auto text-white h-max" x-data="{
+        <div class="grid-cols-12 grid max-w-7xl mx-auto text-white h-max gap-3 px-3" x-data="{
             openTab: 1,
             activeClasses: 'bg-[#131c23] text-white border-b-4 border-b-black z-20',
             inactiveClasses: 'bg-[#2e3547] hover:bg-[#131c23] hover:text-white',
         }">
-            <div class="text-center bg-[#2e3547] divide-y-2">
+            <div class="text-center bg-[#2e3547] divide-y divide-slate-600 rounded-lg overflow-hidden">
                 <a :class="openTab === 1 ? activeClasses : inactiveClasses" @click="openTab = 1" class="block py-3"
                     href="#">
                     <svg class="w-8 h-8 mx-auto" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
@@ -498,7 +549,8 @@
                     Officers
                 </div>
             </div>
-            <div class="col-span-3">
+            <div class="col-span-3 rounded-lg border border-slate-700 bg-slate-900 p-3">
+                <h2 class="mb-3 border-b border-slate-700 pb-2 text-base font-semibold">Call Activity</h2>
                 <div>
                     @livewire('cad.call-chat', ['call' => $call])
                 </div>
