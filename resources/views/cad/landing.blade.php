@@ -71,7 +71,7 @@
             <div class="card">
                 <h1 class="text-2xl font-semibold">Create an MDT identifier</h1>
                 <p class="mt-2 mb-4 text-sm text-gray-300">Choose your department, callsign and rank. Linking a civilian is optional.</p>
-                    @include('cad.partials.identity-form')
+                    @include('cad.partials.identity-form', ['editing' => false])
             </div>
             @else
                 <div class="card">
@@ -106,7 +106,7 @@
                         <div class="mt-5 border-t border-gray-700 pt-5">
                             <h2 class="text-xl font-semibold mb-2">New MDT identifier</h2>
                             <p class="text-sm text-gray-300 mb-4">Create another identifier for an authorised department. A civilian is not required.</p>
-                    @include('cad.partials.identity-form')
+                    @include('cad.partials.identity-form', ['editing' => false])
                         </div>
                     </details>
                 </div>
