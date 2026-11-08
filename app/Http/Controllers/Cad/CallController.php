@@ -75,9 +75,9 @@ class CallController extends Controller
         return view('cad.call.show', compact('call', 'call_natures', 'call_statuses', 'rps', 'recentActivity'));
     }
 
-    public function edit(Call $call): View
+    public function edit(Call $call): RedirectResponse
     {
-        return view('calls.edit', compact('calls'));
+        return redirect()->route('cad.call.show', $call->id);
     }
 
     public function update(Request $request, Call $call)
