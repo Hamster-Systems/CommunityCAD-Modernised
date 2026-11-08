@@ -1,5 +1,16 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-subdivision-dropdown]').forEach(function (dropdown) {
+        const summary = dropdown.querySelector('[data-subdivision-summary]');
+        const options = dropdown.querySelectorAll('input[type="checkbox"][name="subdivisions[]"]');
+        function updateSummary() {
+            const selected = Array.from(options).filter(option => option.checked).map(option => option.value);
+            summary.textContent = selected.length ? selected.join(', ') : 'None / General';
+            summary.title = summary.textContent;
+        }
+        options.forEach(option => option.addEventListener('change', updateSummary));
+        updateSummary();
+    });
     document.querySelectorAll('[data-identifier-form]').forEach(function (form) {
         const civilianSelect = form.querySelector('[name="civilian_id"]');
         const nameField = form.querySelector('[name="display_name"]');
