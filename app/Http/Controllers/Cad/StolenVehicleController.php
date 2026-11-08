@@ -16,7 +16,7 @@ class StolenVehicleController extends Controller
 
     public function clear(Vehicle $vehicle)
     {
-        // dd($vehicle);
+        abort_unless((int) $vehicle->vehicle_status === 2, 422);
         $vehicle->update(['vehicle_status' => 1]);
         return redirect()->route('cad.message_center');
     }
