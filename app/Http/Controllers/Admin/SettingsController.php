@@ -82,43 +82,26 @@ class SettingsController extends Controller
         return redirect()->route('admin.settings.api_key')->with('alerts', [['message' => 'API Key Generated.', 'level' => 'success']]);
     }
 
-    /**
-     * Upload a community logo to the public media disk.
-     *
-     * Kept separate from the generic settings form so uploaded file objects
-     * are never passed to the settings update loop.
-     */
-    public function upload_community_logo(Request $request)
-    {
-        $validated = $request->validate([
-            'community_logo_file' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
-
-        $path = $validated['community_logo_file']->store('branding', 'public');
-
-        if (!$path) {
-            return back()->with('alerts', [
-                ['message' => 'Unable to store the uploaded logo.', 'level' => 'error'],
-            ]);
-        }
-
-        $url = Storage::disk('public')->url($path);
-
-        CadSetting::updateOrCreate(
-            ['name' => 'community_logo'],
-            ['value' => $url, 'type' => 'text']
-        );
-
-        Cache::forget('cad_settings');
-
-        return redirect()->route('admin.settings.general')->with('alerts', [
-            ['message' => 'Community logo uploaded.', 'level' => 'success'],
-        ]);
-    }
-
     public function update(Request $request)
     {
-        $data = $request->except('_token');
+        // The same General Settings form supports either a remote image URL
+        // or an uploaded image. If both are provided, the upload takes priority.
+        $request->validate([
+            'community_logo_file' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'community_logo' => ['sometimes', 'nullable', 'url', 'max:2048'],
+        ]);
+
+        $data = $request->except('_token', 'community_logo_file');
+
+        if ($request->hasFile('community_logo_file')) {
+            $path = $request->file('community_logo_file')->store('branding', 'public');
+
+            if (!$path) {
+                return back()->withErrors(['community_logo_file' => 'Unable to store the uploaded logo.']);
+            }
+
+            $data['community_logo'] = Storage::disk('public')->url($path);
+        }
 
         foreach ($data as $key => $value) {
             CadSetting::updateOrCreate(
