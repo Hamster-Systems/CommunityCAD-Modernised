@@ -14,14 +14,14 @@
             <div class="my-5 text-2xl">
                 <div class="">
                     <p>Report No: <span class="underline">{{ str_pad($report->id, 5, 0, STR_PAD_LEFT) }}</span></p>
-                    <p>Call No: <span class="underline">{{ str_pad($report->call_id, 5, 0, STR_PAD_LEFT) }}</span></p>
+                    <p>Call No: <span class="underline">{{ $report->call_id ?: 'Not linked' }}</span></p>
                     <p>Date: <span class="underline">{{ $report->created_at->format('m/d/Y') }}</span></p>
                 </div>
                 <div class="">
                     <p>Reporting Officer: <span class="underline">
-                            {{ $report->officer->name ?? $report->user->preferred_name }}
+                            {{ $report->officer?->name ?? $report->user?->preferred_name ?? 'Unknown author' }}
                         </span></p>
-                    <p>Report Type: <span class="underline">{{ $report->report_type->title }}</span></p>
+                    <p>Report Type: <span class="underline">{{ $report->report_type?->title ?? 'Unknown report type' }}</span></p>
                     <p>Report Title: <span class="underline">{{ $report->title }}</span></p>
                 </div>
                 <hr class="my-5">
