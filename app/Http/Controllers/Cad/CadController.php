@@ -9,6 +9,8 @@ use App\Models\Call;
 use App\Models\Civilian\Vehicle;
 use App\Models\Department;
 use App\Models\Officer;
+use App\Models\MdtIdentity;
+use App\Models\Civilian;
 use App\Models\UserDepartment;
 use Illuminate\Support\Facades\Http;
 
@@ -34,7 +36,18 @@ class CadController extends Controller
             }
         }
 
-        return view('cad.landing', compact('available_departments'));
+        $membershipIds = collect($available_departments)->pluck('id');
+        $identities = MdtIdentity::where('user_id', auth()->id())
+            ->whereIn('user_department_id', $membershipIds)
+            ->with('userDepartment.department')
+            ->orderBy('display_name')
+            ->get();
+
+        $civilians = Civilian::where('user_id', auth()->id())
+            ->orderBy('first_name')->orderBy('last_name')
+            ->get(['id', 'first_name', 'last_name']);
+
+        return view('cad.landing', compact('available_departments', 'identities', 'civilians'));
     }
 
     public function home()
