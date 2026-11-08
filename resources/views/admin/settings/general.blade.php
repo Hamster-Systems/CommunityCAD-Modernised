@@ -15,6 +15,17 @@
             </a></p>
     </header>
     <p class="settings-page-subtitle">Manage your community branding, public introduction and member preferences.</p>
+    @if ($errors->any())
+        <div role="alert" class="mb-5 rounded-lg border border-red-500/50 bg-red-950/40 px-4 py-3 text-red-100">
+            <p class="font-semibold">Some settings could not be saved</p>
+            <ul class="mt-2 list-disc pl-5 text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="card settings-card">
         <form action="{{ route('admin.settings.update') }}" id="mdeditor" method="POST" enctype="multipart/form-data">
             @csrf
