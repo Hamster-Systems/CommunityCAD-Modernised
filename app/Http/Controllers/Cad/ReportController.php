@@ -25,10 +25,10 @@ class ReportController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'mdcontent' => 'required',
-            'title' => 'required',
-            'call_id' => 'numeric|nullable',
-            'report_type_id' => 'required|numeric',
+            'mdcontent' => ['required', 'string', 'max:50000'],
+            'title' => ['required', 'string', 'max:200'],
+            'call_id' => ['nullable', 'integer', 'exists:calls,id'],
+            'report_type_id' => ['required', 'integer', 'exists:report_types,id'],
         ]);
 
         $data = $validated;
@@ -64,10 +64,10 @@ class ReportController extends Controller
     {
         abort_unless((int) $report->user_id === (int) auth()->id() || auth()->user()->can('admin_access'), 403);
         $validated = $request->validate([
-            'mdcontent' => 'required',
-            'title' => 'required',
-            'call_id' => 'numeric|nullable',
-            'report_type_id' => 'required|numeric',
+            'mdcontent' => ['required', 'string', 'max:50000'],
+            'title' => ['required', 'string', 'max:200'],
+            'call_id' => ['nullable', 'integer', 'exists:calls,id'],
+            'report_type_id' => ['required', 'integer', 'exists:report_types,id'],
         ]);
 
         $data = $validated;
