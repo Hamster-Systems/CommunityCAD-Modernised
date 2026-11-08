@@ -26,7 +26,7 @@
                         @click="openTab = {{ $index + 1 }}"
                         class="rounded-md border-b-2 px-4 py-3 text-sm font-semibold transition" :aria-selected="openTab === {{ $index + 1 }}">
                         {{ $tabName }}
-                        @if ($index === 4) <span class="text-xs">({{ $call->attached_units->count() }})</span> @endif
+                        
                     </button>
                 @endforeach
             </nav>
@@ -471,19 +471,7 @@
                 <section class="p-4 text-base leading-relaxed" x-show="openTab === 5" x-cloak>
                     <h2 class="mb-3 text-lg font-semibold">Units assigned to this incident</h2>
                     <p class="mb-4 text-sm text-slate-400">View current assignments. Attach or detach your own unit using the action bar above.</p>
-                    <div class="space-y-2">
-                        @forelse ($call->attached_units as $unit)
-                            <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-900 p-3">
-                                <div>
-                                    <p class="font-semibold text-sky-300">{{ $unit->unit_callsign }}</p>
-                                    <p class="text-xs text-slate-400">{{ $unit->officer_name }} · {{ $unit->user_department?->department?->name ?? 'Agency' }}</p>
-                                </div>
-                                <span class="rounded-md border border-slate-600 bg-slate-800 px-3 py-1 text-sm">{{ $unit->status }}</span>
-                            </div>
-                        @empty
-                            <div class="rounded-lg border border-dashed border-slate-600 p-5 text-sm text-slate-400">No units have been assigned to this call.</div>
-                        @endforelse
-                    </div>
+                    @livewire('cad.incident-units-list', ['callId' => (int) $call->id])
                 </section>
                 <section class="p-4 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
                     <h2 class="mb-2 text-lg font-semibold">Incident activity</h2>
