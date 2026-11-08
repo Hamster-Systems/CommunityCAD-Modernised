@@ -93,7 +93,7 @@ class CadController extends Controller
 
     public function clear_panic()
     {
-        abort_unless(auth()->user()->can('admin_access'), 403);
+        abort_unless(auth()->user()->can('admin_access') || (int) auth()->user()->active_unit?->department_type === 2, 403);
         $active_panic_units = ActiveUnit::where('is_panic', '1')->get();
 
         foreach ($active_panic_units as $active_unit) {
