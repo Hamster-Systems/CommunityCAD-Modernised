@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Cad;
 
 use App\Http\Controllers\Controller;
 use App\Models\Call;
-use App\Models\CallLog;
+use App\Support\Cad\CallActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -34,12 +34,7 @@ class CallUnitActionController extends Controller
             return redirect()->route('cad.call.show', $call->id);
         }
 
-        CallLog::create([
-            'from' => $unit->log_identity,
-            'text' => $message,
-            'call_id' => $call->id,
-        ]);
-        $call->touch();
+        CallActivityLogger::record($call, 'UNIT', $message);
 
         return redirect()->route('cad.call.show', $call->id);
     }
