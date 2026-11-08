@@ -144,7 +144,7 @@
                     <div class="flex justify-between">
                         <span>
                             @foreach ($call->attached_units as $unit)
-                                {{ $unit->user_department->badge_number }}
+                                {{ $unit->unit_callsign }}
                                 @if (!$loop->last)
                                     ,
                                 @endif
