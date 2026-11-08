@@ -57,14 +57,6 @@
     </div>
 
     <div class="relative min-h-screen">
-        <div class="bg-gray-800 mb-3">
-            <div class="max-w-7xl mx-auto flex justify-between text-white">
-                <p>ID: {{ $call->id }}</p>
-                <p>Nature: {{ $call->nature }} - {{ $call->nature_info['name'] }}</p>
-                <p>Entery Started: {{ $call->created_at->format('H:i:s m/d/Y') }}</p>
-                <p>Last Update: {{ $call->updated_at->format('H:i:s m/d/Y') }}</p>
-            </div>
-        </div>
         <div class="grid-cols-12 grid max-w-7xl mx-auto text-white h-max gap-3 px-3" x-data="{
             openTab: 1,
             activeClasses: 'bg-[#131c23] text-white border-b-4 border-b-black z-20',
@@ -152,9 +144,9 @@
 
             <div class="col-span-8">
                 <h1 class="text-xl text-center font-bold text-white">Call {{ $call->id }} - ({{ $call->nature }})
-                    {{ $call->nature_info['name'] }}</h1>
+                    {{ $natureLabel }}</h1>
                 <p class="text-lg text-center font-bold text-white">Status - ({{ $call->status }})
-                    {{ $call->status_info['name'] }}</p>
+                    {{ $statusLabel }}</p>
 
                 <div class="p-2 text-base leading-relaxed" x-show="openTab === 1">
                     <div class="max-w-7xl mx-auto p-2">
