@@ -40,6 +40,6 @@ class CivilianSearchController extends Controller
         CallActivityLogger::record($targetCall, 'PERSON',
             'Person ' . trim($civilian->first_name . ' ' . $civilian->last_name) . ' linked as ' . $validated['type'] . '.');
 
-        return redirect()->route('cad.name.return', $civilian->id)->with('alerts', [['message' => 'Civilian linked to call '.$call->id, 'level' => 'success']]);
+        return redirect()->route('cad.name.return', $civilian->id)->with('alerts', [['message' => 'Civilian linked to call '.$targetCall->id, 'level' => 'success']]);
     }
 }
