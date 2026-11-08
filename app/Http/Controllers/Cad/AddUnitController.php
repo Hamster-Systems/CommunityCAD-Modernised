@@ -43,6 +43,7 @@ class AddUnitController extends Controller
             'user_department_id' => $membership->id,
             'mdt_identity_id' => $identity->id,
             'department_type' => $membership->department->type,
+            'subdivision' => $identity->subdivision,
             'status' => 'OFFDTY',
             'description' => 'SIGNED IN: ' . date('G:i:s'),
         ]);
