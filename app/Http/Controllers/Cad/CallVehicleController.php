@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Call;
 use App\Models\CallVehicle;
 use App\Models\Civilian\Vehicle;
+use App\Support\Cad\CallActivityLogger;
 
 class CallVehicleController extends Controller
 {
@@ -19,6 +20,10 @@ class CallVehicleController extends Controller
 
         foreach ($call_vehicles as $call_vehicle) {
             $call_vehicle->delete();
+        }
+
+        if ($call_vehicles->isNotEmpty()) {
+            CallActivityLogger::record($call, 'VEHICLE', 'Vehicle ' . $vehicle->plate . ' removed from the incident.');
         }
 
         return redirect()->route('cad.call.show', $call->id);
