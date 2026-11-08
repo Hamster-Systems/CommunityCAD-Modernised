@@ -228,7 +228,7 @@
 
                                                 <div class="border-t border-black">
                                                     @if ($bolo->civilian_id)
-                                                        <p>Civilian Linked: {{ $bolo->civilian->name }}</p>
+                                                        <p>Civilian Linked: {{ $bolo->civilian?->name ?? 'Record unavailable' }}</p>
                                                         <div class="grid grid-cols-4 gap-2 border-2 mt-3">
                                                             <div class="col-span-2 border-r-2 p-2">
                                                                 <div class="flex">
@@ -317,7 +317,7 @@
                                                                         <p class="font-bold">Registered Owner:</p>
                                                                     </div>
                                                                     <div class="ml-3">
-                                                                        <p>{{ $bolo->vehicle->registration_expire->format('m/d/Y') }}
+                                                                        <p>{{ $bolo->vehicle->registration_expire?->format('m/d/Y') ?? 'Not recorded' }}
                                                                         </p>
                                                                         <p>{{ $bolo->vehicle->status_name }}</p>
                                                                         @if ($bolo->vehicle->civilian)
