@@ -34,6 +34,11 @@ class CadAudioController extends Controller
         ]);
 
         $previous = CadAudio::details($event);
+        if ($request->hasFile('sound') && $validated['mode'] !== 'custom') {
+            throw ValidationException::withMessages([
+                'mode' => 'Select Custom uploaded sound when uploading a file.',
+            ]);
+        }
         if ($validated['mode'] === 'custom' && ! $request->hasFile('sound') && ! $previous['has_custom']) {
             throw ValidationException::withMessages([
                 'sound' => 'Upload an MP3, OGG or WAV file to select Custom audio.',
