@@ -177,6 +177,7 @@
                         class="absolute right-0 z-50 w-80 p-3 space-y-3 text-white bg-gray-800 rounded"
                         x-show="statusOpen">
                         @foreach ($call_statuses as $status => $props)
+                            @continue($status === 'PANIC')
                             <a @click="statusOpen = false" class="block hover:bg-gray-500" href="#"
                                 wire:click="set_call_status({{ $call->id }}, '{{ $status }}')">{{ $status }}
                                 - {{ $props['name'] }}</a>
