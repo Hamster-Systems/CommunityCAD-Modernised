@@ -15,6 +15,7 @@
     let unlocked = false;
     let blocked = null;
     let playing = null;
+    let starting = false;
     let checking = false;
     const queue = [];
     let notice;
@@ -53,22 +54,25 @@
     }
 
     function drain() {
-        if (playing || !queue.length) return;
+        if (playing || starting || !queue.length) return;
         const event = queue.shift();
         if (!event || !event.url || !/^https?:\/\//.test(event.url)) {
             drain();
             return;
         }
         const audio = new Audio(event.url);
+        starting = true;
         audio.preload = 'auto';
         audio.volume = Math.min(1, Math.max(0, Number(event.volume) || 0));
-        audio.addEventListener('ended', () => { if (playing === audio) playing = null; drain(); }, {once:true});
-        audio.addEventListener('error', () => { if (playing === audio) playing = null; drain(); }, {once:true});
+        audio.addEventListener('ended', () => { if (playing === audio) playing = null; starting = false; drain(); }, {once:true});
+        audio.addEventListener('error', () => { if (playing === audio) playing = null; starting = false; drain(); }, {once:true});
         audio.play().then(() => {
+            starting = false;
             playing = audio;
             unlocked = true;
             if (notice) notice.hidden = true;
         }).catch(() => {
+            starting = false;
             blocked = audio;
             noticeButton().hidden = false;
             // Do not retry every poll; wait for explicit user interaction.
@@ -79,6 +83,7 @@
         if (!event.url || Number(event.volume) <= 0) return;
         if (event.type === 'panic') {
             if (playing) { playing.pause(); playing = null; }
+            starting = false;
             queue.length = 0;
             blocked = null;
         }
