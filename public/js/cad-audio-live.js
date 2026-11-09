@@ -71,11 +71,17 @@
             playing = audio;
             unlocked = true;
             if (notice) notice.hidden = true;
-        }).catch(() => {
+        }).catch(error => {
             starting = false;
-            blocked = audio;
-            noticeButton().hidden = false;
-            // Do not retry every poll; wait for explicit user interaction.
+            if (error && error.name === 'NotAllowedError') {
+                blocked = audio;
+                noticeButton().hidden = false;
+                // Wait for an explicit user gesture instead of retrying on polls.
+            } else {
+                // Missing/unsupported audio must not be mistaken for autoplay.
+                console.warn('CAD audio could not play:', event.type, error);
+                drain();
+            }
         });
     }
 
