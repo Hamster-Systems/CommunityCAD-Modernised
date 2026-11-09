@@ -19,15 +19,23 @@ class CadAudioPublisher
 
     public static function callUpdated(Call $call): void
     {
-        if ($call->wasChanged('status')) {
+        if ($call->wasChanged('status')
+            && $call->status !== 'PANIC'
+            && $call->getOriginal('status') !== 'PANIC') {
+            // The panic event is separately prioritized: don't also play a
+            // call-update sound for the same emergency transition.
             self::publish('call_updated', null, $call->id);
         }
     }
 
     public static function unitUpdated(ActiveUnit $unit): void
     {
-        if ($unit->wasChanged('is_panic') && (bool) $unit->is_panic) {
-            self::publish('panic', null, null);
+        if ($unit->wasChanged('is_panic')) {
+            if ((bool) $unit->is_panic) {
+                self::publish('panic', null, null);
+            }
+            // Suppress the accompanying unit-status tone while activating
+            // or clearing a panic: one sound per state transition.
             return;
         }
 
