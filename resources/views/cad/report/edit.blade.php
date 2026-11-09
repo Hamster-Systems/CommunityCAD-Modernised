@@ -28,7 +28,7 @@
                     </div>
                     <div class="">
                         <p>Reporting Officer: <span
-                                class="underline">{{ $report->officer->name ?? $report->user->preferred_name }}</span></p>
+                                class="underline">{{ $report->reporting_unit_name ?? $report->officer?->name ?? $report->user?->preferred_name ?? 'Unknown author' }}</span></p>
                         <p>Report Type:
                             <select class="select-input" name="report_type_id" required>
                                 <option>Choose one</option>
