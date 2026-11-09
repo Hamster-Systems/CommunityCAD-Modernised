@@ -19,11 +19,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
 
     <style>
-        /* DIGITALDREAM.ttf has malformed table metadata and Firefox rejects it.
-           Use the already-loaded Orbitron font without requesting the broken file. */
+        /* Restore the original seven-segment-style CAD clock. */
+        @font-face {
+            font-family: 'digital-clock-font';
+            src: url('{{ asset('fonts/DIGITALDREAM.ttf') }}') format('truetype');
+            font-display: swap;
+        }
         #running_clock_date,
         #running_clock_time {
-            font-family: 'Orbitron', ui-monospace, SFMono-Regular, Consolas, monospace !important;
+            font-family: 'digital-clock-font', 'Orbitron', monospace !important;
             font-variant-numeric: tabular-nums;
         }
     </style>
