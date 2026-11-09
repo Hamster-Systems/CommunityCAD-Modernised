@@ -8,6 +8,7 @@ use App\Support\Cad\CadAudio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -72,7 +73,8 @@ class CadAudioController extends Controller
         }
 
         try {
-            foreach ([
+            DB::transaction(function () use ($event, $validated, $newPath, $previous) {
+                foreach ([
                 'mode' => $validated['mode'],
                 'volume' => (string) $validated['volume'],
                 'file' => $validated['mode'] === 'custom' ? ($newPath ?: $previous['file']) : '',
@@ -81,7 +83,8 @@ class CadAudioController extends Controller
                     ['name' => 'cad_audio_' . $event . '_' . $attribute],
                     ['value' => $value ?? '', 'type' => 'text']
                 );
-            }
+                }
+            });
             Cache::forget('cad_settings');
         } catch (\Throwable $exception) {
             if ($newPath) {
@@ -102,11 +105,14 @@ class CadAudioController extends Controller
     {
         abort_unless(isset(CadAudio::EVENTS[$event]), 404);
         $previous = CadAudio::details($event);
-        CadSetting::query()->whereIn('name', [
-            'cad_audio_' . $event . '_mode',
-            'cad_audio_' . $event . '_volume',
-            'cad_audio_' . $event . '_file',
-        ])->delete();
+        DB::transaction(function () use ($event) {
+            foreach (['mode' => 'default', 'volume' => '100', 'file' => ''] as $attribute => $value) {
+                CadSetting::updateOrCreate(
+                    ['name' => 'cad_audio_' . $event . '_' . $attribute],
+                    ['value' => $value, 'type' => 'text']
+                );
+            }
+        });
         Cache::forget('cad_settings');
         if ($previous['file']) {
             Storage::disk('local')->delete($previous['file']);
