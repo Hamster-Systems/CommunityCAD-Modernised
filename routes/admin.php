@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PenalCode\PenalCodeTitleController;
 use App\Http\Controllers\Admin\ReportTypeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SmtpSettingsController;
 use App\Http\Controllers\Admin\CadAudioController;
 use App\Http\Controllers\Admin\TenCodeController;
 use App\Http\Controllers\Admin\User\NotesController;
@@ -65,6 +66,11 @@ Route::get('settings/api_key', [SettingsController::class, 'api_key'])->name('se
 Route::get('settings/generate_api_key', [SettingsController::class, 'generate_api_key'])->name('settings.generate_api_key')->middleware('can:is_owner_user');
 Route::get('settings/discord_roles', [SettingsController::class, 'discord_roles'])->name('settings.discord_roles')->middleware('can:cad_settings');
 Route::get('settings/cad', [SettingsController::class, 'cad'])->name('settings.cad')->middleware('can:cad_settings');
+
+// SMTP credentials and test messages are owner-only administrative actions.
+Route::get('settings/smtp', [SmtpSettingsController::class, 'index'])->name('settings.smtp')->middleware('can:is_owner_user');
+Route::post('settings/smtp', [SmtpSettingsController::class, 'update'])->name('settings.smtp.update')->middleware(['can:is_owner_user', 'throttle:10,1']);
+Route::post('settings/smtp/test', [SmtpSettingsController::class, 'test'])->name('settings.smtp.test')->middleware(['can:is_owner_user', 'throttle:3,1']);
 
 // CAD Audio is a dedicated admin area, separate from general CAD settings.
 Route::get('cad-audio', [CadAudioController::class, 'index'])->name('cad_audio.index')->middleware('can:cad_settings');
