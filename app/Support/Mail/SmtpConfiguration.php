@@ -6,6 +6,7 @@ use App\Models\Admin\SmtpSetting;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 
+
 class SmtpConfiguration
 {
     /**
@@ -14,13 +15,18 @@ class SmtpConfiguration
      */
     public static function boot(): void
     {
-        if (!Schema::hasTable('smtp_settings')) {
+        // During first install the database (or table) may not exist yet.
+        // Never prevent artisan migrate / cache commands from starting.
+        try {
+            if (!Schema::hasTable('smtp_settings')) {
+                return;
+            }
+            $settings = SmtpSetting::query()->first();
+        } catch (\Illuminate\Database\QueryException|\PDOException $exception) {
             return;
         }
 
-        $settings = SmtpSetting::query()->first();
-
-        if ($settings && $settings->enabled) {
+        if ($settings?->enabled) {
             self::apply($settings);
         }
     }
