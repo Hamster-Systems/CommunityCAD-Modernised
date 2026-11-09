@@ -40,3 +40,19 @@ Tracks Issue #39. **This branch starts with a homepage refresh; local registrati
 - Docker build uses Laravel Mix compilation (via temporary Node container when npm is absent on host) before testing CSS.
 
 **Do not merge auth/database changes without security review and test coverage.**
+
+## Phase 2 implementation — first-party credentials (November 2026, draft)
+
+The feature branch now adds an **isolated** `local_account_credentials` table, with one-to-one links back to `users.id`. This preserves all existing Discord-based user IDs and associated CAD records; it is not a wholesale ID migration.
+
+- `/register` POST validates unique username/email (and existing legacy email), password strength and confirmation. New users start as `account_status = 1`.
+- New local user IDs come from the existing `users.id` AUTO_INCREMENT; no existing user is renumbered.
+- `/login` POST authenticates against hashed local credentials with throttling and regenerated sessions.
+- Registration sends a 24-hour signed email verification link. Unverified credentials cannot sign in locally; users can request a resend after proving knowledge of their password.
+- The old Discord OAuth path continues to use legacy user IDs, and excludes local-only credentials when matching Discord IDs.
+
+**Prerequisites before testing:** backup the development database, configure a working `MAIL_MAILER` and `MAIL_FROM_ADDRESS` (SMTP or development mail catcher), then apply `php artisan migrate --force`. Do not test registration against production data.
+
+**Remaining for a later milestone:** password reset/recovery, linking existing Discord users to local credentials, optional Steam/Discord account connection management, configurable registration policy, tests, and a formal verified-email/membership onboarding experience. Do not present these as finished.
+
+**QA:** register a local account; receive and open its signed verification email; sign in via username and email; confirm session/logout; reject duplicate/invalid accounts and weak passwords; ensure unapproved accounts cannot access `portal.dashboard`; confirm an existing Discord member signs in with all permissions and records retained. Check that failed mail delivery is surfaced and that sending services are configured.
