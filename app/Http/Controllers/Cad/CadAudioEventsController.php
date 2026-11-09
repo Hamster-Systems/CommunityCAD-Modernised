@@ -26,6 +26,7 @@ class CadAudioEventsController extends Controller
                 ->header('Cache-Control', 'no-store');
         }
 
+        $configuration = [];
         $events = CadAudioEvent::query()
             ->where('id', '>', (int) $data['since'])
             ->where('created_at', '>=', now()->subMinutes(2))
@@ -36,16 +37,18 @@ class CadAudioEventsController extends Controller
             ->orderBy('id')
             ->limit(40)
             ->get(['id', 'event', 'call_id'])
-            ->map(function ($record) {
+            ->map(function ($record) use (&$configuration) {
                 if (! array_key_exists($record->event, CadAudio::EVENTS)) {
                     return null;
                 }
-                $details = CadAudio::details($record->event);
+                $settings = $configuration[$record->event]
+                    ??= CadAudio::details($record->event);
                 return [
                     'id' => $record->id,
                     'type' => $record->event,
-                    'url' => CadAudio::url($record->event),
-                    'volume' => $details['volume'] / 100,
+                    'url' => $settings['mode'] === 'muted'
+                        ? null : route('cad.audio.stream', ['event' => $record->event]),
+                    'volume' => $settings['volume'] / 100,
                 ];
             })
             ->filter()->values();
