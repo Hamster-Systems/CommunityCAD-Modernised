@@ -94,36 +94,21 @@ class MdtScreen extends Component
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
-    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before detaching.');
-
-        abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
-
-        DB::transaction(function () use ($call, $activeUnit) {
-            if (!$call->attached_units()->whereKey($activeUnit->id)->exists()) return;
-            $call->attached_units()->detach($activeUnit->id);
-            CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' detached from the call.');
-            CallAssignmentStatusService::reopenIfUnassigned($call);
-        });
-
-        $activeUnit->update(['description' => 'Removed from call: '.$call->id]);
-
-        $call->touch();
-        $activeUnit->touch();
+    {
+        abort_unless((int) $activeUnit->user_id === (int) auth()->id()
+            && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
+        app(\App\Support\Cad\CallUnitAssignmentService::class)->detach($activeUnit, $call);
         $this->emit('updated-page');
+        $this->emit('incidentUpdated');
     }
 
     public function add_unit_to_call(ActiveUnit $activeUnit, Call $call)
     {
-        abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
-        $call->attached_units()->syncWithoutDetaching([$activeUnit->id]);
-
-        CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' attached to the call.');
-
-        $activeUnit->update(['description' => 'Added to call: '.$call->id]);
-
-        $call->touch();
-        $activeUnit->touch();
+        abort_unless((int) $activeUnit->user_id === (int) auth()->id()
+            && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
+        app(\App\Support\Cad\CallUnitAssignmentService::class)->attach($activeUnit, $call);
         $this->emit('updated-page');
+        $this->emit('incidentUpdated');
     }
 
     public function close_call(Call $call)
