@@ -1,149 +1,91 @@
 @extends('layouts.public')
 
 @section('content')
-
-    <main class="max-w-2xl w-full mx-auto bg-[#124559] text-white mt-16 rounded-xl p-4">
-        @auth
-            <div class="space-y-3">
-                <p class="flex text-2xl">Welcome back, {{ auth()->user()->discord_name }}!</p>
-                <p class="text-lg">What would you like to do?</p>
-
-                @if (auth()->user()->account_status === 1)
-                    @if (is_null(auth()->user()->reapply))
-                        @if (get_setting('members_must_apply') == 'true')
-                            <div class="flex">
-                                <a class="inline-flex items-center px-4 py-2 transition-colors duration-150 rounded-md bg-[#598392] hover:opacity-75 hover:text-slate-200"
-                                    href="{{ route('application.create') }}">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke-width="1.5" stroke="currentColor"
-                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
-                                            stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <span>New Application</span>
-                                </a>
-                            </div>
+    <main class="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 text-white sm:px-6 sm:pt-16">
+        <section class="overflow-hidden rounded-2xl border border-slate-600 bg-[#124559] shadow-xl">
+            <div class="border-b border-slate-500 px-6 py-8 sm:px-10 sm:py-10">
+                <p class="mb-3 text-xs font-bold uppercase tracking-widest text-sky-200">{{ get_setting('community_name') }}</p>
+                @auth
+                    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+                        Welcome back, {{ auth()->user()->preferred_name }}!
+                    </h1>
+                    <p class="mt-3 max-w-2xl text-slate-200">Access your community account, applications and CAD portal from one place.</p>
+                @else
+                    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+                        Welcome to {{ get_setting('community_name') }}!
+                    </h1>
+                    <div class="mt-4 max-w-3xl text-slate-200">
+                        @if (filled(get_setting('community_intro')))
+                            {!! Str::markdown(get_setting('community_intro')) !!}
+                        @else
+                            <p>Your community portal for applications, account details and CAD access.</p>
                         @endif
-                    @else
-                        @if (get_setting('members_must_apply') == 'true')
-                            @if (auth()->user()->reapply)
-                                @if (auth()->user()->reapply_date > now())
-                                    <p class="">You can not reapply until
-                                        {{ auth()->user()->reapply_date->format('m/d/Y') }}. View your last application to see
-                                        why it was denied.</p>
-                                @else
-                                    <div class="flex">
-                                        <a class="inline-flex items-center px-4 py-2 transition-colors duration-150 rounded-md bg-[#598392] hover:opacity-75 hover:text-slate-200"
-                                            href="{{ route('application.create') }}">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke-width="1.5" stroke="currentColor"
-                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
-                                                    stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                            <span>New Application</span>
-                                        </a>
-                                    </div>
-                                @endif
-                            @else
-                                <p class="">You can not reapply. View your last application to see
-                                    why it was denied.</p>
-                            @endif
-                        @endif
-                    @endif
-                @endif
-
-                @if (auth()->user()->account_status === 3)
-                    <div class="flex">
-                        <a class="inline-flex items-center px-4 py-2 transition-colors duration-150 rounded-md bg-[#598392] hover:opacity-75 hover:text-slate-200"
-                            href="{{ route('portal.dashboard') }}">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke-width="1.5" stroke="currentColor"
-                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
-                                    stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            <span>Go To CAD Portal</span>
-                        </a>
                     </div>
-                @endif
+                @endauth
+            </div>
 
-                <div class="flex">
-                    <a class="inline-flex items-center px-4 py-2 transition-colors duration-150 rounded-md bg-[#598392] hover:opacity-75 hover:text-slate-200"
-                        href="{{ route('account.show', auth()->user()->id) }}">
-                        <span clas="text-green-500">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                            </svg>
-                        </span>
-                        <span>View Profile</span>
+            @auth
+                <div class="grid gap-4 p-6 sm:p-10 md:grid-cols-2">
+                    @if (auth()->user()->account_status === 3)
+                        <a href="{{ route('portal.dashboard') }}"
+                           class="group rounded-xl border border-sky-600 bg-sky-900 p-6 transition hover:border-sky-300 hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-300">
+                            <h2 class="text-xl font-bold">Enter CAD Portal</h2>
+                            <p class="mt-2 text-sm text-slate-200">Open your community dashboard and access your authorised tools.</p>
+                            <span class="mt-5 inline-block text-sm font-semibold text-sky-200 group-hover:text-white">Open portal →</span>
+                        </a>
+                    @endif
+
+                    <a href="{{ route('account.show', auth()->user()->id) }}"
+                       class="group rounded-xl border border-slate-500 bg-slate-800 p-6 transition hover:border-sky-400 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-300">
+                        <h2 class="text-xl font-bold">My Profile</h2>
+                        <p class="mt-2 text-sm text-slate-200">View your account and community profile information.</p>
+                        <span class="mt-5 inline-block text-sm font-semibold text-sky-300 group-hover:text-white">View profile →</span>
                     </a>
+
+                    @if (auth()->user()->account_status === 1 && get_setting('members_must_apply') == 'true')
+                        <div class="rounded-xl border border-slate-500 bg-slate-800 p-6">
+                            <h2 class="text-xl font-bold">Community application</h2>
+                            @if (is_null(auth()->user()->reapply) || (auth()->user()->reapply && auth()->user()->reapply_date && auth()->user()->reapply_date <= now()))
+                                <p class="mt-2 text-sm text-slate-200">Apply to join the community.</p>
+                                <a href="{{ route('application.create') }}"
+                                   class="mt-5 inline-block rounded-lg bg-sky-700 px-4 py-2 font-semibold text-white hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-300">New application</a>
+                            @elseif (auth()->user()->reapply && auth()->user()->reapply_date > now())
+                                <p class="mt-2 text-sm text-slate-200">You can reapply after {{ auth()->user()->reapply_date->format('m/d/Y') }}. Review your previous application for details.</p>
+                            @else
+                                <p class="mt-2 text-sm text-slate-200">You are not currently eligible to reapply. Review your previous application for details.</p>
+                            @endif
+                        </div>
+                    @endif
                 </div>
-                <div class="flex">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-t border-slate-500 px-6 py-5 sm:px-10">
+                    <p class="text-sm text-slate-200">Signed in as {{ auth()->user()->preferred_name }}</p>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <a class="inline-flex items-center px-4 py-2 transition-colors duration-150 bg-red-500 rounded-md cursor-pointer hover:opacity-75 hover:text-red-200"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
-                            <svg aria-hidden="true" class="w-4 h-4 mr-1" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
-                                </path>
-                            </svg>
-                            <span>Logout</span>
-                        </a>
+                        <button type="submit" class="rounded-lg border border-red-400 px-4 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">Log out</button>
                     </form>
                 </div>
-
-            </div>
-        @endauth
-
-        @guest
-            <div class="space-y-2">
-                <p class="flex text-2xl">{{ __('Welcome to') }} {{ get_setting('community_name') }}!</p>
-                <img alt="" class="mx-auto" src="{{ get_setting('community_logo') }}">
-
-                <div class="prose text-white">
-                    <p class="">{!! Str::markdown(get_setting('community_intro')) !!}</p>
+            @else
+                <div class="grid gap-6 p-6 sm:p-10 md:grid-cols-2">
+                    <div class="rounded-xl border border-slate-500 bg-slate-800 p-6">
+                        <h2 class="text-xl font-bold">Access your community</h2>
+                        <p class="mt-3 text-sm text-slate-200">For now, sign in with Discord to access your existing CommunityCAD account or start your community application.</p>
+                        <a href="{{ route('auth.discord') }}"
+                           class="mt-6 inline-flex rounded-lg bg-indigo-500 px-5 py-3 font-semibold text-white transition hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                            Continue with Discord
+                        </a>
+                    </div>
+                    <div class="rounded-xl border border-slate-500 bg-slate-800 p-6">
+                        <h2 class="text-xl font-bold">More sign-in options planned</h2>
+                        <p class="mt-3 text-sm text-slate-200">We're working towards CommunityCAD accounts with optional Discord and Steam connections. Those registration options are not available yet.</p>
+                        <p class="mt-4 text-xs text-slate-300">Account registration and community membership approval are separate steps.</p>
+                    </div>
                 </div>
+            @endauth
 
-                <div class="flex w-full">
-                    <a class="flex items-center mx-auto button-md bg-[#7289da] text-gray-800 hover:opacity-70"
-                        href="{{ route('auth.discord') }}">
-                        <svg class="w-4 h-4 mr-2" viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <style>
-                                    .cls-1 {
-                                        fill: rgb(31 41 55);
-                                    }
-                                </style>
-                            </defs>
-                            <g data-name="图层 2" id="图层_2">
-                                <g data-name="Discord Logos" id="Discord_Logos">
-                                    <g data-name="Discord Logo - Large - White" id="Discord_Logo_-_Large_-_White">
-                                        <path class="cls-1"
-                                            d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-                                    </g>
-                                </g>
-                            </g>
-                        </svg>
-                        <span>{{ __('Login/Apply with Discord') }}</span>
-                    </a>
-                </div>
-            </div>
-        @endguest
-
-        <div class="flex justify-between pt-2 mt-3 space-x-2 border-t">
-            {{-- <x-simple-theme-switch class="text-sm text-gray-300 underline">Change Theme</x-simple-theme-switch> --}}
-
-            <a class="text-sm underline text-slate-400" href="https://communitycad.app">Community CAD
-                {{ config('app.version') }}</a>
-
-            {{-- <a class="text-sm underline text-slate-400" href="{{ route('ingame_login') }}">Ingame Login</a> --}}
-        </div>
+            <footer class="border-t border-slate-500 px-6 py-4 text-sm text-slate-300 sm:px-10">
+                <a class="underline decoration-slate-400 underline-offset-4 hover:text-white focus:outline-none focus:ring-2 focus:ring-sky-300"
+                   href="https://communitycad.app">CommunityCAD {{ config('app.version') }}</a>
+            </footer>
+        </section>
     </main>
-
 @endsection
