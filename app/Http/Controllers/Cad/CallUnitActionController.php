@@ -32,6 +32,7 @@ class CallUnitActionController extends Controller
                 $unit->update(['description' => 'Added to call: ' . $call->id]);
                 CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' assigned to the call.');
             } elseif ($data['action'] === 'detach' && $attached) {
+                abort_if($unit->is_panic, 409, 'Clear the unit panic before detaching.');
                 $call->attached_units()->detach($unit->id);
                 $unit->update(['description' => 'Removed from call: ' . $call->id]);
                 CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' unassigned from the call.');
