@@ -57,7 +57,7 @@
 
                 @if ($alert['audio'] != null)
                     <audio autoplay preload="auto" onloadedmetadata="this.volume = {{ $alert['volume'] ?? 1 }}">
-                        <source src="{{ $alert['audio'] }}" type="audio/mpeg">
+                        <source src="{{ $alert['audio'] }}">
                         Your browser does not support the audio element.
                     </audio>
                 @endif
@@ -72,7 +72,7 @@
 
                 @if ($alert['audio'] != null)
                     <audio autoplay preload="auto" onloadedmetadata="this.volume = {{ $alert['volume'] ?? 1 }}">
-                        <source src="{{ $alert['audio'] }}" type="audio/mpeg">
+                        <source src="{{ $alert['audio'] }}">
                         Your browser does not support the audio element.
                     </audio>
                 @endif
@@ -87,7 +87,7 @@
 
                 @if ($alert['audio'] != null)
                     <audio autoplay preload="auto" onloadedmetadata="this.volume = {{ $alert['volume'] ?? 1 }}">
-                        <source src="{{ $alert['audio'] }}" type="audio/mpeg">
+                        <source src="{{ $alert['audio'] }}">
                         Your browser does not support the audio element.
                     </audio>
                 @endif
