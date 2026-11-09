@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PenalCode\PenalCodeTitleController;
 use App\Http\Controllers\Admin\ReportTypeController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\CadAudioController;
 use App\Http\Controllers\Admin\TenCodeController;
 use App\Http\Controllers\Admin\User\NotesController;
 use App\Http\Controllers\Admin\User\UserAccommodationController;
@@ -64,6 +65,12 @@ Route::get('settings/api_key', [SettingsController::class, 'api_key'])->name('se
 Route::get('settings/generate_api_key', [SettingsController::class, 'generate_api_key'])->name('settings.generate_api_key')->middleware('can:is_owner_user');
 Route::get('settings/discord_roles', [SettingsController::class, 'discord_roles'])->name('settings.discord_roles')->middleware('can:cad_settings');
 Route::get('settings/cad', [SettingsController::class, 'cad'])->name('settings.cad')->middleware('can:cad_settings');
+
+// CAD Audio is a dedicated admin area, separate from general CAD settings.
+Route::get('cad-audio', [CadAudioController::class, 'index'])->name('cad_audio.index')->middleware('can:cad_settings');
+Route::post('cad-audio/{event}', [CadAudioController::class, 'update'])->name('cad_audio.update')->middleware('can:cad_settings');
+Route::post('cad-audio/{event}/reset', [CadAudioController::class, 'reset'])->name('cad_audio.reset')->middleware('can:cad_settings');
+Route::get('cad-audio/{event}/preview', [CadAudioController::class, 'stream'])->name('cad_audio.preview')->middleware('can:cad_settings');
 
 Route::post('settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('can:cad_settings');
 Route::post('settings/update_discord', [SettingsController::class, 'update_discord'])->name('settings.update_discord')->middleware('can:cad_settings');
