@@ -27,6 +27,19 @@
             font-family: 'DSEG7-Classic', 'Orbitron', ui-monospace, monospace !important;
             font-variant-numeric: tabular-nums;
         }
+        /* Live PANIC UNIT call alerts: animated red text, no Tailwind rebuild needed. */
+        @keyframes cad-panic-text-flash {
+            0%, 100% { color: #ff3434; text-shadow: 0 0 5px rgba(255, 40, 40, .75); }
+            50% { color: #ff9b9b; text-shadow: none; }
+        }
+        .cad-panic-call {
+            color: #ff3434 !important;
+            font-weight: 800 !important;
+            animation: cad-panic-text-flash 900ms ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .cad-panic-call { animation: none; }
+        }
     </style>
 
     @livewireStyles
