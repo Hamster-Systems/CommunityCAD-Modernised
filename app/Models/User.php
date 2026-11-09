@@ -30,6 +30,11 @@ class User extends Authenticatable
         'reapply_date' => 'date',
     ];
 
+    public function localCredential()
+    {
+        return $this->hasOne(LocalAccountCredential::class);
+    }
+
     public function applications()
     {
         return $this->hasMany('App\Models\Application');
