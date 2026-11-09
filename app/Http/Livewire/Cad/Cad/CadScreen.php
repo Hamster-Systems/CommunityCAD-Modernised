@@ -55,6 +55,7 @@ class CadScreen extends Component
 
     public function set_status(ActiveUnit $activeUnit, $status)
     {
+        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before changing status.');
         $activeUnit->update(['status' => $status, 'description' => 'Status Set To: '.$status]);
         $this->emit('updated-page');
     }
