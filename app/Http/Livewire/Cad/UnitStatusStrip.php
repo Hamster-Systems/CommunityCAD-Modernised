@@ -12,10 +12,10 @@ class UnitStatusStrip extends Component
 
     public function changeStatus(string $status): void
     {
-        abort_unless(in_array($status, ['AVL', 'BUSY', 'ENRUTE', 'ONSCN', 'TRANS', 'BRK'], true), 422);
+        abort_unless(in_array($status, ['AVL', 'BUSY', 'ENRUTE', 'ONSCN', 'TRANS', 'BRK', 'UNAV'], true), 422);
         $unit = auth()->user()?->active_unit;
         abort_unless($unit && (int) $unit->user_id === (int) auth()->id(), 403);
-        abort_if($unit->is_panic || $unit->status === 'OFFDTY', 409);
+        abort_if($unit->is_panic, 409, 'Clear the active panic before changing unit status.');
 
         $call = $unit->calls()->where('status', '!=', 'CLO')
             ->where('status', 'not like', 'CLO-%')->orderByDesc('calls.created_at')->first();
