@@ -33,7 +33,7 @@
                 <div class="text-xs uppercase tracking-wide text-slate-400">Assigned units · {{ $call->attached_units->count() }}</div>
                 <div class="mt-1 flex flex-wrap gap-1">
                     @forelse ($call->attached_units as $assigned)
-                        <span class="rounded border border-sky-700 bg-sky-950 px-2 py-0.5 font-semibold">{{ $assigned->unit_callsign }} <span class="font-normal text-sky-200">{{ $assigned->status }}</span></span>
+                        <span class="rounded border border-sky-700 bg-sky-950 px-2 py-0.5 font-semibold {{ $assigned->is_panic ? 'cad-panic-call' : '' }}">{{ $assigned->unit_callsign }} <span class="font-normal {{ $assigned->is_panic ? 'text-red-300' : 'text-sky-200' }}">{{ $assigned->status }}</span></span>
                     @empty
                         <span class="text-slate-400">No units assigned</span>
                     @endforelse
