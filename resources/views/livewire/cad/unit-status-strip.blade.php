@@ -7,6 +7,7 @@
             'ONSCN' => 'On Scene',
             'TRANS' => 'Transporting',
             'BRK' => 'Break',
+            'UNAV' => 'Unavailable',
         ];
     @endphp
     <span class="mr-1 text-xs font-bold uppercase tracking-wide text-slate-300">
@@ -15,8 +16,8 @@
     @foreach ($options as $code => $label)
         @php
             $requiresCall = in_array($code, ['ENRUTE', 'ONSCN', 'TRANS'], true);
-            $blocked = !$unit || $unit->status === 'OFFDTY' || $unit->is_panic || ($requiresCall && !$hasOpenCall);
-            $selected = $unit && $unit->status === $code;
+            $blocked = !$unit || $unit->is_panic || ($requiresCall && (!$hasOpenCall || str_starts_with($unit->status, 'OFFDTY')));
+            $selected = $unit && ($code === 'UNAV' ? str_starts_with($unit->status, 'OFFDTY') : $unit->status === $code);
         @endphp
         <button type="button" wire:click="changeStatus('{{ $code }}')"
             wire:loading.attr="disabled" wire:target="changeStatus"
@@ -28,5 +29,5 @@
             {{ $label }}
         </button>
     @endforeach
-    <span class="ml-auto text-xs text-slate-300">{{ $hasOpenCall ? 'Assigned to a call' : 'No active assignment' }}</span>
+    <span class="ml-auto text-xs text-slate-300">{{ $unit && str_starts_with($unit->status, 'OFFDTY') ? 'Off duty · still in CAD' : ($hasOpenCall ? 'Assigned to a call' : 'No active assignment') }}</span>
 </div>
