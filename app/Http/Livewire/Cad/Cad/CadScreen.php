@@ -93,38 +93,21 @@ class CadScreen extends Component
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
-    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before detaching.');
-
-
-        $call->attached_units()->detach($activeUnit->id);
-
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Officer '.$activeUnit->unit_callsign.' has been unassigned.',
-            'call_id' => $call->id,
-        ]);
-
-        $activeUnit->update(['description' => 'Removed from call: '.$call->id]);
-
-        $call->touch();
-        $activeUnit->touch();
+    {
+        abort_unless(auth()->user()?->can('admin_access')
+            || (int) auth()->user()?->active_unit?->department_type === 2, 403);
+        app(\App\Support\Cad\CallUnitAssignmentService::class)->detach($activeUnit, $call);
         $this->emit('updated-page');
+        $this->emit('incidentUpdated');
     }
 
     public function add_unit_to_call(ActiveUnit $activeUnit, Call $call)
     {
-        $call->attached_units()->attach($activeUnit->id);
-
-        CallLog::create([
-            'from' => auth()->user()->active_unit->log_identity,
-            'text' => 'Officer '.$activeUnit->unit_callsign.' has been assigned.',
-            'call_id' => $call->id,
-        ]);
-
-        $activeUnit->update(['description' => 'Added to call: '.$call->id]);
-        $call->touch();
-        $activeUnit->touch();
+        abort_unless(auth()->user()?->can('admin_access')
+            || (int) auth()->user()?->active_unit?->department_type === 2, 403);
+        app(\App\Support\Cad\CallUnitAssignmentService::class)->attach($activeUnit, $call);
         $this->emit('updated-page');
+        $this->emit('incidentUpdated');
     }
 
     public function close_call(Call $call)
