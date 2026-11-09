@@ -19,8 +19,17 @@
                 </div>
                 <div class="">
                     <p>Reporting Officer: <span class="underline">
-                            {{ $report->officer?->name ?? $report->user?->preferred_name ?? 'Unknown author' }}
+                            {{ $report->reporting_unit_name ?? $report->officer?->name ?? $report->user?->preferred_name ?? 'Unknown author' }}
                         </span></p>
+                    @if ($report->reporting_unit_callsign)
+                        <p>Unit Callsign: <span class="underline">{{ $report->reporting_unit_callsign }}</span></p>
+                    @endif
+                    @if ($report->reporting_unit_rank)
+                        <p>Rank: <span class="underline">{{ $report->reporting_unit_rank }}</span></p>
+                    @endif
+                    @if ($report->reporting_unit_department)
+                        <p>Department: <span class="underline">{{ $report->reporting_unit_department }}</span></p>
+                    @endif
                     <p>Report Type: <span class="underline">{{ $report->report_type?->title ?? 'Unknown report type' }}</span></p>
                     <p>Report Title: <span class="underline">{{ $report->title }}</span></p>
                 </div>
