@@ -56,8 +56,17 @@ class LocalAccountController extends Controller
             return User::findOrFail($userId);
         });
 
-        Notification::route('mail', $email)
-            ->notify(new VerifyLocalAccountEmail((int) $user->id, $email));
+        try {
+            Notification::route('mail', $email)
+                ->notify(new VerifyLocalAccountEmail((int) $user->id, $email));
+        } catch (\Throwable $exception) {
+            // The account already exists: never present an email transport
+            // failure as a failed registration that users should retry.
+            report($exception);
+
+            return redirect()->route('auth.local.verification-help')
+                ->with('status', 'Your account was created, but the verification email could not be sent. Check mail configuration or contact an administrator, then request a new email here.');
+        }
 
         return redirect()->route('auth.login')
             ->with('status', 'Account created. Check your email to verify it before signing in.');
