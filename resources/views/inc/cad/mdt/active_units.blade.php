@@ -10,7 +10,7 @@
         </tr>
         @foreach ($active_units as $active_unit)
             @if ($active_unit->department_type != 2)
-                <tr class="{{ $active_unit->display_status_text_color }}">
+                <tr class="{{ $active_unit->is_panic ? 'cad-panic-row' : $active_unit->display_status_text_color }}">
                     <td class="p-1 border border-slate-400">
                         {{ $active_unit->user_department?->department?->initials ?? '—' }}</td>
                     <td class="p-1 border border-slate-400">{{ $active_unit->unit_callsign }}
