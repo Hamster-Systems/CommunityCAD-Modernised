@@ -69,6 +69,14 @@
                         <em>Open settings &rarr;</em>
                     </a>
                 @endcan
+                @can('cad_settings')
+                    <a href="{{ route('admin.cad_audio.index') }}" class="admin-overview-tile">
+                        <span class="admin-overview-tile-icon" aria-hidden="true">07</span>
+                        <strong>CAD Audio</strong>
+                        <span>Upload, preview and configure sound notifications for calls, units and panic.</span>
+                        <em>Manage CAD sounds &rarr;</em>
+                    </a>
+                @endcan
                 @can('license_type_manage')
                     <a href="{{ route('admin.license_type.index') }}" class="admin-overview-tile">
                         <span class="admin-overview-tile-icon" aria-hidden="true">05</span>
