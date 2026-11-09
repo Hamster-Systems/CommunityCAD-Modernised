@@ -1,6 +1,23 @@
 @extends('layouts.public')
 
 @section('content')
+    @guest
+        <main class="cc-auth-page">
+            <section class="cc-auth-card" aria-labelledby="home-signin-title">
+                <div class="cc-auth-brand">
+                    <div class="cc-auth-brand-mark" aria-hidden="true">C</div>
+                    <div><strong>{{ get_setting('community_name') }}</strong><span>Community Management System</span></div>
+                </div>
+                <h1 id="home-signin-title">Welcome back</h1>
+                <p class="cc-auth-muted">Sign in to access your community dashboard, account and CAD tools.</p>
+                <a class="cc-auth-btn cc-auth-btn-primary" href="{{ route('auth.discord') }}">Continue with Discord</a>
+                <p class="cc-auth-help">Discord is the currently supported sign-in method.</p>
+                <div class="cc-auth-divider"><span>New to the community?</span></div>
+                <a class="cc-auth-btn cc-auth-btn-secondary" href="{{ route('auth.register') }}">Create an account</a>
+                <p class="cc-auth-footer">Community registration and access approval are separate.</p>
+            </section>
+        </main>
+    @else
     <main class="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 text-white sm:px-6 sm:pt-16">
         <section class="overflow-hidden rounded-2xl border border-slate-600 bg-[#124559] shadow-xl">
             <div class="border-b border-slate-500 px-6 py-8 sm:px-10 sm:py-10">
@@ -64,55 +81,6 @@
                         <button type="submit" class="rounded-lg border border-red-400 px-4 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">Log out</button>
                     </form>
                 </div>
-            @else
-                <div class="grid gap-6 p-6 sm:p-10 lg:grid-cols-5">
-                    <div class="rounded-xl border border-sky-500 bg-slate-800 p-6 lg:col-span-3">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-sky-300">New to the community?</p>
-                        <h2 class="mt-3 text-2xl font-bold">Create your CommunityCAD account</h2>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-200">
-                            Get started by setting up a community account. You can then complete your profile,
-                            apply to join and access the services you're approved for.
-                        </p>
-                        <div class="mt-6 rounded-lg border border-slate-600 bg-slate-900 p-4 text-sm text-slate-200">
-                            <p class="font-semibold text-white">How joining works</p>
-                            <ol class="mt-3 list-inside list-decimal space-y-2">
-                                <li>Connect with Discord to begin registration.</li>
-                                <li>Complete your CommunityCAD account details.</li>
-                                <li>Apply for membership if your community requires it.</li>
-                            </ol>
-                        </div>
-                        @if (session()->has('id'))
-                            <a href="{{ route('account.create') }}"
-                               class="mt-6 inline-flex items-center rounded-lg bg-sky-600 px-5 py-3 font-bold text-white transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
-                                Continue account registration →
-                            </a>
-                        @else
-                            <a href="{{ route('auth.discord') }}"
-                               class="mt-6 inline-flex items-center rounded-lg bg-sky-600 px-5 py-3 font-bold text-white transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
-                                Create account with Discord →
-                            </a>
-                        @endif
-                        <p class="mt-3 text-xs text-slate-300">Discord is currently required for initial registration. Email/password registration is being developed.</p>
-                    </div>
-
-                    <div class="rounded-xl border border-slate-500 bg-slate-800 p-6 lg:col-span-2">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-300">Already registered?</p>
-                        <h2 class="mt-3 text-xl font-bold">Welcome back</h2>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-200">
-                            Have an existing CommunityCAD account? Sign in to return to your profile or CAD portal.
-                        </p>
-                        <a href="{{ route('auth.discord') }}"
-                           class="mt-6 inline-flex items-center rounded-lg border border-slate-400 bg-slate-700 px-5 py-3 font-semibold text-white transition hover:border-sky-300 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200">
-                            Sign in with Discord
-                        </a>
-                        <div class="mt-7 border-t border-slate-600 pt-5">
-                            <h3 class="text-sm font-semibold text-white">Connected accounts are coming</h3>
-                            <p class="mt-2 text-sm text-slate-300">
-                                We plan to add optional Discord and Steam linking once first-party account registration is ready.
-                            </p>
-                        </div>
-                    </div>
-                </div>
             @endauth
 
             <footer class="border-t border-slate-500 px-6 py-4 text-sm text-slate-300 sm:px-10">
@@ -121,4 +89,5 @@
             </footer>
         </section>
     </main>
+    @endguest
 @endsection
