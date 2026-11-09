@@ -1,4 +1,32 @@
 <div class="space-y-2" wire:poll.5s>
+    @if ($pendingEnrouteCallId)
+        <section class="mx-auto my-2 max-w-7xl rounded-lg border border-sky-500/70 bg-[#16283b] p-4 text-white shadow-lg normal-case"
+            role="region" aria-label="New call assignment">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-bold uppercase tracking-wide text-sky-300">New call assignment · #{{ $pendingEnrouteCallId }}</p>
+                    <p class="mt-1 text-sm">Your unit has been assigned to this call. Would you like to mark yourself <strong>En Route</strong>?</p>
+                    <p class="mt-1 text-xs text-slate-300">If you keep your current status, the call remains assigned to your unit.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button"
+                        wire:click="answerAssignment({{ $pendingEnrouteCallId }}, true)"
+                        wire:loading.attr="disabled" wire:target="answerAssignment"
+                        class="rounded-md bg-sky-700 px-4 py-2 text-sm font-semibold hover:bg-sky-600 disabled:opacity-50">
+                        Mark En Route
+                    </button>
+                    <button type="button"
+                        wire:click="answerAssignment({{ $pendingEnrouteCallId }}, false)"
+                        wire:loading.attr="disabled" wire:target="answerAssignment"
+                        class="rounded-md border border-slate-500 bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700 disabled:opacity-50">
+                        Keep current status
+                    </button>
+                    <a class="rounded-md border border-slate-500 px-4 py-2 text-sm hover:bg-slate-800"
+                        href="{{ route('cad.call.show', $pendingEnrouteCallId) }}">View call</a>
+                </div>
+            </div>
+        </section>
+    @endif
     @foreach ($active_alerts as $alert)
         @if ($alert['color'] == 'red')
             <div class="bg-red-600 text-white animate-pulse py-1 text-center text-lg">
