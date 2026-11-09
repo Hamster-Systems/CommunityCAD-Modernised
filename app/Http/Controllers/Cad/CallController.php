@@ -90,6 +90,10 @@ class CallController extends Controller
             'priority' => 'required',
         ]);
 
+        abort_if(in_array($validated['status'], ['ENRT', 'ARRVD'], true)
+            && !$call->attached_units()->exists(), 422,
+            'Attach at least one unit before setting an en-route or on-scene call status.');
+
         $old = $call->only(['status', 'nature', 'priority', 'location', 'city', 'narrative']);
         $call->update($validated);
 
