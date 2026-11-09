@@ -237,6 +237,7 @@
                                     <label class="block mr-2">Status:</label>
                                     <select class="w-full rounded-md border border-slate-600 bg-slate-100 px-3 py-2 text-sm text-black" name="status">
                                         @foreach ($call_statuses as $code => $props)
+                            @continue($code === 'PANIC')
                                             <option @selected($call->status == $code) value="{{ $code }}">
                                                 {{ $code }} -
                                                 {{ $props['name'] }}
