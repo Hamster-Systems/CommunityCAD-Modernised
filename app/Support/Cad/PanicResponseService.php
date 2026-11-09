@@ -56,19 +56,26 @@ class PanicResponseService
     {
         DB::transaction(function () use ($unit) {
             $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);
-            if (! $unit->is_panic) {
-                return;
-            }
-
-            $restoredUnitStatus = $unit->pre_panic_status
-                ?: ($unit->calls()->exists() ? 'BUSY' : 'AVL');
-
+            // Recheck the unit's attached incidents even when this request is
+            // repeated: an earlier clear may have updated the unit while its
+            // call was left in PANIC by an interrupted/legacy workflow.
             $assignedCalls = $unit->calls()->get();
-            $unit->update([
-                'is_panic' => false,
-                'status' => $restoredUnitStatus,
-                'pre_panic_status' => null,
-            ]);
+
+            if ($unit->is_panic) {
+                $restoredUnitStatus = $unit->pre_panic_status
+                    ?: ($assignedCalls->isNotEmpty() ? 'BUSY' : 'AVL');
+
+                $unit->update([
+                    'is_panic' => false,
+                    'status' => $restoredUnitStatus,
+                    'pre_panic_status' => null,
+                ]);
+            } elseif ($unit->status === 'PANIC') {
+                $unit->update([
+                    'status' => $unit->pre_panic_status ?: ($assignedCalls->isNotEmpty() ? 'BUSY' : 'AVL'),
+                    'pre_panic_status' => null,
+                ]);
+            }
 
             foreach ($assignedCalls as $call) {
                 $this->restoreCallIfSafe($call, $unit);
@@ -84,7 +91,7 @@ class PanicResponseService
     {
         $call = Call::query()->lockForUpdate()->findOrFail($attachedCall->id);
         if ($call->status !== 'PANIC'
-            || $call->attached_units()->where('is_panic', true)->exists()) {
+            || $call->attached_units()->where('active_units.is_panic', true)->exists()) {
             return;
         }
 
