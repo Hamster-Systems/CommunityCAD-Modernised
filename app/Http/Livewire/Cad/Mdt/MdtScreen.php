@@ -65,6 +65,9 @@ class MdtScreen extends Component
     public function set_call_status(Call $call, $status)
     {
         abort_unless(array_key_exists($status, CallStatuses::STATUSCODES), 422);
+        abort_if(in_array($status, ['ENRT', 'ARRVD'], true)
+            && !$call->attached_units()->exists(), 422,
+            'Attach at least one unit before setting an en-route or on-scene call status.');
         $oldStatus = $call->status;
         if ($oldStatus === $status) return;
         $call->update(['status' => $status]);
