@@ -1,7 +1,37 @@
 @extends('layouts.admin')
 
 @section('content')
-    <div class="admin-overview" style="max-width: 1100px;">
+    <style>
+        /* Scoped styles: stable even if the existing Tailwind bundle misses
+           modern utility classes. Never affect other Admin Portal pages. */
+        .cad-audio-page { width:100%; max-width:1150px; margin:0 auto; }
+        .cad-audio-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
+        @media (min-width:950px) {
+            .cad-audio-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        }
+        .cad-audio-card { min-width:0; border:1px solid #334155; border-radius:12px; background:#152234; padding:20px; }
+        .cad-audio-card select,
+        .cad-audio-card input[type=file] {
+            display:block; width:100%; max-width:100%; box-sizing:border-box;
+            padding:10px 12px; border:1px solid #52657e; border-radius:7px;
+            background:#26374e !important; color:#f8fafc !important;
+            font:inherit; font-size:14px;
+        }
+        .cad-audio-card select option { background:#26374e; color:#f8fafc; }
+        .cad-audio-card input[type=file]::file-selector-button {
+            background:#374a65; border:0; border-radius:5px; color:#fff;
+            padding:6px 10px; margin-right:12px; cursor:pointer;
+        }
+        .cad-audio-card input[type=range] { width:100%; accent-color:#6366f1; cursor:pointer; }
+        .cad-audio-card audio { display:block; width:100%; max-width:100%; min-width:0; }
+        .cad-audio-card button { font:600 13px system-ui,sans-serif; border-radius:7px; padding:10px 15px; cursor:pointer; }
+        .cad-audio-card .cad-audio-save { background:#4f46e5 !important; color:#fff !important; border:1px solid #6366f1; }
+        .cad-audio-card .cad-audio-save:hover { background:#6366f1 !important; }
+        .cad-audio-card .cad-audio-reset { background:#19293b !important; color:#e2e8f0 !important; border:1px solid #64748b; }
+        .cad-audio-card .cad-audio-reset:hover { background:#334155 !important; }
+        .cad-audio-card :is(button,input,select,a):focus-visible { outline:2px solid #38bdf8; outline-offset:3px; }
+    </style>
+    <div class="admin-overview cad-audio-page">
         <header class="admin-overview-header">
             <div>
                 <p class="admin-overview-eyebrow">Community administration / CAD</p>
@@ -32,9 +62,9 @@
             <p class="mt-1">Choose a built-in sound, upload a custom file or mute each event. Audio is stored privately in persistent application storage. Browsers may require a click before allowing automatic sound playback.</p>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div class="cad-audio-grid">
             @foreach ($events as $event => $settings)
-                <section class="rounded-xl border border-slate-700 bg-[#152234] p-5 shadow-md" aria-labelledby="audio-title-{{ $event }}">
+                <section class="cad-audio-card" aria-labelledby="audio-title-{{ $event }}">
                     <header class="mb-4 flex items-start justify-between gap-3 border-b border-slate-700 pb-3">
                         <div>
                             <h2 id="audio-title-{{ $event }}" class="text-lg font-bold text-white">{{ $settings['title'] }}</h2>
@@ -44,11 +74,6 @@
                             {{ $settings['mode'] }}
                         </span>
                     </header>
-                    @if (in_array($event, ['call_updated', 'unit_status'], true))
-                        <p class="mb-3 rounded-md border border-amber-700/70 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
-                            Settings are saved now; automatic playback for this event will be connected in the central CAD audio update.
-                        </p>
-                    @endif
 
                     <form method="POST" action="{{ route('admin.cad_audio.update', $event) }}" enctype="multipart/form-data" class="space-y-4">
                         @csrf
@@ -99,14 +124,14 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
-                            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+                            <button type="submit" class="cad-audio-save">
                                 Save audio
                             </button>
                         </div>
                     </form>
                     <form method="POST" action="{{ route('admin.cad_audio.reset', $event) }}" class="mt-2">
                         @csrf
-                        <button type="submit" class="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-700"
+                        <button type="submit" class="cad-audio-reset"
                             onclick="return confirm('Restore the default sound for {{ $settings['title'] }} and remove the saved custom file?')">
                             Restore default
                         </button>
