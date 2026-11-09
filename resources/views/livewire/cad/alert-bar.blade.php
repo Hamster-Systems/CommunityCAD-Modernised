@@ -1,12 +1,11 @@
 <div class="space-y-2" wire:poll.5s>
     @if ($pendingEnrouteCallId)
-        {{-- Original addedtocall.mp3 announcement; play once per assignment, not every 5s Livewire poll. --}}
+        {{-- Visual FMS confirmation only. Central CAD audio listener handles one-time sound. --}}
         <section class="mx-auto my-2 max-w-7xl rounded-lg border border-sky-500/70 bg-[#16283b] p-4 text-white shadow-lg normal-case"
             role="region" aria-label="New call assignment"
             wire:key="assignment-audio-{{ auth()->user()->active_unit->id }}-{{ $pendingEnrouteCallId }}-{{ auth()->user()->active_unit->updated_at?->getTimestamp() ?? 0 }}"
-            x-data
             >
-<div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p class="text-sm font-bold uppercase tracking-wide text-sky-300">New call assignment · #{{ $pendingEnrouteCallId }}</p>
                     <p class="mt-1 text-sm">Your unit has been assigned to this call. Would you like to mark yourself <strong>En Route</strong>?</p>
