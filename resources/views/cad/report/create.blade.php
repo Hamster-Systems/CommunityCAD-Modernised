@@ -29,6 +29,12 @@
                     <div class="">
                         <p>Reporting Officer: <span
                                 class="underline">{{ auth()->user()->active_unit?->officer_name ?? auth()->user()->preferred_name ?? 'Unknown officer' }}</span></p>
+                        @if (auth()->user()->active_unit)
+                            <p>Unit Callsign: <span class="underline">{{ auth()->user()->active_unit->unit_callsign }}</span></p>
+                            @if (auth()->user()->active_unit->unit_rank)
+                                <p>Rank: <span class="underline">{{ auth()->user()->active_unit->unit_rank }}</span></p>
+                            @endif
+                        @endif
                         <p>Report Type:
                             <select class="select-input" name="report_type_id" required>
                                 <option>Choose one</option>
