@@ -4,13 +4,17 @@
         <section class="mx-auto my-2 max-w-7xl rounded-lg border border-sky-500/70 bg-[#16283b] p-4 text-white shadow-lg normal-case"
             role="region" aria-label="New call assignment"
             x-data
-            x-init="
+            x-init="(() => {
                 const key = 'cad-assignment-sound:{{ (int) auth()->user()->active_unit->id }}:{{ $pendingEnrouteCallId }}:{{ auth()->user()->active_unit->updated_at?->getTimestamp() ?? 0 }}';
-                if (!sessionStorage.getItem(key)) {
-                    sessionStorage.setItem(key, 'played');
+                try {
+                    if (!sessionStorage.getItem(key)) {
+                        sessionStorage.setItem(key, 'played');
+                        $refs.assignmentAudio.play().catch(() => {});
+                    }
+                } catch (error) {
                     $refs.assignmentAudio.play().catch(() => {});
                 }
-            ">
+            })()">
             <audio x-ref="assignmentAudio" preload="auto">
                 <source src="{{ secure_asset('audio/addedtocall.mp3') }}" type="audio/mpeg">
             </audio>
