@@ -6,12 +6,11 @@
             wire:key="assignment-audio-{{ auth()->user()->active_unit->id }}-{{ $pendingEnrouteCallId }}-{{ auth()->user()->active_unit->updated_at?->getTimestamp() ?? 0 }}"
             x-data
             @if (\App\Support\Cad\CadAudio::url('call_assigned'))
-                x-init="$refs.assignmentAudio.play().catch(() => {})"
+                x-init="($refs.assignmentAudio.volume = {{ \App\Support\Cad\CadAudio::volume('call_assigned') }}, $refs.assignmentAudio.play().catch(() => {}))"
             @endif
             >
             @if (\App\Support\Cad\CadAudio::url('call_assigned'))
-                <audio x-ref="assignmentAudio" preload="auto"
-                    x-init="$el.volume = {{ \App\Support\Cad\CadAudio::volume('call_assigned') }}">
+                <audio x-ref="assignmentAudio" preload="auto">
                     <source src="{{ \App\Support\Cad\CadAudio::url('call_assigned') }}">
                 </audio>
             @endif
