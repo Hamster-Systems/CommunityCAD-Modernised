@@ -29,6 +29,7 @@ class IncidentCommandHeader extends Component
         DB::transaction(function () use ($call, $unit) {
             $attached = $call->attached_units()->whereKey($unit->id)->exists();
             if ($attached) {
+                abort_if($unit->is_panic, 409, 'Clear your unit panic before detaching.');
                 $call->attached_units()->detach($unit->id);
                 $unit->update(['description' => 'Removed from call: ' . $call->id]);
                 CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' unassigned from the call.');
