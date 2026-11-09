@@ -5,10 +5,16 @@
             role="region" aria-label="New call assignment"
             wire:key="assignment-audio-{{ auth()->user()->active_unit->id }}-{{ $pendingEnrouteCallId }}-{{ auth()->user()->active_unit->updated_at?->getTimestamp() ?? 0 }}"
             x-data
-            x-init="$refs.assignmentAudio.play().catch(() => {})">
-            <audio x-ref="assignmentAudio" preload="auto">
-                <source src="{{ secure_asset('audio/addedtocall.mp3') }}" type="audio/mpeg">
-            </audio>
+            @if (\App\Support\Cad\CadAudio::url('call_assigned'))
+                x-init="$refs.assignmentAudio.play().catch(() => {})"
+            @endif
+            >
+            @if (\App\Support\Cad\CadAudio::url('call_assigned'))
+                <audio x-ref="assignmentAudio" preload="auto"
+                    x-init="$el.volume = {{ \App\Support\Cad\CadAudio::volume('call_assigned') }}">
+                    <source src="{{ \App\Support\Cad\CadAudio::url('call_assigned') }}">
+                </audio>
+            @endif
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p class="text-sm font-bold uppercase tracking-wide text-sky-300">New call assignment · #{{ $pendingEnrouteCallId }}</p>
@@ -30,11 +36,13 @@
                     </button>
                     <a class="rounded-md border border-slate-500 px-4 py-2 text-sm hover:bg-slate-800"
                         href="{{ route('cad.call.show', $pendingEnrouteCallId) }}">View call</a>
-                    <button type="button" @click="$refs.assignmentAudio.currentTime = 0; $refs.assignmentAudio.play().catch(() => {})"
-                        class="rounded-md border border-slate-500 px-3 py-2 text-sm hover:bg-slate-800"
-                        aria-label="Replay call assignment announcement" title="Replay assignment sound">
-                        🔊
-                    </button>
+                    @if (\App\Support\Cad\CadAudio::url('call_assigned'))
+                        <button type="button" @click="$refs.assignmentAudio.currentTime = 0; $refs.assignmentAudio.play().catch(() => {})"
+                            class="rounded-md border border-slate-500 px-3 py-2 text-sm hover:bg-slate-800"
+                            aria-label="Replay call assignment announcement" title="Replay assignment sound">
+                            🔊
+                        </button>
+                    @endif
                 </div>
             </div>
         </section>
@@ -49,8 +57,8 @@
                 @endif
 
                 @if ($alert['audio'] != null)
-                    <audio autoplay id="panicButton" volume="1">
-                        <source src="{{ secure_asset($alert['audio']) }}" type="audio/mpeg">
+                    <audio autoplay preload="auto" onloadedmetadata="this.volume = {{ $alert['volume'] ?? 1 }}">
+                        <source src="{{ $alert['audio'] }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
                 @endif
@@ -64,8 +72,8 @@
                 @endif
 
                 @if ($alert['audio'] != null)
-                    <audio autoplay id="panicButton" volume="1">
-                        <source src="{{ secure_asset($alert['audio']) }}" type="audio/mpeg">
+                    <audio autoplay preload="auto" onloadedmetadata="this.volume = {{ $alert['volume'] ?? 1 }}">
+                        <source src="{{ $alert['audio'] }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
                 @endif
@@ -79,8 +87,8 @@
                 @endif
 
                 @if ($alert['audio'] != null)
-                    <audio autoplay id="panicButton" volume="1">
-                        <source src="{{ secure_asset($alert['audio']) }}" type="audio/mpeg">
+                    <audio autoplay preload="auto" onloadedmetadata="this.volume = {{ $alert['volume'] ?? 1 }}">
+                        <source src="{{ $alert['audio'] }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
                 @endif
