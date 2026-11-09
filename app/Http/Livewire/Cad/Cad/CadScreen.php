@@ -92,7 +92,8 @@ class CadScreen extends Component
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
-    {
+    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before detaching.');
+
 
         $call->attached_units()->detach($activeUnit->id);
 
