@@ -32,7 +32,7 @@ Route::get('/', function () {
         return redirect()->route('portal.dashboard');
     }
 
-    return view('pages.home');
+    return auth()->check() ? view('pages.home') : view('pages.login');
 })->name('home');
 Route::view('/new_ticket', 'new_ticket')->name('');
 
