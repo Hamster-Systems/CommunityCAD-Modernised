@@ -50,6 +50,24 @@ class UnitResponseStatusService
                 $unit->refresh();
             }
 
+            // Available releases this unit from every assigned incident. If it
+            // was the last responding unit, return the incident to Call Open.
+            if ($status === 'AVL') {
+                foreach ($unit->calls()->get() as $assignedCall) {
+                    $assignedCall->attached_units()->detach($unit->id);
+                    CallActivityLogger::record($assignedCall, 'UNIT',
+                        'Unit ' . $unit->unit_callsign . ' became available and detached from the call.');
+                    CallAssignmentStatusService::reopenIfUnassigned($assignedCall);
+                }
+                if ($unit->status !== 'AVL') {
+                    $unit->update([
+                        'status' => 'AVL',
+                        'description' => 'Status Set To: AVL',
+                    ]);
+                }
+                return;
+            }
+
             $call = $selectedCall
                 ? $unit->calls()->whereKey($selectedCall->id)->first()
                 : $unit->calls()->where('status', '!=', 'CLO')
