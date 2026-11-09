@@ -54,7 +54,7 @@
     }
 
     function drain() {
-        if (playing || starting || !queue.length) return;
+        if (playing || starting || blocked || !queue.length) return;
         const event = queue.shift();
         if (!event || !event.url || !/^https?:\/\//.test(event.url)) {
             drain();
