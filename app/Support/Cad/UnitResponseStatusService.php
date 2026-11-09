@@ -17,6 +17,39 @@ class UnitResponseStatusService
         DB::transaction(function () use ($unit, $status, $selectedCall) {
             $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);
 
+            // The global status toolbar is the single duty control.
+            if ($status === 'UNAV') {
+                if (!str_starts_with($unit->status, 'OFFDTY')) {
+                    $assignedCalls = $unit->calls()->get();
+                    foreach ($assignedCalls as $assignedCall) {
+                        $assignedCall->attached_units()->detach($unit->id);
+                        CallAssignmentStatusService::reopenIfUnassigned($assignedCall);
+                        CallActivityLogger::record($assignedCall, 'UNIT',
+                            'Unit ' . $unit->unit_callsign . ' went unavailable and detached from the call.');
+                    }
+                    $unit->update([
+                        'status' => 'OFFDTY',
+                        'description' => 'Unit unavailable (off duty in CAD)',
+                        'off_duty_at' => now(),
+                    ]);
+                }
+                return;
+            }
+
+            if (str_starts_with($unit->status, 'OFFDTY')) {
+                abort_if(in_array($status, ['ENRUTE', 'ONSCN', 'TRANS'], true), 409,
+                    'Select Available first, then attach to a call.');
+                $unit->update([
+                    'status' => 'AVL',
+                    'description' => 'Status Set To: AVL',
+                    'first_on_duty_at' => now(),
+                    'off_duty_at' => null,
+                    'off_duty_type' => null,
+                ]);
+                // Refresh the in-memory state for the normal status transition below.
+                $unit->refresh();
+            }
+
             $call = $selectedCall
                 ? $unit->calls()->whereKey($selectedCall->id)->first()
                 : $unit->calls()->where('status', '!=', 'CLO')
