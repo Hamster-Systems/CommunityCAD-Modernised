@@ -44,6 +44,11 @@
                             {{ $settings['mode'] }}
                         </span>
                     </header>
+                    @if (in_array($event, ['call_updated', 'unit_status'], true))
+                        <p class="mb-3 rounded-md border border-amber-700/70 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
+                            Settings are saved now; automatic playback for this event will be connected in the central CAD audio update.
+                        </p>
+                    @endif
 
                     <form method="POST" action="{{ route('admin.cad_audio.update', $event) }}" enctype="multipart/form-data" class="space-y-4">
                         @csrf
