@@ -2,7 +2,7 @@
 
 @section('content')
 <main class="cc-auth-page">
-    <section class="cc-auth-card cc-auth-card-wide" aria-labelledby="register-title">
+    <section class="cc-auth-card cc-auth-card-register" aria-labelledby="register-title">
         <div class="cc-auth-brand">
             <div class="cc-auth-brand-mark" aria-hidden="true">C</div>
             <div><strong>{{ get_setting('community_name') }}</strong><span>Create a first-party account</span></div>
@@ -21,7 +21,8 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('auth.local.register') }}">
+        <form method="POST" action="{{ route('auth.local.register') }}" id="local-register-form">
+            <div class="cc-auth-register-grid">
             @csrf
             <label class="cc-auth-field" for="username">Username
                 <input class="cc-auth-input" id="username" name="username" type="text" minlength="3" maxlength="40" pattern="[A-Za-z0-9_.-]+" autocomplete="username" required value="{{ old('username') }}" placeholder="Your username">
@@ -38,15 +39,16 @@
             <label class="cc-auth-field" for="password_confirmation">Confirm password
                 <input class="cc-auth-input" id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required placeholder="Repeat your password">
             </label>
-            <p class="cc-auth-help">Passwords must contain upper and lowercase letters and a number. Email verification is required before signing in.</p>
+            </div>
+            <p class="cc-auth-help">Use at least 12 characters with uppercase, lowercase and a number. Verify your email before signing in.</p>
             <button class="cc-auth-btn cc-auth-btn-primary mt-6" type="submit">Create account</button>
         </form>
 
-        <div class="cc-auth-divider"><span>Or use the existing Discord registration</span></div>
+        <div class="cc-auth-divider cc-auth-register-divider"><span>or register with Discord</span></div>
         <a class="cc-auth-btn cc-auth-btn-secondary" href="{{ session()->has('id') ? route('account.create') : route('auth.discord') }}">
-            Continue registration with Discord
+            Register with Discord
         </a>
-        <p class="cc-auth-footer">Account registration does not automatically grant community membership or CAD permissions.</p>
+
         <p class="mt-3 text-center text-sm"><a class="text-sky-300 underline" href="{{ route('auth.login') }}">Already registered? Sign in</a></p>
     </section>
 </main>
