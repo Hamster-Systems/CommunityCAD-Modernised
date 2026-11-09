@@ -67,10 +67,9 @@ class User extends Authenticatable
 
     public function getAgeAttribute()
     {
-        $birthday = $this->birthday;
-        $age = Carbon::parse($birthday)->age;
-
-        return $age;
+        // Local accounts can be created before a date of birth is collected.
+        // Never interpret a missing birthday as today's date or a valid age.
+        return $this->birthday?->age;
     }
 
     public function getPreferredNameAttribute()
@@ -88,7 +87,11 @@ class User extends Authenticatable
             return $this->discord_name;
         }
 
-        return $this->discord_name.'#'.$this->discriminator;
+        if (!$this->discord_name) {
+            return $this->localCredential?->username ?? $this->display_name ?? 'CommunityCAD user';
+        }
+
+        return $this->discord_name.($this->discriminator ? '#'.$this->discriminator : '');
     }
 
     public function getStatusNameAttribute()
