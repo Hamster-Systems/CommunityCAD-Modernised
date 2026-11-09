@@ -1,82 +1,30 @@
-<div>
-    <div class="py-4 text-gray-200">
-        <div class="ml-6 text-lg font-bold flex items-center">
-            <img alt="Court Logo" class="w-12" src="{{ get_setting('community_logo') }}">
-            <div class="ml-3">
-                {{-- <p>{{ get_setting('community_name') }}</p> --}}
-                <p>Cad Settings</p>
-            </div>
+<nav class="settings-sidebar-nav" aria-label="Administration settings">
+    <div class="settings-sidebar-heading">
+        <div class="settings-sidebar-mark" aria-hidden="true">C</div>
+        <div>
+            <div class="settings-sidebar-name">CommunityCAD</div>
+            <div class="settings-sidebar-caption">Administration</div>
         </div>
-        <ul class="mt-6 text-sm font-medium text-slate-200">
-            @can('admin_access')
-                <li class="relative px-6 py-3">
-                    <a class="flex items-center @if (request()->is('admin') or request()->is('admin/*')) !text-base !text-purple-500 @endif"
-                        href="{{ route('admin.index') }}">
-                        <span class="inline-flex items-center">
-                            <svg class="w-4 h-4" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-
-                            <span class="ml-4">Back to Admin</span>
-                        </span>
-                    </a>
-                </li>
-            @endcan
-            <hr>
-            <li class="relative px-6 py-3 text-xl">
-                General
-            </li>
-            <li class="ml-4 relative px-6 py-3">
-                <a class="flex items-center @if (request()->is('admin/settings/general/*') || request()->is('admin/settings/general')) text-lg text-purple-500 @endif"
-                    href="{{ route('admin.settings.general') }}">
-                    <span class="ml-4">General Settings</span>
-                </a>
-            </li>
-
-            <li class="ml-4 relative px-6 py-3">
-                <a class="flex items-center @if (request()->is('admin/settings/roleplay/*') || request()->is('admin/settings/roleplay')) text-lg text-purple-500 @endif"
-                    href="{{ route('admin.settings.roleplay') }}">
-                    <span class="ml-4">Roleplay Settings</span>
-                </a>
-            </li>
-            <li class="ml-4 relative px-6 py-3">
-                <a class="flex items-center @if (request()->is('admin/settings/application/*') || request()->is('admin/settings/application')) text-lg text-purple-500 @endif"
-                    href="{{ route('admin.settings.application') }}">
-                    <span class="ml-4">Application Settings</span>
-                </a>
-            </li>
-            <li class="ml-4 relative px-6 py-3">
-                <a class="flex items-center @if (request()->is('admin/settings/cad/*') || request()->is('admin/settings/cad')) text-lg text-purple-500 @endif"
-                    href="{{ route('admin.settings.cad') }}">
-                    <span class="ml-4">CAD/MDT Settings</span>
-                </a>
-            </li>
-            <li class="relative px-6 py-3 text-xl">
-                API and Integration
-            </li>
-            <li class="ml-4 relative px-6 py-3">
-                <a class="flex items-center @if (request()->is('admin/settings/discord_roles/*') || request()->is('admin/settings/discord_roles')) text-lg text-purple-500 @endif"
-                    href="{{ route('admin.settings.discord_roles') }}">
-                    <span class="ml-4">Discord Roles</span>
-                </a>
-            </li>
-            <li class="ml-4 relative px-6 py-3">
-                <a class="flex items-center @if (request()->is('admin/settings/discord/*') || request()->is('admin/settings/discord')) text-lg text-purple-500 @endif"
-                    href="{{ route('admin.settings.discord') }}">
-                    <span class="ml-4">Discord Logging</span>
-                </a>
-            </li>
-            @if (in_array(auth()->user()->id, config('cad.owner_ids')))
-                <li class="ml-4 relative px-6 py-3">
-                    <a class="flex items-center @if (request()->is('admin/settings/api_key/*') || request()->is('admin/settings/api_key')) text-lg text-purple-500 @endif"
-                        href="{{ route('admin.settings.api_key') }}">
-                        <span class="ml-4">API Key</span>
-                    </a>
-                </li>
-            @endif
-        </ul>
     </div>
+    <a class="settings-sidebar-back" href="{{ route('admin.index') }}">&#8592; Back to admin</a>
 
-</div>
+    <div class="settings-sidebar-group">General</div>
+    <a class="settings-sidebar-link {{ request()->is('admin/settings/general') ? 'is-active' : '' }}"
+        href="{{ route('admin.settings.general') }}">General settings</a>
+    <a class="settings-sidebar-link {{ request()->is('admin/settings/roleplay') ? 'is-active' : '' }}"
+        href="{{ route('admin.settings.roleplay') }}">Roleplay</a>
+    <a class="settings-sidebar-link {{ request()->is('admin/settings/application') ? 'is-active' : '' }}"
+        href="{{ route('admin.settings.application') }}">Applications</a>
+    <a class="settings-sidebar-link {{ request()->is('admin/settings/cad') ? 'is-active' : '' }}"
+        href="{{ route('admin.settings.cad') }}">CAD / MDT</a>
+
+    <div class="settings-sidebar-group">Integrations</div>
+    <a class="settings-sidebar-link {{ request()->is('admin/settings/discord_roles') ? 'is-active' : '' }}"
+        href="{{ route('admin.settings.discord_roles') }}">Discord roles</a>
+    <a class="settings-sidebar-link {{ request()->is('admin/settings/discord') ? 'is-active' : '' }}"
+        href="{{ route('admin.settings.discord') }}">Discord logging</a>
+    @if (in_array(auth()->user()->id, config('cad.owner_ids')))
+        <a class="settings-sidebar-link {{ request()->is('admin/settings/api_key') ? 'is-active' : '' }}"
+            href="{{ route('admin.settings.api_key') }}">API key</a>
+    @endif
+</nav>

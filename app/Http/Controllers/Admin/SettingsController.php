@@ -8,6 +8,8 @@ use App\Models\DiscordChannel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class SettingsController extends Controller
 {
@@ -83,7 +85,40 @@ class SettingsController extends Controller
 
     public function update(Request $request)
     {
-        $data = $request->except('_token');
+        // The same General Settings form supports either a remote image URL
+        // or an uploaded image. If both are provided, the upload takes priority.
+        $hasLogoUpload = $request->hasFile('community_logo_file');
+
+        $validator = Validator::make($request->all(), [
+            'community_logo_file' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            // An uploaded image takes precedence, so a stale URL should
+            // not invalidate a valid file upload.
+            'community_logo' => $hasLogoUpload
+                ? ['nullable']
+                : ['sometimes', 'nullable', 'url', 'max:2048'],
+        ]);
+
+        if ($validator->fails()) {
+            // The shared /admin/settings POST route has no GET equivalent.
+            // Never rely on redirect()->back() for validation failures here.
+            return redirect()->route('admin.settings.general')
+                ->withErrors($validator)
+                ->withInput($request->except('community_logo_file'));
+        }
+
+        $data = $request->except('_token', 'community_logo_file');
+
+        if ($request->hasFile('community_logo_file')) {
+            $path = $request->file('community_logo_file')->store('branding', 'public');
+
+            if (!$path) {
+                return redirect()->route('admin.settings.general')
+                    ->withErrors(['community_logo_file' => 'Unable to store the uploaded logo.'])
+                    ->withInput($request->except('community_logo_file'));
+            }
+
+            $data['community_logo'] = Storage::disk('public')->url($path);
+        }
 
         foreach ($data as $key => $value) {
             CadSetting::updateOrCreate(

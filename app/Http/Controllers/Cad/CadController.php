@@ -9,6 +9,8 @@ use App\Models\Call;
 use App\Models\Civilian\Vehicle;
 use App\Models\Department;
 use App\Models\Officer;
+use App\Models\MdtIdentity;
+use App\Models\Civilian;
 use App\Models\UserDepartment;
 use Illuminate\Support\Facades\Http;
 
@@ -34,7 +36,20 @@ class CadController extends Controller
             }
         }
 
-        return view('cad.landing', compact('available_departments'));
+        $membershipIds = collect($available_departments)->pluck('id');
+        $identities = MdtIdentity::where('user_id', auth()->id())
+            ->whereIn('user_department_id', $membershipIds)
+            ->with('userDepartment.department')
+            ->orderBy('display_name')
+            ->get();
+
+        $civilians = Civilian::where('user_id', auth()->id())
+            ->orderBy('first_name')->orderBy('last_name')
+            ->get(['id', 'first_name', 'last_name']);
+
+        $subdivisions = config('cad.mdt_subdivisions', []);
+
+        return view('cad.landing', compact('available_departments', 'identities', 'civilians', 'subdivisions'));
     }
 
     public function home()
@@ -45,13 +60,20 @@ class CadController extends Controller
 
         $call_count = Call::where('status', '!=', 'CLO')->where('status', 'not like', 'CLO-%')->count();
 
-        return view('cad.home', compact('call_count'));
+        $activeUnit = auth()->user()->active_unit;
+        $myCalls = $activeUnit->calls()
+            ->where('status', '!=', 'CLO')
+            ->where('status', 'not like', 'CLO-%')
+            ->orderByDesc('calls.created_at')
+            ->get();
+
+        return view('cad.home', compact('call_count', 'myCalls'));
     }
 
     public function message_center()
     {
-        $stolen_vehicles = Vehicle::where('vehicle_status', 2)->get();
-        $bolos = Bolo::all();
+        $stolen_vehicles = Vehicle::with(['civilian', 'business'])->where('vehicle_status', 2)->latest()->get();
+        $bolos = Bolo::with(['civilian', 'vehicle.civilian', 'vehicle.business', 'call'])->latest()->get();
         return view('cad.message_center', compact('stolen_vehicles', 'bolos'));
     }
 
@@ -71,6 +93,7 @@ class CadController extends Controller
 
     public function clear_panic()
     {
+        abort_unless(auth()->user()->can('admin_access') || (int) auth()->user()->active_unit?->department_type === 2, 403);
         $active_panic_units = ActiveUnit::where('is_panic', '1')->get();
 
         foreach ($active_panic_units as $active_unit) {

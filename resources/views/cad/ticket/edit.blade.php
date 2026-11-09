@@ -683,11 +683,10 @@
                 </div>
                 <div class="w-1/6 text-center space-y-4">
                     @if ($allow_sign)
-                        <a href="{{ route('cad.ticket.sign_ticket', $ticket->id) }}">
-                            <button
-                                class="w-full py-1 text-blue-600 bg-gray-300 rounded-lg font-bold hover:bg-gray-400">Sign
-                                Ticket</button>
-                        </a>
+                        <form method="POST" action="{{ route('cad.ticket.sign_ticket', $ticket->id) }}">
+                            @csrf
+                            <button type="submit" class="w-full py-1 text-blue-600 bg-gray-300 rounded-lg font-bold hover:bg-gray-400">Sign Ticket</button>
+                        </form>
                     @else
                         <p>You must add charges before signing the ticket.</p>
                     @endif

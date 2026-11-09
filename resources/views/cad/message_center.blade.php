@@ -80,9 +80,9 @@
                                                                 <p>{{ $vehicle->civilian->postal }}
                                                                     {{ $vehicle->civilian->street }}
                                                                     {{ $vehicle->civilian->city }}</p>
-                                                                <p>12345</p>
+                                                                <p>Not recorded</p>
                                                                 <p>{{ $vehicle->civilian->s_n_n }}</p>
-                                                                <p>123-345-9834</p>
+                                                                <p>Not recorded</p>
                                                                 <p>INDIV - Individual</p>
                                                                 <p>{{ $vehicle->civilian->occupation }}</p>
                                                             </div>
@@ -129,8 +129,10 @@
                                                         href="{{ route('cad.name.return', $vehicle->civilian->id) }}">Run
                                                         Name</a>
                                                     <div class="">
-                                                        <a class="delete-button-md"
-                                                            href="{{ route('cad.stolen_vehicles.clear', $vehicle->id) }}">Clear</a>
+                                                        <form method="POST" action="{{ route('cad.stolen_vehicles.clear', $vehicle->id) }}">
+                                                            @csrf
+                                                            <button type="submit" class="delete-button-md">Clear stolen status</button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>
@@ -226,7 +228,7 @@
 
                                                 <div class="border-t border-black">
                                                     @if ($bolo->civilian_id)
-                                                        <p>Civilian Linked: {{ $bolo->civilian->name }}</p>
+                                                        <p>Civilian Linked: {{ $bolo->civilian?->name ?? 'Record unavailable' }}</p>
                                                         <div class="grid grid-cols-4 gap-2 border-2 mt-3">
                                                             <div class="col-span-2 border-r-2 p-2">
                                                                 <div class="flex">
@@ -242,9 +244,9 @@
                                                                         <p>{{ $bolo->civilian->postal }}
                                                                             {{ $bolo->civilian->street }}
                                                                             {{ $bolo->civilian->city }}</p>
-                                                                        <p>12345</p>
+                                                                        <p>Not recorded</p>
                                                                         <p>{{ $bolo->civilian->s_n_n }}</p>
-                                                                        <p>123-345-9834</p>
+                                                                        <p>Not recorded</p>
                                                                         <p>INDIV - Individual</p>
                                                                         <p>{{ $bolo->civilian->occupation }}</p>
                                                                     </div>
@@ -315,7 +317,7 @@
                                                                         <p class="font-bold">Registered Owner:</p>
                                                                     </div>
                                                                     <div class="ml-3">
-                                                                        <p>{{ $bolo->vehicle->registration_expire->format('m/d/Y') }}
+                                                                        <p>{{ $bolo->vehicle->registration_expire?->format('m/d/Y') ?? 'Not recorded' }}
                                                                         </p>
                                                                         <p>{{ $bolo->vehicle->status_name }}</p>
                                                                         @if ($bolo->vehicle->civilian)

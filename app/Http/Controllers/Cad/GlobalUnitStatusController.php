@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Controllers\Cad;
+
+use App\Http\Controllers\Controller;
+use App\Support\Cad\UnitResponseStatusService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class GlobalUnitStatusController extends Controller
+{
+    public function __invoke(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'status' => ['required', Rule::in(['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS', 'UNAV'])],
+        ]);
+
+        $unit = $request->user()->active_unit;
+        abort_unless($unit && (int) $unit->user_id === (int) $request->user()->id, 403);
+        abort_if($unit->is_panic, 409, 'Clear the active panic before changing your status.');
+
+        // Incident-specific response and transport states require a call.
+        $assignedCall = $unit->calls()
+            ->where('status', '!=', 'CLO')->where('status', 'not like', 'CLO-%')
+            ->orderByDesc('calls.created_at')->first();
+        if (in_array($data['status'], ['ENRUTE', 'ONSCN', 'TRANS'], true)) {
+            abort_unless($assignedCall, 403, 'Attach to an open call before selecting this status.');
+        }
+
+        app(UnitResponseStatusService::class)->change($unit, $data['status'], $assignedCall);
+
+        return redirect()->back();
+    }
+}

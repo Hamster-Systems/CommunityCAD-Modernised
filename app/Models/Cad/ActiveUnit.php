@@ -4,6 +4,7 @@ namespace App\Models\Cad;
 
 use App\Models\Call;
 use App\Models\Officer;
+use App\Models\MdtIdentity;
 use App\Models\User;
 use App\Models\UserDepartment;
 use Carbon\Carbon;
@@ -36,14 +37,44 @@ class ActiveUnit extends Model
         return $age;
     }
 
+    public function getUnitCallsignAttribute()
+    {
+        return $this->mdtIdentity?->callsign
+            ?? $this->user_department?->badge_number
+            ?? 'UNIT-' . $this->id;
+    }
+
+    public function getUnitRankAttribute()
+    {
+        return $this->mdtIdentity?->rank ?? $this->user_department?->rank ?? '';
+    }
+
+    public function getLogIdentityAttribute()
+    {
+        return $this->officer_name . ' (' . $this->unit_callsign . ')';
+    }
+
     public function getDisplayNameAttribute()
     {
+        if ($this->mdtIdentity) {
+            return $this->mdtIdentity->display_name;
+        }
+
         return $this->formatName($this->getOfficerNameAttribute());
     }
 
     public function getOfficerNameAttribute()
     {
-        return isset($this->officer->name) ? $this->officer->name : auth()->user()->preferred_name;
+        if ($this->mdtIdentity) {
+            return $this->mdtIdentity->display_name;
+        }
+
+        return $this->officer ? $this->officer->name : ($this->user ? $this->user->preferred_name : 'Unknown unit');
+    }
+
+    public function mdtIdentity()
+    {
+        return $this->belongsTo(MdtIdentity::class, 'mdt_identity_id');
     }
 
     public function officer()
@@ -75,6 +106,10 @@ class ActiveUnit extends Model
 
             case 'BRK':
                 return 'text-gray-500';
+            case 'BUSY':
+                return 'text-amber-500';
+            case 'TRANS':
+                return 'text-violet-400';
                 break;
 
             case 'ENRUTE':

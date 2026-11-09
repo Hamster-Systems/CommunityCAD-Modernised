@@ -1,7 +1,7 @@
     <header class="z-10 shadow-md  bg-[#717377] uppercase">
         <div class="text-black text-center flex items-center justify-between max-w-7xl mx-auto">
             <p class="font-bold text-center">{{ auth()->user()->active_unit->user_department->department->name }}
-                Public Safety System - {{ auth()->user()->active_unit->officer->name }}
+                Public Safety System - {{ auth()->user()->active_unit->officer_name }} @if(auth()->user()->active_unit->mdtIdentity) — {{ auth()->user()->active_unit->mdtIdentity->callsign }} @endif
             </p>
 
             <a class="flex items-centerhover:underline text-xl" href="{{ route('cad.offduty.create') }}">
@@ -92,6 +92,7 @@
                 </div>
             </div>
         </div>
+        @livewire('cad.unit-status-strip')
         <div class="flex justify-between max-w-7xl mx-auto mt-2">
             <div class="flex items-center text-gray-300 space-x-4">
                 {{-- <a class="hover:underline" href="#">Firearm Database</a> --}}

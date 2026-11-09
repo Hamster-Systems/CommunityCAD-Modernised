@@ -22,36 +22,31 @@ class AddUnitController extends Controller
         }
 
         $validated = $request->validate([
-            'user_department' => 'required|numeric',
+            'mdt_identity_id' => ['required', 'integer'],
         ]);
 
-        $selected_department = $validated['user_department'];
+        // The chosen identity must belong to the logged-in user. It must
+        // also belong to an MDT-eligible department they currently hold.
+        $identity = \App\Models\MdtIdentity::where('user_id', auth()->id())
+            ->with('userDepartment.department')
+            ->findOrFail($validated['mdt_identity_id']);
 
-        $user_department = UserDepartment::findOrFail($selected_department);
-        $officer = Officer::where('user_id', auth()->user()->id)->where('user_department_id', $user_department->id)->get()->first();
+        $membership = $identity->userDepartment;
+        abort_unless($membership && (string) $membership->user_id === (string) auth()->id()
+            && $membership->department
+            && in_array((int) $membership->department->type, [1, 2, 4], true), 403);
 
-        if (!$officer) {
-            return redirect()->route('portal.dashboard')->with('alerts', [['message' => 'You have not created an officer for this department yet. Please go to the Civilian portal to create one.', 'level' => 'error']]);
-        } else {
-            $input['officer_id'] = $officer->id;
-        }
-
-        if ($user_department->rank == 'NEEDS SET' || $user_department->badge_number == "NEEDS SET") {
-            $help_message = "Please see a staff or admin.";
-
-            if (get_setting('use_discord_department_roles')) {
-                $help_message = "Please update in the officer screen.";
-            }
-            return redirect()->route('portal.dashboard')->with('alerts', [['message' => 'You do not have a valid rank or badge number. ' . $help_message, 'level' => 'error']]);
-        }
-
-        $input['user_id'] = auth()->user()->id;
-        $input['user_department_id'] = $user_department->id;
-        $input['department_type'] = $user_department->department->type;
-        $input['status'] = 'OFFDTY';
-        $input['description'] = 'SIGNED IN: ' . date('G:i:s');
-
-        $new_active_unit = ActiveUnit::create($input);
+        // officer_id remains nullable for backwards compatibility with
+        // legacy records; a civilian and legacy Officer are no longer required.
+        ActiveUnit::create([
+            'user_id' => auth()->id(),
+            'user_department_id' => $membership->id,
+            'mdt_identity_id' => $identity->id,
+            'department_type' => $membership->department->type,
+            'subdivision' => $identity->subdivision,
+            'status' => 'OFFDTY',
+            'description' => 'SIGNED IN: ' . date('G:i:s'),
+        ]);
 
         return redirect()->route('cad.home');
     }

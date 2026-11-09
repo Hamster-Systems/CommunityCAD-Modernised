@@ -12,8 +12,8 @@
             @if ($active_unit->department_type != 2)
                 <tr class="{{ $active_unit->display_status_text_color }}">
                     <td class="p-1 border border-slate-400">
-                        {{ $active_unit->user_department->department->initials }}</td>
-                    <td class="p-1 border border-slate-400">{{ $active_unit->user_department->badge_number }}
+                        {{ $active_unit->user_department?->department?->initials ?? '—' }}</td>
+                    <td class="p-1 border border-slate-400">{{ $active_unit->unit_callsign }}
                         ({{ $active_unit->display_name }})</td>
                     <td class="relative p-1 border border-slate-400" x-data="{ statusOpen: false }">
                         <div class="flex justify-between">

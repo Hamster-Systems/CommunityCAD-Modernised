@@ -8,7 +8,7 @@ use App\Models\Cad\CallNatures;
 use App\Models\Cad\CallStatuses;
 use App\Models\Call;
 use App\Models\CallCivilian;
-use App\Models\CallLog;
+use App\Support\Cad\CallActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -38,6 +38,7 @@ class CallController extends Controller
 
         if (! isset($input['linked_civilians'])) {
             $call = Call::create($input);
+            CallActivityLogger::record($call, 'CALL', 'Incident created.');
 
             return redirect()->route('cad.mdt');
         }
@@ -46,6 +47,7 @@ class CallController extends Controller
         $linked_civilians_types = $input['linked_civilians_types'];
         unset($input['linked_civilians'], $input['linked_civilians_types']);
         $call = Call::create($input);
+        CallActivityLogger::record($call, 'CALL', 'Incident created.');
 
         $index = 0;
         foreach ($linked_civilians as $civilian_id) {
@@ -54,6 +56,8 @@ class CallController extends Controller
                 'civilian_id' => $civilian_id,
                 'type' => $linked_civilians_types[$index],
             ]);
+            $linked = \App\Models\Civilian::find($civilian_id);
+            CallActivityLogger::record($call, 'PERSON', 'Person ' . ($linked ? trim($linked->first_name . ' ' . $linked->last_name) : '#' . $civilian_id) . ' linked as ' . $linked_civilians_types[$index] . '.');
             $index++;
         }
 
@@ -62,20 +66,21 @@ class CallController extends Controller
 
     public function show(Call $call): View
     {
-        $call->with('call_civilians');
+        $call->load(['attached_units.mdtIdentity', 'attached_units.user_department.department', 'call_civilians']);
         $call_natures = CallNatures::NATURECODES;
         $call_statuses = CallStatuses::STATUSCODES;
         $rps = CallCivilian::where('call_id', $call->id)->where('type', 'RP')->get();
+        $recentActivity = $call->call_log()->orderByDesc('created_at')->limit(50)->get();
 
-        return view('cad.call.show', compact('call', 'call_natures', 'call_statuses', 'rps'));
+        return view('cad.call.show', compact('call', 'call_natures', 'call_statuses', 'rps', 'recentActivity'));
     }
 
-    public function edit(Call $call): View
+    public function edit(Call $call): RedirectResponse
     {
-        return view('calls.edit', compact('calls'));
+        return redirect()->route('cad.call.show', $call->id);
     }
 
-    public function update(Request $request, Call $call): RedirectResponse
+    public function update(Request $request, Call $call)
     {
         $validated = $request->validate([
             'status' => 'required',
@@ -85,57 +90,38 @@ class CallController extends Controller
             'priority' => 'required',
         ]);
 
-        $name = '';
+        abort_if(in_array($validated['status'], ['ENRT', 'ARRVD'], true)
+            && !$call->attached_units()->exists(), 422,
+            'Attach at least one unit before setting an en-route or on-scene call status.');
 
-        if (auth()->user()->active_unit->user_department->department->type == 1) {
-            $name = 'Officer';
-        } elseif (auth()->user()->active_unit->user_department->department->type == 2) {
-            $name = 'Dispatcher';
-        } elseif (auth()->user()->active_unit->user_department->department->type == 4) {
-            $name = 'Fire/EMS';
-        }
+        $old = $call->only(['status', 'nature', 'priority', 'location', 'city', 'narrative']);
+        $call->update($validated);
 
-        if ($call->status != $validated['status']) {
-            CallLog::create([
-                'from' => $name.' '.auth()->user()->active_unit->user_department->badge_number,
-                'text' => 'Call Status Updated to: '.$validated['status'],
-                'call_id' => $call->id,
-            ]);
-
-            if ($validated['status'] == 'CLO' || explode('-', $validated['status'], 2)[0] == 'CLO') {
-                foreach ($call->attached_units as $unit) {
-                    $unit->update(['status' => 'AVL']);
-                    $unit->touch();
-                    $call->attached_units()->detach($unit->id);
-                }
-
-                $call->attached_units()->detach();
-
-                CallLog::create([
-                    'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->badge_number.')',
-                    'text' => 'Call '.$call->id.' has been closed and all units removed from call.',
-                    'call_id' => $call->id,
-                ]);
+        $changes = [];
+        foreach (['status' => 'Status', 'nature' => 'Nature', 'priority' => 'Priority',
+                  'location' => 'Location', 'city' => 'City', 'narrative' => 'Narrative'] as $field => $label) {
+            if ((string) ($old[$field] ?? '') !== (string) ($call->$field ?? '')) {
+                $changes[$label] = [$old[$field] ?? null, $call->$field];
             }
         }
+        CallActivityLogger::changes($call, $changes);
 
-        if ($call->nature != $validated['nature']) {
-            CallLog::create([
-                'from' => $name.' '.auth()->user()->active_unit->user_department->badge_number,
-                'text' => 'Call Nature Updated to: '.$validated['nature'],
-                'call_id' => $call->id,
-            ]);
+        if (isset($changes['Status']) && ($call->status === 'CLO' || str_starts_with($call->status, 'CLO-'))) {
+            foreach ($call->attached_units as $unit) {
+                $unit->update(['status' => 'AVL']);
+                $call->attached_units()->detach($unit->id);
+                CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' released on call closure.');
+            }
+            CallActivityLogger::record($call, 'CALL', 'Incident closed; assigned units released.');
         }
 
-        if ($call->nature != $validated['priority']) {
-            CallLog::create([
-                'from' => $name.' '.auth()->user()->active_unit->user_department->badge_number,
-                'text' => 'Call Priority Updated to: P'.$validated['priority'],
-                'call_id' => $call->id,
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'Incident saved successfully.',
+                'updated_at' => $call->updated_at?->toIso8601String(),
             ]);
         }
-
-        $call->update($validated);
 
         return redirect()->route('cad.call.show', $call->id);
     }

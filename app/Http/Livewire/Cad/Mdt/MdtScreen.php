@@ -6,8 +6,10 @@ use App\Models\Cad\ActiveUnit;
 use App\Models\Cad\CallNatures;
 use App\Models\Cad\CallStatuses;
 use App\Models\Call;
-use App\Models\CallLog;
-use App\Notifications\DiscordNotification;
+use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\CallAssignmentStatusService;
+use Illuminate\Support\Facades\DB;
+use App\Support\Cad\UnitResponseStatusService;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 
@@ -38,7 +40,7 @@ class MdtScreen extends Component
 
     public function render()
     {
-        $this->active_units = ActiveUnit::with(['officer', 'user_department', 'calls'])->get()->sortBy('user_department.department.type')->sortBy('user_department.department.initials');
+        $this->active_units = ActiveUnit::with(['officer', 'mdtIdentity', 'user_department', 'calls'])->get()->sortBy('user_department.department.type')->sortBy('user_department.department.initials');
         $this->calls = Call::where('status', '!=', 'CLO')->where('status', 'not like', 'CLO-%')->orderBy('priority', 'desc')
             ->when(! empty($this->type_filters), fn (Builder $query) => $query->whereIn('type', $this->type_filters))
             ->when(! empty($this->nature_filter), fn (Builder $query) => $query->where('nature', $this->nature_filter))
@@ -51,12 +53,23 @@ class MdtScreen extends Component
 
     public function set_status(ActiveUnit $activeUnit, $status)
     {
-        $activeUnit->update(['status' => $status, 'description' => 'Status Set To: '.$status]);
+        abort_unless((int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
+        abort_unless(in_array($status, ['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS', 'UNAV'], true), 422);
+        abort_if($activeUnit->is_panic, 409);
+
+        app(UnitResponseStatusService::class)->change($activeUnit, $status);
         $this->emit('updated-page');
+        $this->emit('incidentUpdated');
     }
 
     public function set_call_status(Call $call, $status)
     {
+        abort_unless(array_key_exists($status, CallStatuses::STATUSCODES), 422);
+        abort_if(in_array($status, ['ENRT', 'ARRVD'], true)
+            && !$call->attached_units()->exists(), 422,
+            'Attach at least one unit before setting an en-route or on-scene call status.');
+        $oldStatus = $call->status;
+        if ($oldStatus === $status) return;
         $call->update(['status' => $status]);
 
         $status_array = explode('-', $status);
@@ -64,36 +77,30 @@ class MdtScreen extends Component
             $this->close_call($call);
         }
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Call Status Updated To '.$status,
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::changes($call, ['Status' => [$oldStatus, $status]]);
         $this->emit('updated-page');
     }
 
     public function set_call_priority(Call $call, $priority)
     {
-        CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Call Priority Updated To '.$priority,
-            'call_id' => $call->id,
-        ]);
-
+        abort_unless(in_array((string) $priority, ['1', '2', '3', '4', '5'], true), 422);
+        $oldPriority = $call->priority;
+        if ((string) $oldPriority === (string) $priority) return;
         $call->update(['priority' => $priority]);
+        CallActivityLogger::changes($call, ['Priority' => [$oldPriority, $priority]]);
         $this->emit('updated-page');
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
     {
+        abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
 
-        $call->attached_units()->detach($activeUnit->id);
-
-        CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Officer '.$activeUnit->badge_number.' has been unassigned.',
-            'call_id' => $call->id,
-        ]);
+        DB::transaction(function () use ($call, $activeUnit) {
+            if (!$call->attached_units()->whereKey($activeUnit->id)->exists()) return;
+            $call->attached_units()->detach($activeUnit->id);
+            CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' detached from the call.');
+            CallAssignmentStatusService::reopenIfUnassigned($call);
+        });
 
         $activeUnit->update(['description' => 'Removed from call: '.$call->id]);
 
@@ -104,13 +111,10 @@ class MdtScreen extends Component
 
     public function add_unit_to_call(ActiveUnit $activeUnit, Call $call)
     {
-        $call->attached_units()->attach($activeUnit->id);
+        abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
+        $call->attached_units()->syncWithoutDetaching([$activeUnit->id]);
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Officer '.$activeUnit->badge_number.' has been assigned.',
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' attached to the call.');
 
         $activeUnit->update(['description' => 'Added to call: '.$call->id]);
 
@@ -128,35 +132,8 @@ class MdtScreen extends Component
 
         $call->attached_units()->detach();
 
-        CallLog::create([
-            'from' => auth()->user()->active_unit->officer->name.' ('.auth()->user()->active_unit->user_department->badge_number.')',
-            'text' => 'Call '.$call->id.' has been closed and all units removed from call.',
-            'call_id' => $call->id,
-        ]);
+        CallActivityLogger::record($call, 'CALL', 'Incident closed and all units released.');
         $this->emit('updated-page');
     }
 
-    public function on_duty(ActiveUnit $activeUnit)
-    {
-        $activeUnit->update(['status' => 'AVL', 'description' => 'Status Set To: AVL', 'first_on_duty_at' => now()]);
-
-        DiscordNotification::send(
-            'cad_on_duty',
-            auth()->user()->preferred_name.' has went on duty.',
-            'Department: '.$activeUnit->user_department->department->name,
-            5763719,
-            [
-                [
-                    'name' => 'On Duty At',
-                    'value' => date('m/d/Y H:i:s'),
-                ],
-                [
-                    'name' => 'Discord ID',
-                    'value' => auth()->user()->id,
-                ],
-            ]
-        );
-
-        $this->emit('updated-page');
-    }
 }

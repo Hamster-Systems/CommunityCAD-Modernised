@@ -51,7 +51,7 @@
                         </div>
                         <div class="ml-3">
                             <p>{{ $civilian->postal }} {{ $civilian->street }} {{ $civilian->city }}</p>
-                            <p>12345</p>
+                            <p>Not recorded</p>
                             <p>{{ $civilian->s_n_n }}</p>
                             <p>{{ $civilian->phone_number }}</p>
                             <p>INDIV - Individual</p>

@@ -1,10 +1,11 @@
 @extends('layouts.admin_settings')
 
 @section('content')
-    <header class="w-full my-3">
+    <header class="settings-page-header">
+        <div class="settings-eyebrow">Administration / Settings</div>
         <h1 class="text-2xl font-bold text-white">General Settings</h1>
-        <p class="text-sm"><a class="flex text-sm items-center text-blue-600 underline"
-                href="https://communitycad.app/docs/settings-page">Learn More
+        <p class="text-sm"><a class="flex text-sm items-center text-blue-400 underline"
+                href="{{ route('admin.index') }}">Back to admin
                 <svg class="w-4 h-4 ml-2" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -13,8 +14,20 @@
                 </svg>
             </a></p>
     </header>
-    <div class="card">
-        <form action="{{ route('admin.settings.update') }}" id="mdeditor" method="POST">
+    <p class="settings-page-subtitle">Manage your community branding, public introduction and member preferences.</p>
+    @if ($errors->any())
+        <div role="alert" class="mb-5 rounded-lg border border-red-500/50 bg-red-950/40 px-4 py-3 text-red-100">
+            <p class="font-semibold">Some settings could not be saved</p>
+            <ul class="mt-2 list-disc pl-5 text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="card settings-card">
+        <form action="{{ route('admin.settings.update', [], false) }}" id="mdeditor" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="pill p-3">
                 <p class="text-lg font-semibold">Community Name</p>
@@ -23,22 +36,41 @@
                     value="{{ old('community_name', get_setting('community_name')) }}">
             </div>
 
-            <div class="pill p-3">
-                <div class="flex justify-between">
+            <div class="pill p-3 settings-logo-field" x-data="{ logoMode: 'upload', preview: null }">
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
                     <div>
-                        <p class="text-lg font-semibold">Community Logo</p>
-                        <p>The logo of your community. Must be a url.</p>
+                        <h2 class="text-lg font-semibold">Community Logo</h2>
+                        <p class="text-sm text-slate-400">Use an uploaded image or an external URL. Both update the same logo setting.</p>
                     </div>
-                    <img alt="" class="w-16 h-16" src="{{ get_setting('community_logo') }}">
+                    <img alt="Current community logo" class="settings-logo-preview" :src="preview || '{{ get_setting('community_logo') }}'"
+                        onerror="this.style.opacity='0.15'">
                 </div>
-
-                <input class="text-input" name="community_logo" type="url"
-                    value="{{ old('community_logo', get_setting('community_logo')) }}">
+                <div class="settings-mode-tabs" role="group" aria-label="Choose logo source">
+                    <button type="button" class="settings-mode-button" :class="logoMode === 'upload' ? 'is-active' : ''"
+                        @click="logoMode = 'upload'">Upload image</button>
+                    <button type="button" class="settings-mode-button" :class="logoMode === 'url' ? 'is-active' : ''"
+                        @click="logoMode = 'url'; preview = null">Image URL</button>
+                </div>
+                <div x-show="logoMode === 'upload'" class="mt-4">
+                    <label class="settings-field-label" for="community_logo_file">Choose an image</label>
+                    <input id="community_logo_file" name="community_logo_file" type="file"
+                        accept="image/png,image/jpeg,image/webp" class="settings-file-input"
+                        @change="if ($event.target.files && $event.target.files[0]) { if (preview) URL.revokeObjectURL(preview); preview = URL.createObjectURL($event.target.files[0]); }">
+                    <p class="settings-help">PNG, JPG or WebP, up to 2 MB. The image is saved when you click Save settings.</p>
+                    <x-input-error :messages="$errors->get('community_logo_file')" class="mt-2" />
+                </div>
+                <div x-show="logoMode === 'url'" class="mt-4">
+                    <label class="settings-field-label" for="community_logo">External image URL</label>
+                    <input id="community_logo" class="text-input" name="community_logo" type="url"
+                        value="{{ old('community_logo', get_setting('community_logo')) }}" placeholder="https://example.com/logo.png">
+                    <p class="settings-help">Changing the URL does not remove a previously uploaded image from storage.</p>
+                    <x-input-error :messages="$errors->get('community_logo')" class="mt-2" />
+                </div>
             </div>
 
             <div class="pill p-3">
                 <p class="text-lg font-semibold">Community Intro</p>
-                <p>Text shown on the home page of the CAD that unlogged in users or applicants will see. Basicly a small
+                <p>Text shown on the home page of the CAD that unlogged in users or applicants will see. A short
                     about us section.</p>
                 <div>
                     <div class="mt-1 block w-full rounded-md border-gray-300 bg-white shadow-sm" id="editor">
@@ -62,7 +94,7 @@
                         </svg>
                     </a> --}}
                 </p>
-                <p>The type of community will detrumine how new members are handled.</p>
+                <p>The type of community will determine how new members are handled.</p>
                 <select class="select-input" disabled id="community_type" name="community_type">
                     <option @selected(old('community_type', get_setting('community_type')) == 'legacy') value="legacy">Legacy</option>
                     {{-- <option @selected(old('community_type', get_setting('community_type')) == 'whitelisted') value="whitelisted">Whitelisted</option> --}}
@@ -132,7 +164,7 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <p class="text-lg font-semibold">Allow Members To Submit LOA Requests</p>
-                        <p>This will allow memebers to submit LOA requests through the portal.
+                        <p>This will allow members to submit LOA requests through the portal.
                         </p>
                     </div>
                     <select class="w-28 px-1 py-1 mt-2 text-black border rounded-md cursor-pointer focus:outline-none"
@@ -162,7 +194,7 @@
                 <div class="">
                     <p class="text-lg font-semibold">Days Until Inactive</p>
                     <p>Takes a number for how many days until a member is classified as inactive on the CAD. Right now this
-                        only effects the number on the dashboard. Soon it will have abilities like purge and auto kick after
+                        only affects the number on the dashboard. Soon it will have abilities like purge and auto kick after
                         so many days. There is no ETA on this improvement.</p>
 
                     <input class="text-input" name="days_until_inactive" type="number"
@@ -171,7 +203,7 @@
             </div>
 
             <div class="flex justify-end">
-                <button class="inline-block secondary-button-md">Save</button>
+                <button class="inline-block secondary-button-md settings-save-button" type="submit">Save settings</button>
             </div>
         </form>
     </div>

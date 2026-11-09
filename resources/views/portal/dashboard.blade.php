@@ -1,9 +1,17 @@
 @extends('layouts.portal')
 
 @section('content')
-    <header class="w-full my-3">
-        <h1 class="text-2xl font-bold text-white">Member Portal</h1>
-        <p class="text-sm text-white">Welcome to {{ get_setting('community_name') }}</p>
+    <header class="w-full my-3 flex flex-wrap items-center gap-4">
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-700 bg-slate-800">
+            <img src="{{ get_setting('community_logo') }}" alt="{{ get_setting('community_name') }} logo"
+                class="h-full w-full object-contain p-2"
+                onerror="this.style.display='none'; this.parentElement.querySelector('[data-logo-fallback]').style.display='block';">
+            <span data-logo-fallback class="hidden text-lg font-bold text-slate-300" aria-hidden="true">CAD</span>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold text-white">Member Portal</h1>
+            <p class="text-sm text-slate-300">Welcome to {{ get_setting('community_name') }}</p>
+        </div>
     </header>
 
     <div class="md:flex md:justify-between">

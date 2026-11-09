@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Call;
 use App\Models\CallVehicle;
 use App\Models\Civilian\Vehicle;
+use App\Support\Cad\CallActivityLogger;
 use Illuminate\Http\Request;
 
 class VehicleSearchController extends Controller
@@ -25,16 +26,30 @@ class VehicleSearchController extends Controller
     public function link_vehicle_to_call(Vehicle $vehicle, Call $call, Request $request)
     {
         $validated = $request->validate([
-            'call_id' => 'required',
-            'type' => 'required',
+            'call_id' => ['required', 'integer', 'exists:calls,id'],
+            'type' => ['required', 'string', 'max:40'],
         ]);
 
-        CallVehicle::create([
-            'call_id' => $validated['call_id'],
-            'vehicle_id' => $vehicle->id,
-            'type' => $validated['type'],
-        ]);
+        $targetCall = Call::findOrFail($validated['call_id']);
+        abort_if($targetCall->status === 'CLO' || str_starts_with($targetCall->status, 'CLO-'), 422, 'Cannot link records to closed calls.');
 
-        return redirect()->route('cad.vehicle.return', $vehicle->plate)->with('alerts', [['message' => 'Vehicle linked to call '.$call->id, 'level' => 'success']]);
+        $existing = CallVehicle::where('call_id', $targetCall->id)
+            ->where('vehicle_id', $vehicle->id)
+            ->where('type', $validated['type'])->exists();
+
+        if (!$existing) {
+            CallVehicle::create([
+                'call_id' => $targetCall->id,
+                'vehicle_id' => $vehicle->id,
+                'type' => $validated['type'],
+            ]);
+        }
+
+        if (!$existing) {
+        CallActivityLogger::record($targetCall, 'VEHICLE',
+            'Vehicle ' . $vehicle->plate . ' linked as ' . $validated['type'] . '.');
+        }
+
+        return redirect()->route('cad.vehicle.return', $vehicle->plate)->with('alerts', [['message' => 'Vehicle linked to call '.$targetCall->id, 'level' => 'success']]);
     }
 }
