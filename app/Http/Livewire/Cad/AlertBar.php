@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Cad;
 use App\Models\Cad\ActiveUnit;
 use App\Models\Call;
 use App\Support\Cad\UnitResponseStatusService;
+use App\Support\Cad\CadAudio;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -84,7 +85,8 @@ class AlertBar extends Component
                 'color' => 'red',
                 'message' => 'You have activated your panic button at ' . $unit->location,
                 'link' => null,
-                'audio' => 'audio/panic_button.mp3',
+                'audio' => CadAudio::url('panic'),
+                'volume' => CadAudio::volume('panic'),
             ];
         }
 
@@ -106,7 +108,8 @@ class AlertBar extends Component
                 'color' => 'green',
                 'message' => 'A new call has been created',
                 'link' => null,
-                'audio' => 'audio/newcall.mp3',
+                'audio' => CadAudio::url('new_call'),
+                'volume' => CadAudio::volume('new_call'),
             ];
         }
 
@@ -123,7 +126,8 @@ class AlertBar extends Component
                     'color' => 'green',
                     'message' => 'You have been added to a call. Click to see call.',
                     'link' => route('cad.call.show', $call->id),
-                    'audio' => 'audio/addedtocall.mp3',
+                    'audio' => CadAudio::url('call_assigned'),
+                    'volume' => CadAudio::volume('call_assigned'),
                 ];
             }
         }
