@@ -7,6 +7,12 @@ use App\Http\Controllers\Auth\LogoutController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
+// Distinct entry pages; authentication still uses the existing Discord flow.
+Route::view('login', 'pages.login')->name('auth.login')->middleware('guest');
+Route::get('register', function () {
+    return redirect()->route(session()->has('id') ? 'account.create' : 'auth.discord');
+})->name('auth.register')->middleware('guest');
+
 Route::get('login/discord', function () {
     return Socialite::driver('discord')->redirect();
 })->name('auth.discord')->middleware('guest');
