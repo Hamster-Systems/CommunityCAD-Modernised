@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Models\Cad\ActiveUnit;
+use App\Models\Cad\CadAudioEvent;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -16,6 +17,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // Audio events are ephemeral. Keep the database table small even on
+        // active communities; the browser only reads the latest two minutes.
+        $schedule->call(fn () => CadAudioEvent::where('created_at', '<', now()->subDay())->delete())->daily();
+
         // $schedule->command('inspire')->hourly();
         $schedule->call(function () {
             $active_units = ActiveUnit::where('updated_at', '<', Carbon::now()->subHours(4))->without(['officer', 'user_department', 'calls'])->get();
