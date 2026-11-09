@@ -26,23 +26,12 @@ class IncidentCommandHeader extends Component
         abort_unless($unit && (int) $unit->user_id === (int) auth()->id(), 403);
         abort_if((int) $unit->department_type === 2, 403);
 
-        DB::transaction(function () use ($call, $unit) {
-            $attached = $call->attached_units()->whereKey($unit->id)->exists();
-            if ($attached) {
-                abort_if($unit->is_panic, 409, 'Clear your unit panic before detaching.');
-                $call->attached_units()->detach($unit->id);
-                $unit->update(['description' => 'Removed from call: ' . $call->id]);
-                CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' unassigned from the call.');
-                CallAssignmentStatusService::reopenIfUnassigned($call);
-            } else {
-                abort_if(str_starts_with($unit->status, 'OFFDTY'), 409,
-                    'Select Available before assigning your unit.');
-                abort_if($call->status === 'CLO' || str_starts_with($call->status, 'CLO-'), 422);
-                $call->attached_units()->syncWithoutDetaching([$unit->id]);
-                $unit->update(['description' => 'Added to call: ' . $call->id]);
-                CallActivityLogger::record($call, 'UNIT', 'Unit ' . $unit->unit_callsign . ' assigned to the call.');
-            }
-        });
+        $service = app(\App\Support\Cad\CallUnitAssignmentService::class);
+        if ($call->attached_units()->whereKey($unit->id)->exists()) {
+            $service->detach($unit, $call);
+        } else {
+            $service->attach($unit, $call);
+        }
 
         $this->emit('incidentUpdated');
     }
