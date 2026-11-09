@@ -112,7 +112,8 @@ class AlertBar extends Component
         $assignment = $this->currentAssignment($unit);
         if ($assignment) {
             $this->pendingEnrouteCallId = (int) $assignment->id;
-        } elseif (preg_match('/^Added to call:\s*(\d+)$/', trim((string) $unit->description), $matches)
+        } elseif (! config('cad.prompt_enroute_on_assignment', true)
+            && preg_match('/^Added to call:\s*(\d+)$/', trim((string) $unit->description), $matches)
             && $unit->updated_at && $unit->updated_at->gt(now()->subSeconds(15))) {
             // Keep the legacy view-call notification if prompting is disabled.
             $call = $unit->calls()->whereKey((int) $matches[1])->first();
