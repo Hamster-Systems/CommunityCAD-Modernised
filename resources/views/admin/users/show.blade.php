@@ -41,11 +41,11 @@
 
                     <div class="flex">
                         <p class="px-2 font-bold">Birthday</p>
-                        <p class="px-2">{{ $user->birthday->format('M d, Y') }}</p>
+                        <p class="px-2">{{ $user->birthday?->format('M d, Y') ?? 'Not provided' }}</p>
                     </div>
                     <div class="flex">
                         <p class="px-2 font-bold">Age</p>
-                        <p class="px-2">{{ $user->age }}</p>
+                        <p class="px-2">{{ $user->age ?? 'Unavailable' }}</p>
                     </div>
                 </div>
             </div>
@@ -116,11 +116,11 @@
                     </li>
                     <li class="py-3">
                         <p>Account since</p>
-                        <p class="ml-auto text-sm">{{ $user->created_at->format('M d, Y') }}</p>
+                        <p class="ml-auto text-sm">{{ $user->created_at?->format('M d, Y') ?? 'Unavailable' }}</p>
                     </li>
                     <li class="py-3">
                         <p>Last login</p>
-                        <p class="ml-auto text-sm">{{ $user->last_login->format('M d, Y H:i') }}</p>
+                        <p class="ml-auto text-sm">{{ $user->last_login?->format('M d, Y H:i') ?? 'Never' }}</p>
                     </li>
 
                     <li class="py-3">
