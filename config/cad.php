@@ -2,6 +2,9 @@
 
 return [
 
+    // Future AdminCP toggle: enable/disable the UK FMS-style assignment prompt.
+    'prompt_enroute_on_assignment' => env('CAD_PROMPT_ENROUTE_ON_ASSIGNMENT', true),
+
     'owner_ids' => explode('|', env('OWNER_IDS')),
 
     // Forwarded HTTPS scheme/host can only be trusted from these proxies.

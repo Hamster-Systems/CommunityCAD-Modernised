@@ -5,10 +5,6 @@
         @include('inc.cad.mdt-nav')
     </div>
 
-    <div wire:key='alert-bar'>
-        @livewire('cad.alert-bar')
-    </div>
-
     <div wire:key='mdt-screen'>
         @if (auth()->user()->active_unit->department_type == 1)
             @livewire('cad.mdt.mdt-screen')

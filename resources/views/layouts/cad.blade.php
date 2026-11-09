@@ -18,16 +18,13 @@
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
 
+    {{-- DSEG uses a valid seven-segment typeface; the bundled DIGITALDREAM.ttf
+         has malformed cmap/table metadata and Firefox rejects it. --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dseg@0.46.0/css/dseg.css">
     <style>
-        /* Restore the original seven-segment-style CAD clock. */
-        @font-face {
-            font-family: 'digital-clock-font';
-            src: url('{{ asset('fonts/DIGITALDREAM.ttf') }}') format('truetype');
-            font-display: swap;
-        }
         #running_clock_date,
         #running_clock_time {
-            font-family: 'digital-clock-font', 'Orbitron', monospace !important;
+            font-family: 'DSEG7-Classic', 'Orbitron', ui-monospace, monospace !important;
             font-variant-numeric: tabular-nums;
         }
     </style>
