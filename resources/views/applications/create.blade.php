@@ -8,6 +8,15 @@
             <div class="text-white">
                 <form action="{{ route('application.store') }}" method="POST">
                     @csrf
+                    @if (!auth()->user()->birthday)
+                        <div class="w-full">
+                            <label class="block mt-3 text-black-500" for="birthday">Date of birth (required for age eligibility)</label>
+                            <input class="w-full p-2 mt-2 text-black border rounded-md focus:outline-none"
+                                type="date" name="birthday" id="birthday" max="{{ now()->subDay()->toDateString() }}"
+                                value="{{ old('birthday') }}" required>
+                            <x-input-error :messages="$errors->get('birthday')" class="mt-2" />
+                        </div>
+                    @endif
                     <div class="w-full">
                         <label class="block mt-3 text-black-500" for="department_id">What department are you applying
                             for?</label>
