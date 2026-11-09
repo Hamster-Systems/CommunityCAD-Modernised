@@ -206,6 +206,19 @@
 
             @can('cad_settings')
                 <li class="relative px-6 py-3">
+                    <a class="flex items-center {{ request()->is('admin/cad-audio*') ? 'text-purple-400 font-bold' : '' }}"
+                        href="{{ route('admin.cad_audio.index') }}">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M11 5 6 9H3v6h3l5 4V5Z"/>
+                            <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5a10 10 0 0 1 0 14"/>
+                        </svg>
+                        <span class="ml-4">CAD Audio</span>
+                    </a>
+                </li>
+            @endcan
+            @can('cad_settings')
+                <li class="relative px-6 py-3">
                     <a class="flex items-center @if (request()->is('admin/cad_setting/*') || request()->is('admin/cad_setting')) !text-base !text-purple-500 @endif"
                         href="{{ route('admin.settings.general') }}">
                         <svg class="w-4 h-4" fill="none" stroke-width="1.5" stroke="currentColor"

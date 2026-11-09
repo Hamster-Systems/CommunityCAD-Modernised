@@ -62,8 +62,9 @@ class PanicResponseService
             $assignedCalls = $unit->calls()->get();
 
             if ($unit->is_panic) {
-                $restoredUnitStatus = $unit->pre_panic_status
-                    ?: ($assignedCalls->isNotEmpty() ? 'BUSY' : 'AVL');
+                $restoredUnitStatus = $assignedCalls->isEmpty()
+                    ? 'AVL'
+                    : ($unit->pre_panic_status ?: 'BUSY');
 
                 $unit->update([
                     'is_panic' => false,
@@ -72,7 +73,8 @@ class PanicResponseService
                 ]);
             } elseif ($unit->status === 'PANIC') {
                 $unit->update([
-                    'status' => $unit->pre_panic_status ?: ($assignedCalls->isNotEmpty() ? 'BUSY' : 'AVL'),
+                    'status' => $assignedCalls->isEmpty()
+                        ? 'AVL' : ($unit->pre_panic_status ?: 'BUSY'),
                     'pre_panic_status' => null,
                 ]);
             }

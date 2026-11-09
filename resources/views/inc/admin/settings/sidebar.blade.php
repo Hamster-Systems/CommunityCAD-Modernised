@@ -18,6 +18,9 @@
     <a class="settings-sidebar-link {{ request()->is('admin/settings/cad') ? 'is-active' : '' }}"
         href="{{ route('admin.settings.cad') }}">CAD / MDT</a>
 
+    <a class="settings-sidebar-link {{ request()->is('admin/cad-audio*') ? 'is-active' : '' }}"
+        href="{{ route('admin.cad_audio.index') }}">CAD Audio</a>
+
     <div class="settings-sidebar-group">Integrations</div>
     <a class="settings-sidebar-link {{ request()->is('admin/settings/discord_roles') ? 'is-active' : '' }}"
         href="{{ route('admin.settings.discord_roles') }}">Discord roles</a>

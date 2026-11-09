@@ -1,14 +1,10 @@
 <div class="space-y-2" wire:poll.5s>
     @if ($pendingEnrouteCallId)
-        {{-- Original addedtocall.mp3 announcement; play once per assignment, not every 5s Livewire poll. --}}
+        {{-- Visual FMS confirmation only. Central CAD audio listener handles one-time sound. --}}
         <section class="mx-auto my-2 max-w-7xl rounded-lg border border-sky-500/70 bg-[#16283b] p-4 text-white shadow-lg normal-case"
             role="region" aria-label="New call assignment"
             wire:key="assignment-audio-{{ auth()->user()->active_unit->id }}-{{ $pendingEnrouteCallId }}-{{ auth()->user()->active_unit->updated_at?->getTimestamp() ?? 0 }}"
-            x-data
-            x-init="$refs.assignmentAudio.play().catch(() => {})">
-            <audio x-ref="assignmentAudio" preload="auto">
-                <source src="{{ secure_asset('audio/addedtocall.mp3') }}" type="audio/mpeg">
-            </audio>
+            >
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p class="text-sm font-bold uppercase tracking-wide text-sky-300">New call assignment · #{{ $pendingEnrouteCallId }}</p>
@@ -30,11 +26,6 @@
                     </button>
                     <a class="rounded-md border border-slate-500 px-4 py-2 text-sm hover:bg-slate-800"
                         href="{{ route('cad.call.show', $pendingEnrouteCallId) }}">View call</a>
-                    <button type="button" @click="$refs.assignmentAudio.currentTime = 0; $refs.assignmentAudio.play().catch(() => {})"
-                        class="rounded-md border border-slate-500 px-3 py-2 text-sm hover:bg-slate-800"
-                        aria-label="Replay call assignment announcement" title="Replay assignment sound">
-                        🔊
-                    </button>
                 </div>
             </div>
         </section>
@@ -47,13 +38,6 @@
                 @else
                     <p>{{ $alert['message'] }}</p>
                 @endif
-
-                @if ($alert['audio'] != null)
-                    <audio autoplay id="panicButton" volume="1">
-                        <source src="{{ secure_asset($alert['audio']) }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                @endif
             </div>
         @elseif($alert['color'] == 'yellow')
             <div class="bg-yellow-600 text-white py-1 text-center text-lg">
@@ -62,13 +46,6 @@
                 @else
                     <p>{{ $alert['message'] }}</p>
                 @endif
-
-                @if ($alert['audio'] != null)
-                    <audio autoplay id="panicButton" volume="1">
-                        <source src="{{ secure_asset($alert['audio']) }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                @endif
             </div>
         @elseif($alert['color'] == 'green')
             <div class="bg-green-600 text-white py-1 text-center text-lg">
@@ -76,13 +53,6 @@
                     <a href="{{ $alert['link'] }}">{{ $alert['message'] }}</a>
                 @else
                     <p>{{ $alert['message'] }}</p>
-                @endif
-
-                @if ($alert['audio'] != null)
-                    <audio autoplay id="panicButton" volume="1">
-                        <source src="{{ secure_asset($alert['audio']) }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
                 @endif
             </div>
         @endif

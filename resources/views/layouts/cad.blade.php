@@ -54,7 +54,9 @@
     @livewireStyles
 </head>
 
-<body class="font-mono antialiased bg-black uppercase" onload="startTime()">
+<body class="font-mono antialiased bg-black uppercase" onload="startTime()"
+    data-cad-audio-feed="{{ route('cad.audio.events') }}"
+    data-cad-audio-user="{{ (int) auth()->id() }}">
 
     <div class="">
         @yield('content')
@@ -69,6 +71,8 @@
     @endif
 
     @livewireScripts
+
+    <script src="{{ asset('js/cad-audio-live.js') }}" defer></script>
 
     @include('inc.cad.helperscripts')
 </body>
