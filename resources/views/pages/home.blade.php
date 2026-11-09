@@ -65,19 +65,52 @@
                     </form>
                 </div>
             @else
-                <div class="grid gap-6 p-6 sm:p-10 md:grid-cols-2">
-                    <div class="rounded-xl border border-slate-500 bg-slate-800 p-6">
-                        <h2 class="text-xl font-bold">Access your community</h2>
-                        <p class="mt-3 text-sm text-slate-200">For now, sign in with Discord to access your existing CommunityCAD account or start your community application.</p>
-                        <a href="{{ route('auth.discord') }}"
-                           class="mt-6 inline-flex rounded-lg bg-indigo-500 px-5 py-3 font-semibold text-white transition hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200">
-                            Continue with Discord
-                        </a>
+                <div class="grid gap-6 p-6 sm:p-10 lg:grid-cols-5">
+                    <div class="rounded-xl border border-sky-500 bg-slate-800 p-6 lg:col-span-3">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-sky-300">New to the community?</p>
+                        <h2 class="mt-3 text-2xl font-bold">Create your CommunityCAD account</h2>
+                        <p class="mt-3 text-sm leading-relaxed text-slate-200">
+                            Get started by setting up a community account. You can then complete your profile,
+                            apply to join and access the services you're approved for.
+                        </p>
+                        <div class="mt-6 rounded-lg border border-slate-600 bg-slate-900 p-4 text-sm text-slate-200">
+                            <p class="font-semibold text-white">How joining works</p>
+                            <ol class="mt-3 list-inside list-decimal space-y-2">
+                                <li>Connect with Discord to begin registration.</li>
+                                <li>Complete your CommunityCAD account details.</li>
+                                <li>Apply for membership if your community requires it.</li>
+                            </ol>
+                        </div>
+                        @if (session()->has('id'))
+                            <a href="{{ route('account.create') }}"
+                               class="mt-6 inline-flex items-center rounded-lg bg-sky-600 px-5 py-3 font-bold text-white transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                Continue account registration →
+                            </a>
+                        @else
+                            <a href="{{ route('auth.discord') }}"
+                               class="mt-6 inline-flex items-center rounded-lg bg-sky-600 px-5 py-3 font-bold text-white transition hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                Create account with Discord →
+                            </a>
+                        @endif
+                        <p class="mt-3 text-xs text-slate-300">Discord is currently required for initial registration. Email/password registration is being developed.</p>
                     </div>
-                    <div class="rounded-xl border border-slate-500 bg-slate-800 p-6">
-                        <h2 class="text-xl font-bold">More sign-in options planned</h2>
-                        <p class="mt-3 text-sm text-slate-200">We're working towards CommunityCAD accounts with optional Discord and Steam connections. Those registration options are not available yet.</p>
-                        <p class="mt-4 text-xs text-slate-300">Account registration and community membership approval are separate steps.</p>
+
+                    <div class="rounded-xl border border-slate-500 bg-slate-800 p-6 lg:col-span-2">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-slate-300">Already registered?</p>
+                        <h2 class="mt-3 text-xl font-bold">Welcome back</h2>
+                        <p class="mt-3 text-sm leading-relaxed text-slate-200">
+                            Have an existing CommunityCAD account? Sign in to return to your profile or CAD portal.
+                        </p>
+                        <a href="{{ route('auth.discord') }}"
+                           class="mt-6 inline-flex items-center rounded-lg border border-slate-400 bg-slate-700 px-5 py-3 font-semibold text-white transition hover:border-sky-300 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-200">
+                            Sign in with Discord
+                        </a>
+                        <div class="mt-7 border-t border-slate-600 pt-5">
+                            <h3 class="text-sm font-semibold text-white">Connected accounts are coming</h3>
+                            <p class="mt-2 text-sm text-slate-300">
+                                We plan to add optional Discord and Steam linking once first-party account registration is ready.
+                            </p>
+                        </div>
                     </div>
                 </div>
             @endauth
