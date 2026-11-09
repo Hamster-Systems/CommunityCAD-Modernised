@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminPageController;
 use App\Http\Controllers\Admin\CadAudioController;
+use App\Http\Controllers\Cad\CadAudioEventsController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\Auth\IngameLoginController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -52,6 +53,9 @@ Route::middleware(['auth', 'member.check'])->group(function () {
         Route::get('department/{department}/roster', [DepartmentController::class, 'roster_index'], ['department' => 'department'])->name('department.roster.index');
         Route::get('department/{department}', [DepartmentController::class, 'show'])->name('department.show');
     });
+
+    Route::get('cad/audio/events', [CadAudioEventsController::class, 'index'])
+        ->name('cad.audio.events');
 
     // Authenticated CAD users can stream only allowlisted sounds, never file paths.
     Route::get('cad/sounds/{event}', [CadAudioController::class, 'stream'])
