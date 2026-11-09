@@ -81,7 +81,7 @@
         </tr>
         @foreach ($calls as $call)
             <tr wire:key="mdt-call-row-{{ $call->id }}"
-                class="{{ $call->status_info['color'] }} cursor-pointer hover:bg-slate-800/80"
+                class="{{ $call->status === 'PANIC' ? 'cad-panic-row' : $call->status_info['color'] }} cursor-pointer hover:bg-slate-800/80"
                 x-data="{ contextOpen: false, contextX: 0, contextY: 0,
                     openContext(event) {
                         this.contextX = Math.max(8, Math.min(event.clientX, window.innerWidth - 258));
