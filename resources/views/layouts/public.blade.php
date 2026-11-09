@@ -40,6 +40,30 @@
             -webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px);
         }
         .cc-auth-card-wide{max-width:480px;}
+
+        /* Two-column signup keeps the submit action visible on common laptop screens. */
+        .cc-auth-card-register{max-width:660px;padding:24px 28px;}
+        .cc-auth-card-register .cc-auth-brand{margin-bottom:12px;}
+        .cc-auth-card-register h1{font-size:27px;margin-bottom:6px;}
+        .cc-auth-card-register .cc-auth-muted{margin-bottom:13px;font-size:12px;}
+        .cc-auth-register-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;}
+        .cc-auth-card-register .cc-auth-field{margin-top:9px;}
+        .cc-auth-card-register .cc-auth-input{min-height:39px;margin-top:5px;padding:8px 10px;}
+        .cc-auth-card-register .cc-auth-divider{margin:14px 0;}
+        .cc-auth-card-register .cc-auth-help{margin-top:10px;}
+        .cc-auth-card-register .cc-auth-footer{margin-top:10px;}
+        .cc-auth-card-register .cc-auth-btn{min-height:40px;padding:8px 12px;}
+        @media(max-width:600px){
+            .cc-auth-card-register{max-width:420px;padding:20px;}
+            .cc-auth-register-grid{grid-template-columns:1fr;gap:0;}
+        }
+        @media(max-height:760px) and (min-width:601px){
+            .cc-auth-card-register{padding:18px 25px;}
+            .cc-auth-card-register .cc-auth-brand{margin-bottom:7px;}
+            .cc-auth-card-register .cc-auth-field{margin-top:6px;}
+            .cc-auth-card-register .cc-auth-input{min-height:36px;}
+        }
+
         .cc-auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px;font-size:13px;line-height:1.3;}
         .cc-auth-brand strong,.cc-auth-brand span{display:block;}
         .cc-auth-brand strong{font-size:14px;color:#fff}
