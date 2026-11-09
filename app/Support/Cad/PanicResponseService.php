@@ -20,6 +20,8 @@ class PanicResponseService
             if ($unit->is_panic) {
                 return;
             }
+            abort_if(str_starts_with($unit->status, 'OFFDTY'), 409,
+                'Sign on duty before activating a unit panic.');
 
             $unit->update([
                 'is_panic' => true,
