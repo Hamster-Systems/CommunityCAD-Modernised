@@ -15,7 +15,8 @@ class UnitResponseStatusService
     public function change(ActiveUnit $unit, string $status, ?Call $selectedCall = null): void
     {
         DB::transaction(function () use ($unit, $status, $selectedCall) {
-            $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);
+            $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);            abort_if($unit->is_panic, 409, 'Clear your active panic before changing duty status.');
+
 
             // The global status toolbar is the single duty control.
             if ($status === 'UNAV') {

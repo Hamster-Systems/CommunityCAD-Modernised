@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Cad;
 
 use App\Http\Controllers\Controller;
+use App\Support\Cad\PanicResponseService;
 use App\Models\Bolo;
 use App\Models\Cad\ActiveUnit;
 use App\Models\Call;
@@ -77,27 +78,33 @@ class CadController extends Controller
         return view('cad.message_center', compact('stolen_vehicles', 'bolos'));
     }
 
-    public function panic()
+    public function panic(PanicResponseService $panic)
     {
-        auth()->user()->active_unit->update(['is_panic' => true, 'status' => 'PANIC']);
+        $unit = auth()->user()->active_unit;
+        abort_unless($unit && (int) $unit->user_id === (int) auth()->id(), 403);
+        abort_if(str_starts_with($unit->status, 'OFFDTY'), 409);
+
+        $panic->activate($unit);
 
         return redirect()->route('cad.mdt');
     }
 
-    public function stop_panic()
+    public function stop_panic(PanicResponseService $panic)
     {
-        auth()->user()->active_unit->update(['is_panic' => false, 'status' => 'AVL']);
+        $unit = auth()->user()->active_unit;
+        abort_unless($unit && (int) $unit->user_id === (int) auth()->id(), 403);
+        $panic->clear($unit);
 
         return redirect()->route('cad.mdt');
     }
 
-    public function clear_panic()
+    public function clear_panic(PanicResponseService $panic)
     {
-        abort_unless(auth()->user()->can('admin_access') || (int) auth()->user()->active_unit?->department_type === 2, 403);
-        $active_panic_units = ActiveUnit::where('is_panic', '1')->get();
+        abort_unless(auth()->user()->can('admin_access') ||
+            (int) auth()->user()->active_unit?->department_type === 2, 403);
 
-        foreach ($active_panic_units as $active_unit) {
-            $active_unit->update(['is_panic' => false, 'status' => 'AVL']);
+        foreach (ActiveUnit::query()->where('is_panic', true)->get() as $unit) {
+            $panic->clear($unit);
         }
 
         return redirect()->route('cad.mdt');

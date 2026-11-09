@@ -9,7 +9,7 @@
                 <div class="mt-2 flex flex-wrap items-center gap-3">
                     <h1 class="text-xl font-bold md:text-2xl">#{{ $call->id }} · {{ $natureLabel }}</h1>
                     <span class="rounded border border-amber-600/70 bg-amber-950 px-2 py-1 text-xs font-bold text-amber-200">PRIORITY {{ $call->priority }}</span>
-                    <span class="rounded border border-slate-500 px-2 py-1 text-xs font-bold">{{ $statusLabel }}</span>
+                    <span class="rounded border border-slate-500 px-2 py-1 text-xs font-bold {{ $call->status === 'PANIC' ? 'cad-panic-call' : '' }}">{{ $statusLabel }}</span>
                 </div>
                 <p class="mt-2 text-sm text-slate-300">{{ $call->location ?: 'Location not supplied' }} · {{ $call->city ?: 'City unknown' }}</p>
             </div>
@@ -33,7 +33,7 @@
                 <div class="text-xs uppercase tracking-wide text-slate-400">Assigned units · {{ $call->attached_units->count() }}</div>
                 <div class="mt-1 flex flex-wrap gap-1">
                     @forelse ($call->attached_units as $assigned)
-                        <span class="rounded border border-sky-700 bg-sky-950 px-2 py-0.5 font-semibold">{{ $assigned->unit_callsign }} <span class="font-normal text-sky-200">{{ $assigned->status }}</span></span>
+                        <span class="rounded border border-sky-700 bg-sky-950 px-2 py-0.5 font-semibold {{ $assigned->is_panic ? 'cad-panic-call' : '' }}">{{ $assigned->unit_callsign }} <span class="font-normal {{ $assigned->is_panic ? 'text-red-300' : 'text-sky-200' }}">{{ $assigned->status }}</span></span>
                     @empty
                         <span class="text-slate-400">No units assigned</span>
                     @endforelse

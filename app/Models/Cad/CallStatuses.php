@@ -5,6 +5,10 @@ namespace App\Models\Cad;
 class CallStatuses
 {
     public const STATUSCODES = [
+        'PANIC' => [
+            'color' => 'cad-panic-call',
+            'name' => 'PANIC UNIT',
+        ],
         'RCVD' => [
             'color' => 'text-green-500',
             'name' => 'Call Open',

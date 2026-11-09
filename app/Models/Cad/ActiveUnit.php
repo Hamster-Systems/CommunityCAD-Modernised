@@ -100,6 +100,9 @@ class ActiveUnit extends Model
     public function getDisplayStatusTextColorAttribute()
     {
         switch ($this->status) {
+            case 'PANIC':
+                return 'cad-panic-call';
+
             case 'AVL':
                 return 'text-green-500';
                 break;

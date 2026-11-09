@@ -55,12 +55,16 @@ class CadScreen extends Component
 
     public function set_status(ActiveUnit $activeUnit, $status)
     {
+        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before changing status.');
         $activeUnit->update(['status' => $status, 'description' => 'Status Set To: '.$status]);
         $this->emit('updated-page');
     }
 
     public function set_call_status(Call $call, $status)
     {
+        abort_unless(array_key_exists($status, CallStatuses::STATUSCODES), 422);
+        abort_if($status === 'PANIC' || $call->status === 'PANIC', 409,
+            'Clear the unit panic before editing the incident status.');
         $call->update(['status' => $status]);
 
         $status_array = explode('-', $status);
@@ -89,7 +93,8 @@ class CadScreen extends Component
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
-    {
+    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before detaching.');
+
 
         $call->attached_units()->detach($activeUnit->id);
 
@@ -140,7 +145,8 @@ class CadScreen extends Component
     }
 
     public function hard_offduty(ActiveUnit $activeUnit)
-    {
+    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before forcing off duty.');
+
         $activeUnit->calls()->detach();
         $activeUnit->update(['status' => 'OFFDTY', 'description' => 'Forced off duty by dispatch', 'off_duty_at' => now(), 'off_duty_type' => 2]);
         $start_timer = $activeUnit->first_on_duty_at;

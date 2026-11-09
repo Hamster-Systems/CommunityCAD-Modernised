@@ -5,40 +5,36 @@ namespace App\Http\Controllers\Api\v1\Emergency;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\v1\Emergency\PanicRequest;
 use App\Models\Cad\ActiveUnit;
-use Illuminate\Http\Request;
+use App\Support\Cad\PanicResponseService;
 
 class PanicController extends Controller
 {
-    public function panic(PanicRequest $request)
+    public function panic(PanicRequest $request, PanicResponseService $panic)
     {
+        // Preserve the existing API caller contract but reuse the same
+        // transactional call/assignment logic as the browser button.
+        $unit = ActiveUnit::where('user_id', $request->user_id)->first();
 
-        $active_unit = ActiveUnit::where('user_id', $request->user_id)->get()->first();
-
-        if (!$active_unit) {
+        if (! $unit) {
             return response()->json([
-                'success'   => false,
-                'message'   => 'No active unit found for the given user.',
-                'data'      => []
-            ]);
+                'success' => false,
+                'message' => 'No active unit found for the given user.',
+                'data' => [],
+            ], 404);
         }
 
-        $active_unit->status = 'PANIC';
-        $active_unit->is_panic = 1;
-        $active_unit->location = $request->location;
-        $message = 'You have pressed your panic button.';
-
-        if (!$request->is_panic) {
-            $active_unit->status = 'AVL';
-            $active_unit->is_panic = 0;
+        if ($request->boolean('is_panic')) {
+            $panic->activate($unit, $request->location);
+            $message = 'You have pressed your panic button.';
+        } else {
+            $panic->clear($unit);
             $message = 'You have cleared your panic button.';
         }
 
-        $active_unit->save();
-
         return response()->json([
-            'success'   => true,
-            'message'   => $message,
-            'data'      => []
+            'success' => true,
+            'message' => $message,
+            'data' => [],
         ]);
     }
 }

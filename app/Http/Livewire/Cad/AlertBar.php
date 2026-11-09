@@ -28,6 +28,7 @@ class AlertBar extends Component
     private function currentAssignment(ActiveUnit $unit): ?Call
     {
         if (! config('cad.prompt_enroute_on_assignment', true)
+            || $unit->is_panic
             || str_starts_with($unit->status, 'OFFDTY')
             || in_array($unit->status, ['ENRUTE', 'ONSCN', 'TRANS'], true)
             || ! preg_match('/^Added to call:\s*(\d+)$/', trim((string) $unit->description), $matches)

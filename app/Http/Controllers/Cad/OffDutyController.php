@@ -15,6 +15,7 @@ class OffDutyController extends Controller
     public function create()
     {
         $active_unit = ActiveUnit::where('user_id', auth()->user()->id)->get()->first();
+        abort_if($active_unit?->is_panic, 409, 'Clear your unit panic before leaving duty.');
         $calls = Call::where('status', '!=', 'CLO')->get();
         foreach ($calls as $call) {
             $call->attached_units()->detach($active_unit->id);
@@ -45,6 +46,7 @@ class OffDutyController extends Controller
         $report = Report::create($validated);
 
         $active_unit = ActiveUnit::where('user_id', auth()->user()->id)->get()->first();
+        abort_if($active_unit?->is_panic, 409, 'Clear your unit panic before leaving duty.');
 
         $start_timer = $active_unit->first_on_duty_at;
         $end_timer = $active_unit->off_duty_at;
@@ -107,6 +109,7 @@ class OffDutyController extends Controller
     public function skipreport()
     {
         $active_unit = ActiveUnit::where('user_id', auth()->user()->id)->get()->first();
+        abort_if($active_unit?->is_panic, 409, 'Clear your unit panic before leaving duty.');
         $calls = Call::where('status', '!=', 'CLO')->get();
         foreach ($calls as $call) {
             $call->attached_units()->detach($active_unit->id);

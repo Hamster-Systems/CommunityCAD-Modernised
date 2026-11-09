@@ -64,6 +64,8 @@ class MdtScreen extends Component
 
     public function set_call_status(Call $call, $status)
     {
+        abort_if($status === 'PANIC' || $call->status === 'PANIC', 409,
+            'Clear the unit panic before editing the incident status.');
         abort_unless(array_key_exists($status, CallStatuses::STATUSCODES), 422);
         abort_if(in_array($status, ['ENRT', 'ARRVD'], true)
             && !$call->attached_units()->exists(), 422,
@@ -92,7 +94,8 @@ class MdtScreen extends Component
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
-    {
+    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before detaching.');
+
         abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
 
         DB::transaction(function () use ($call, $activeUnit) {

@@ -14,6 +14,14 @@ class CallAssignmentStatusService
     {
         $call = Call::query()->lockForUpdate()->findOrFail($call->id);
 
+        // A manually detached panicked unit must not leave an orphaned
+        // PANIC incident behind. Preserve the old status if another unit
+        // remains attached, otherwise reopen an active response.
+        if ($call->status === 'PANIC') {
+            app(PanicResponseService::class)->restoreCallIfSafe($call);
+            $call->refresh();
+        }
+
         if (!in_array($call->status, ['ENRT', 'ARRVD'], true)
             || $call->attached_units()->exists()) {
             return;

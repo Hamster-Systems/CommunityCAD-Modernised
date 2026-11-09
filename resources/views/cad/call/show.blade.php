@@ -235,8 +235,12 @@
                                 </div>
                                 <div class="w-1/3 ml-3">
                                     <label class="block mr-2">Status:</label>
-                                    <select class="w-full rounded-md border border-slate-600 bg-slate-100 px-3 py-2 text-sm text-black" name="status">
+                                    <select class="w-full rounded-md border border-slate-600 bg-slate-100 px-3 py-2 text-sm text-black" name="status" @disabled($call->status === 'PANIC')>
+                                        @if ($call->status === 'PANIC')
+                                            <option value="PANIC" selected>PANIC — PANIC UNIT (clear unit panic to restore)</option>
+                                        @endif
                                         @foreach ($call_statuses as $code => $props)
+                                            @continue($code === 'PANIC')
                                             <option @selected($call->status == $code) value="{{ $code }}">
                                                 {{ $code }} -
                                                 {{ $props['name'] }}

@@ -81,7 +81,7 @@
         </tr>
         @foreach ($calls as $call)
             <tr wire:key="mdt-call-row-{{ $call->id }}"
-                class="{{ $call->status_info['color'] }} cursor-pointer hover:bg-slate-800/80"
+                class="{{ $call->status === 'PANIC' ? 'cad-panic-row' : $call->status_info['color'] }} cursor-pointer hover:bg-slate-800/80"
                 x-data="{ contextOpen: false, contextX: 0, contextY: 0,
                     openContext(event) {
                         this.contextX = Math.max(8, Math.min(event.clientX, window.innerWidth - 258));
@@ -177,6 +177,7 @@
                         class="absolute right-0 z-50 w-80 p-3 space-y-3 text-white bg-gray-800 rounded"
                         x-show="statusOpen">
                         @foreach ($call_statuses as $status => $props)
+                            @continue($status === 'PANIC')
                             <a @click="statusOpen = false" class="block hover:bg-gray-500" href="#"
                                 wire:click="set_call_status({{ $call->id }}, '{{ $status }}')">{{ $status }}
                                 - {{ $props['name'] }}</a>

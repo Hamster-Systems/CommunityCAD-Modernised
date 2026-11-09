@@ -27,6 +27,28 @@
             font-family: 'DSEG7-Classic', 'Orbitron', ui-monospace, monospace !important;
             font-variant-numeric: tabular-nums;
         }
+        /* Animate the actual table cells/text, not a <tr> color that
+           child elements may override. Reduced motion remains high-contrast. */
+        @keyframes cad-panic-flash {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: .16; }
+        }
+        .cad-panic-row > td,
+        .cad-panic-call {
+            color: #ff4040 !important;
+            font-weight: 800 !important;
+            animation: cad-panic-flash 900ms steps(1, end) infinite;
+        }
+        .cad-panic-row > td a,
+        .cad-panic-row > td span {
+            color: inherit;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .cad-panic-row > td, .cad-panic-call {
+                animation: none !important;
+                opacity: 1;
+            }
+        }
     </style>
 
     @livewireStyles
