@@ -90,6 +90,9 @@ class CallController extends Controller
             'priority' => 'required',
         ]);
 
+        abort_if($validated['status'] === 'PANIC' || $call->status === 'PANIC', 409,
+            'Panic call status is managed automatically. Clear the panic before editing this incident.');
+
         abort_if(in_array($validated['status'], ['ENRT', 'ARRVD'], true)
             && !$call->attached_units()->exists(), 422,
             'Attach at least one unit before setting an en-route or on-scene call status.');
