@@ -28,7 +28,7 @@
                     </div>
                     <div class="">
                         <p>Reporting Officer: <span
-                                class="underline">{{ auth()->user()->active_unit->officer->name }}</span></p>
+                                class="underline">{{ auth()->user()->active_unit?->officer_name ?? auth()->user()->preferred_name ?? 'Unknown officer' }}</span></p>
                         <p>Report Type:
                             <select class="select-input" name="report_type_id" required>
                                 <option>Choose one</option>
