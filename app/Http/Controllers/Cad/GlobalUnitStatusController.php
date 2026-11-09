@@ -13,13 +13,12 @@ class GlobalUnitStatusController extends Controller
     public function __invoke(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'status' => ['required', Rule::in(['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS'])],
+            'status' => ['required', Rule::in(['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS', 'UNAV'])],
         ]);
 
         $unit = $request->user()->active_unit;
         abort_unless($unit && (int) $unit->user_id === (int) $request->user()->id, 403);
         abort_if($unit->is_panic, 409, 'Clear the active panic before changing your status.');
-        abort_if($unit->status === 'OFFDTY', 409, 'Go on duty before changing your status.');
 
         // Incident-specific response and transport states require a call.
         $assignedCall = $unit->calls()
