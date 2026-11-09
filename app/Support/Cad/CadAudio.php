@@ -34,7 +34,8 @@ class CadAudio
         }
         $volume = (int) self::setting($event, 'volume', '100');
         $file = self::setting($event, 'file');
-        $hasCustom = $file && str_starts_with($file, 'cad-audio/' . $event . '/')
+        $hasCustom = $file
+            && preg_match('/^cad-audio\\/' . preg_quote($event, '/') . '\\/[0-9a-f-]{36}\\.(mp3|ogg|wav)$/', $file)
             && Storage::disk('local')->exists($file);
 
         return array_merge(self::EVENTS[$event], [
