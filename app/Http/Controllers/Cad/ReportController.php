@@ -34,8 +34,22 @@ class ReportController extends Controller
         $data = $validated;
         $data['text'] = $data['mdcontent'];
         unset($data['mdcontent']);
-        $data['user_id'] = auth()->user()->id;
-        $data['officer_id'] = auth()->user()->active_unit->officer_id;
+        $user = $request->user();
+        $unit = $user->active_unit;
+        $data['user_id'] = $user->id;
+        // Legacy Officer rows are optional for independent MDT identities.
+        $data['officer_id'] = $unit?->officer_id;
+
+        // Capture the unit identity at submission time. Later identity edits,
+        // department transfers, or off-duty transitions must not rewrite reports.
+        $data['reporting_unit_name'] = mb_substr(
+            $unit?->officer_name ?? $user->preferred_name ?? 'Unknown author', 0, 160
+        );
+        $data['reporting_unit_callsign'] = $unit ? mb_substr($unit->unit_callsign, 0, 32) : null;
+        $data['reporting_unit_rank'] = $unit ? mb_substr($unit->unit_rank, 0, 80) : null;
+        $data['reporting_unit_department'] = $unit?->user_department?->department?->name
+            ? mb_substr($unit->user_department->department->name, 0, 160)
+            : null;
 
         $report = Report::create($data);
 
