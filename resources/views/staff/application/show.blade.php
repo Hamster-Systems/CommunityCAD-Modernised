@@ -236,7 +236,7 @@
             <div class="">
                 @foreach ($histories as $history)
                     <div class="p-3 my-2 border-2 border-gray-900">
-                        <p class="text-white">Actioned by: {{ $history->user->preferred_name }} at
+                        <p class="text-white">Actioned by: {{ $history->user?->preferred_name ?? 'CommunityCAD System' }} at
                             {{ $history->created_at->format('m/d/Y H:i:s') }}
                         </p>
                         <div>
