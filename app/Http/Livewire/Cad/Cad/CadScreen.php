@@ -144,7 +144,8 @@ class CadScreen extends Component
     }
 
     public function hard_offduty(ActiveUnit $activeUnit)
-    {
+    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before forcing off duty.');
+
         $activeUnit->calls()->detach();
         $activeUnit->update(['status' => 'OFFDTY', 'description' => 'Forced off duty by dispatch', 'off_duty_at' => now(), 'off_duty_type' => 2]);
         $start_timer = $activeUnit->first_on_duty_at;
