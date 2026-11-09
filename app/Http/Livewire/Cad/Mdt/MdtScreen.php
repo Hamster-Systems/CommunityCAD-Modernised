@@ -7,8 +7,9 @@ use App\Models\Cad\CallNatures;
 use App\Models\Cad\CallStatuses;
 use App\Models\Call;
 use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\CallAssignmentStatusService;
+use Illuminate\Support\Facades\DB;
 use App\Support\Cad\UnitResponseStatusService;
-use App\Notifications\DiscordNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 
@@ -53,8 +54,8 @@ class MdtScreen extends Component
     public function set_status(ActiveUnit $activeUnit, $status)
     {
         abort_unless((int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
-        abort_unless(in_array($status, ['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS'], true), 422);
-        abort_if($activeUnit->is_panic || $activeUnit->status === 'OFFDTY', 409);
+        abort_unless(in_array($status, ['AVL', 'BUSY', 'BRK', 'ENRUTE', 'ONSCN', 'TRANS', 'UNAV'], true), 422);
+        abort_if($activeUnit->is_panic, 409);
 
         app(UnitResponseStatusService::class)->change($activeUnit, $status);
         $this->emit('updated-page');
@@ -91,9 +92,12 @@ class MdtScreen extends Component
     {
         abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
 
-        $call->attached_units()->detach($activeUnit->id);
-
-        CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' detached from the call.');
+        DB::transaction(function () use ($call, $activeUnit) {
+            if (!$call->attached_units()->whereKey($activeUnit->id)->exists()) return;
+            $call->attached_units()->detach($activeUnit->id);
+            CallActivityLogger::record($call, 'UNIT', 'Unit ' . $activeUnit->unit_callsign . ' detached from the call.');
+            CallAssignmentStatusService::reopenIfUnassigned($call);
+        });
 
         $activeUnit->update(['description' => 'Removed from call: '.$call->id]);
 
@@ -129,28 +133,4 @@ class MdtScreen extends Component
         $this->emit('updated-page');
     }
 
-    public function on_duty(ActiveUnit $activeUnit)
-    {
-        abort_unless((int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
-        $activeUnit->update(['status' => 'AVL', 'description' => 'Status Set To: AVL', 'first_on_duty_at' => now()]);
-
-        DiscordNotification::send(
-            'cad_on_duty',
-            auth()->user()->preferred_name.' has went on duty.',
-            'Department: '.$activeUnit->user_department->department->name,
-            5763719,
-            [
-                [
-                    'name' => 'On Duty At',
-                    'value' => date('m/d/Y H:i:s'),
-                ],
-                [
-                    'name' => 'Discord ID',
-                    'value' => auth()->user()->id,
-                ],
-            ]
-        );
-
-        $this->emit('updated-page');
-    }
 }
