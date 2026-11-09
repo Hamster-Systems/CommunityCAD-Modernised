@@ -27,6 +27,13 @@
             font-family: 'DSEG7-Classic', 'Orbitron', ui-monospace, monospace !important;
             font-variant-numeric: tabular-nums;
         }
+        /* BUSY status only: readable amber against the existing CAD theme. */
+        .cad-status-busy,
+        .cad-status-busy > td,
+        .cad-status-busy > td a,
+        .cad-status-busy > td span {
+            color: #ffb347 !important;
+        }
         /* Animate the actual table cells/text, not a <tr> color that
            child elements may override. Reduced motion remains high-contrast. */
         @keyframes cad-panic-flash {
