@@ -119,3 +119,6 @@
             </div>
         </div>
     </header>
+
+    {{-- Shared alert bar: assignment prompts follow the unit across CAD pages. --}}
+    @livewire('cad.alert-bar')
