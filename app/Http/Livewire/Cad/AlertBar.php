@@ -42,6 +42,7 @@ class AlertBar extends Component
         }
 
         return $unit->calls()->whereKey($callId)
+            ->where('status', '!=', 'CLR')
             ->where('status', '!=', 'CLO')
             ->where('status', 'not like', 'CLO-%')
             ->first();
