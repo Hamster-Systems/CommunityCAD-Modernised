@@ -36,7 +36,11 @@ class AuthController extends Controller
 
     protected function findOrNewUser($discordUser)
     {
-        $user = User::where('id', $discordUser->getId())->first();
+        // Legacy Discord-backed accounts retain their original IDs. A new
+        // local-only user can never be claimed just because an ID matches.
+        $user = User::where('id', $discordUser->getId())
+            ->whereDoesntHave('localCredential')
+            ->first();
 
         if ($discordUser->user['discriminator'] == 0) {
 
