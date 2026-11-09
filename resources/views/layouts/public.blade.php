@@ -87,6 +87,14 @@
 
     @yield('content')
 
+    @if (!auth()->check() && request()->routeIs('home', 'auth.login', 'auth.register', 'auth.local.verification-help', 'account.create'))
+        <div class="cc-auth-photo-credit">
+            Background: <a href="https://commons.wikimedia.org/wiki/File:Sutton_Police_Station_by_night.jpg" target="_blank" rel="noopener noreferrer">Simon Lee / Wikimedia Commons</a>
+            · <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 2.0</a>
+            · tinted and cropped for display
+        </div>
+    @endif
+
     @if (session('alerts'))
         <div class="">
             <div class="absolute right-0 z-50 top-9">
