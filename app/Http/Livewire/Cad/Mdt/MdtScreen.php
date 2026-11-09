@@ -94,7 +94,8 @@ class MdtScreen extends Component
     }
 
     public function remove_unit_from_call(ActiveUnit $activeUnit, Call $call)
-    {
+    {        abort_if($activeUnit->is_panic, 409, 'Clear the unit panic before detaching.');
+
         abort_unless((int) $activeUnit->user_id === (int) auth()->id() && (int) $activeUnit->id === (int) auth()->user()->active_unit?->id, 403);
 
         DB::transaction(function () use ($call, $activeUnit) {
