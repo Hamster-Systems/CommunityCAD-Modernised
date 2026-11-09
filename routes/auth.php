@@ -14,6 +14,7 @@ Route::post('login', [LocalAccountController::class, 'login'])->name('auth.local
 Route::view('register', 'pages.register')->name('auth.register')->middleware('guest');
 Route::post('register', [LocalAccountController::class, 'register'])->name('auth.local.register')->middleware(['guest', 'throttle:3,1']);
 Route::get('verify-email/{user}', [LocalAccountController::class, 'verify'])->name('auth.local.verify')->middleware(['guest', 'signed', 'throttle:10,1']);
+Route::view('login/verification-help', 'pages.verification-help')->name('auth.local.verification-help')->middleware('guest');
 Route::post('verify-email/resend', [LocalAccountController::class, 'resend'])->name('auth.local.resend')->middleware(['guest', 'throttle:3,1']);
 
 Route::get('login/discord', function () {
