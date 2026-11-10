@@ -27,7 +27,11 @@
                 </div>
             </div>
 
-        <div class="w-full max-w-3xl px-4 py-10 space-y-5">
+        {{-- Keep ALL identifier controls, including native selects and <details>,
+             hidden until the usage notice has been accepted. Inline display:none
+             avoids a flash of controls before Alpine initialises. --}}
+        <div class="w-full max-w-3xl px-4 py-10 space-y-5"
+            x-show="!modalOpen" style="display: none;">
             @if ($errors->any())
                 <div role="alert" class="mb-4 rounded-lg border border-red-500 bg-red-950/30 p-4 text-red-200">
                     <p class="font-semibold mb-2">Please review the identifier details:</p>
