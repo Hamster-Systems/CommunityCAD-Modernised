@@ -120,3 +120,20 @@ PR #34 merged only a BUSY text-colour improvement and Docker documentation, not 
 - [ ] Unit status TIME continues to reflect last unit status update as before.
 - [ ] Historical calls retain their created timestamp and no database migration is necessary.
 - [ ] Verify reduced-motion and panic styles do not obscure the Transporting state.
+
+
+## Separate Call Updated audio setting (10 November)
+
+- The Admin CAD Audio page now has **three distinct slots**: `Call status updated` (existing `call_updated`), `Call Updated` (new `call_activity_updated`), and `Unit status updated` (existing `unit_status`).
+- Direct incident status/priority/core field edits retain the old `call_updated` sound and the customer’s existing upload/volume settings; personal unit status stays on `unit_status`.
+- Newly posted Call Notes / Activity notes and updates when other responders attach, detach or change their unit response status now emit `call_activity_updated`, with recipients restricted to the relevant attached users.
+- The new audio slot automatically appears from the `CadAudio::EVENTS` allowlist in Admin CAD Audio. It supports its own custom MP3/OGG/WAV, volume, mute, preview, and reset controls with persistent storage; no controller/route/schema changes needed.
+- The initial built-in fallback reuses the existing notification clip until an admin uploads the **"Your call has been updated"** custom MP3 to the new Call Updated slot. Existing configured audio is never overwritten.
+
+### Regression QA
+- [ ] Admin CAD Audio shows Call status updated, Call Updated, Unit status updated separately.
+- [ ] Upload Call Updated MP3, save, preview, confirm changes to its volume/mute do not modify the other two slots.
+- [ ] Unit A posts a Call Note: A+B attached units hear Call Updated; unrelated C hears nothing.
+- [ ] Unit B goes On Scene: B hears Unit status, A hears Call Updated, C hears nothing.
+- [ ] Dispatcher manually changes call priority: attached units hear the existing Call status updated slot, not Call Updated.
+- [ ] Panic remains global and no extra call-update sound is emitted.
