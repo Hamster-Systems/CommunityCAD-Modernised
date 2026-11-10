@@ -55,6 +55,9 @@
         .cad-audio-stat { background:#152234; border:1px solid #34465b; border-radius:10px; padding:12px 15px; }
         .cad-audio-stat strong {display:block;color:white;font-size:22px;font-weight:750;font-variant-numeric:tabular-nums;}
         .cad-audio-stat span {display:block;color:#cbd5e1;font-size:12px;}
+        /* Distinct section boundary; no tone panel touching the last voice card. */
+        .cad-audio-tones-separator { margin:52px 0 28px; padding-top:24px; border-top:2px solid #40566f; }
+        .cad-audio-tones-panel { background:#101c2a; border:1px solid #3d5169; border-radius:12px; padding:22px; }
         .cad-audio-card .cad-audio-preview { margin-top:auto; }
         @media (max-width:959px) { .cad-audio-card > header {min-height:0;} }
     </style>
@@ -190,9 +193,10 @@
                 </section>
             @endforeach
         </div>
-        <section class="mt-8 rounded-xl border border-slate-700 bg-[#152234] p-5">
-            <h2 class="text-lg font-bold text-white">Department &amp; alert tones</h2>
-            <p class="mt-2 text-sm text-slate-300">Fire station tones, dispatch signalling, timed priority alerts and department-specific alert patterns will be configured in a separate tones table. They are not part of the voice notification settings above.</p>
+        <div class="cad-audio-tones-separator" role="separator" aria-label="Department and alert tones section"></div>
+        <section class="cad-audio-tones-panel" aria-labelledby="cad-department-tones-heading">
+            <h2 id="cad-department-tones-heading" class="text-lg font-bold text-white">Department &amp; alert tones</h2>
+            <p class="mt-2 text-sm text-slate-300">Fire station tones, dispatch signalling, timed priority alerts and department-specific alert patterns will be configured separately from the voice notification library above.</p>
         </section>
         <p class="mt-6 text-sm text-slate-400">Settings apply community-wide. Audio playback depends on browser autoplay permission; changes to sounds do not alter the associated CAD status or call history.</p>
     </div>
