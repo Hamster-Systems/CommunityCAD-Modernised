@@ -45,15 +45,18 @@ class CadAudioPublisher
 
     /**
      * Notify only the currently attached units about a newly added incident
-     * note. Activity uses a distinct configured sound from the incident's
-     * own status/field update notifications.
+     * note, except the submitting user. Activity uses a distinct configured
+     * sound from the incident's own status/field update notifications.
      */
     public static function noteAdded(Call $call, string $category = 'NOTE'): void
     {
         // Dispatch-authored notes have a dedicated sound; ordinary Call Notes,
         // situation reports and witness notes use Call Updated.
-        self::notifyAttachedUnits($call,
-            strtoupper($category) === 'DISPATCH' ? 'dispatch_note' : 'call_activity_updated');
+        self::notifyAttachedUnits(
+            $call,
+            strtoupper($category) === 'DISPATCH' ? 'dispatch_note' : 'call_activity_updated',
+            auth()->id() === null ? null : (int) auth()->id()
+        );
     }
 
     /**
@@ -73,10 +76,19 @@ class CadAudioPublisher
         }
     }
 
-    private static function notifyAttachedUnits(Call $call, string $event = 'call_updated'): void
-    {
+    private static function notifyAttachedUnits(
+        Call $call,
+        string $event = 'call_updated',
+        ?int $excludeUserId = null
+    ): void {
         foreach ($call->attached_units()->whereNotNull('user_id')
             ->distinct()->pluck('user_id') as $userId) {
+            // The author sees their submitted note immediately in the UI;
+            // only their co-responders need an audible notification.
+            if ($excludeUserId !== null && (int) $userId === $excludeUserId) {
+                continue;
+            }
+
             self::publish($event, (int) $userId, $call->id);
         }
     }
