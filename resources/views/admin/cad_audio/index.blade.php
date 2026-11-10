@@ -59,9 +59,10 @@
 
         <div class="mb-5 rounded-lg border border-sky-800 bg-[#142639] p-4 text-sm text-slate-200">
             <strong class="text-white">Notification audio</strong>
-            <p class="mt-1">Choose a built-in sound, upload a custom file or mute each event. Audio is stored privately in persistent application storage. Browsers may require a click before allowing automatic sound playback.</p>
+            <p class="mt-1">Every notification uses its bundled audio until you upload a replacement. Upload an MP3, OGG or WAV directly without changing modes, or select Muted to disable playback. Uploaded sounds stay saved when muted.</p>
         </div>
 
+        <h2 class="mb-3 text-lg font-bold text-white">CAD notification sounds</h2>
         <div class="cad-audio-grid">
             @foreach ($events as $event => $settings)
                 <section class="cad-audio-card" aria-labelledby="audio-title-{{ $event }}">
@@ -82,8 +83,7 @@
                         </label>
                         <select id="mode-{{ $event }}" name="mode" required
                             class="w-full rounded-md border border-slate-500 bg-[#24344a] px-3 py-2 text-white">
-                            <option value="default" @selected($settings['mode'] === 'default')>Default sound</option>
-                            <option value="custom" @selected($settings['mode'] === 'custom')>Custom uploaded sound</option>
+                            <option value="custom" @selected($settings['mode'] === 'custom')>Custom audio (bundled sound until replaced)</option>
                             <option value="muted" @selected($settings['mode'] === 'muted')>Muted</option>
                         </select>
 
@@ -95,7 +95,7 @@
                                 class="mt-2 block w-full rounded-md border border-slate-500 bg-[#24344a] p-2 text-sm text-white file:mr-3 file:rounded file:border-0 file:bg-indigo-600 file:px-3 file:py-1 file:text-white">
                             <p class="mt-1 text-xs text-slate-400">
                                 MP3, OGG or WAV · maximum 2 MB.
-                                {{ $settings['has_custom'] ? 'A custom file is saved.' : 'No custom file uploaded.' }}
+                                {{ $settings['has_custom'] ? 'Uploaded audio saved. Muting will not delete it.' : 'Using bundled audio until you upload a replacement.' }}
                             </p>
                         </div>
 
@@ -113,7 +113,7 @@
                         <div class="rounded-lg border border-slate-700 bg-[#0f1826] p-3">
                             <p class="mb-2 text-xs font-bold uppercase text-slate-400">Current sound preview</p>
                             @if ($settings['mode'] === 'muted')
-                                <p class="text-sm text-slate-400">This event is muted. Select another mode and save to enable preview.</p>
+                                <p class="text-sm text-slate-400">This sound is muted. Select Custom audio and save to enable playback again. Your uploaded file is retained.</p>
                             @else
                                 <audio controls preload="none" class="w-full" aria-label="Preview {{ $settings['title'] }} sound"
                                     onplay="this.volume = {{ $settings['volume'] / 100 }}">
@@ -132,13 +132,17 @@
                     <form method="POST" action="{{ route('admin.cad_audio.reset', $event) }}" class="mt-2">
                         @csrf
                         <button type="submit" class="cad-audio-reset"
-                            onclick="return confirm('Restore the default sound for {{ $settings['title'] }} and remove the saved custom file?')">
-                            Restore default
+                            onclick="return confirm('Remove the uploaded file and restore the bundled sound for {{ $settings['title'] }}?')">
+                            Restore bundled sound
                         </button>
                     </form>
                 </section>
             @endforeach
         </div>
+        <section class="mt-8 rounded-xl border border-slate-700 bg-[#152234] p-5">
+            <h2 class="text-lg font-bold text-white">Department &amp; alert tones</h2>
+            <p class="mt-2 text-sm text-slate-300">Fire station tones, dispatch signalling, timed priority alerts and department-specific alert patterns will be configured in a separate tones table. They are not part of the voice notification settings above.</p>
+        </section>
         <p class="mt-6 text-sm text-slate-400">Settings apply community-wide. Audio playback depends on browser autoplay permission; changes to sounds do not alter the associated CAD status or call history.</p>
     </div>
 @endsection
