@@ -11,10 +11,11 @@
 >
 Welcome to Community CAD!
 
-- **Website:** [communitycad.app](https://communitycad.app)
-- **Documentation:** [communitycad.app/docs](https://communitycad.app/docks)
-- **Suggestions/Bugs:** [GitHub - Issues](https://github.com/CommunityCAD/CommunityCAD/issues/new/choose)
-- **Discord Link:** [communitycad.app/discord](https://communitycad.app/discord)
+- **Hamster Systems website:** [hamster-sys.com](https://hamster-sys.com)
+- **CommunityCAD website:** Coming soon
+- **Documentation:** Coming soon
+- **Discord community:** Coming soon
+- **Feature requests / bug reports:** [CommunityCAD-Modernised Issues](https://github.com/Hamster-Systems/CommunityCAD-Modernised/issues/new/choose)
 
 ## Unified Docker development layout
 
