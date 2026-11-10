@@ -17,6 +17,14 @@ Welcome to Community CAD!
 - **Discord community:** Coming soon
 - **Feature requests / bug reports:** [CommunityCAD-Modernised Issues](https://github.com/Hamster-Systems/CommunityCAD-Modernised/issues/new/choose)
 
+## Original CommunityCAD credits
+
+This project is built upon the **original open-source CommunityCAD codebase** developed and released by the **[CommunityCAD project and its contributors](https://github.com/CommunityCAD/CommunityCAD)**. Full credit for the original CAD/MDT application, its foundations and original functionality belongs to those developers.
+
+**Hamster Systems** is independently modernising and extending that existing project. Our enhancements do not make us the original creators of CommunityCAD, and this repository is **not an official release of or endorsed by the original CommunityCAD team**.
+
+Thank you to the original developers and everyone who contributed to making the source code available. Please refer to the [original repository and its contribution history](https://github.com/CommunityCAD/CommunityCAD/graphs/contributors) for upstream contributors. Existing third-party attribution and applicable copyright/license notices must continue to be respected.
+
 ## Docker Setup
 
 Coming soon. The modernised installation instructions are still being prepared.
