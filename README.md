@@ -26,7 +26,7 @@ CommunityCAD-Modernised/
 ├── routes/
 ├── storage/               # Runtime data; preserve across deployments
 ├── docker/                # Dockerfiles and deployment helpers, if needed
-├── compose.yml            # Deploy-specific Compose config (see migration below)
+├── compose.yaml            # Deploy-specific Compose config (see migration below)
 ├── .env                   # Local secrets; never commit
 ├── artisan
 ├── composer.json
@@ -82,7 +82,7 @@ docker compose config --no-interpolate
 docker compose config --quiet
 ```
 
-If the new `compose.yml` isn't present or validation fails, **do not** run `docker compose up` from the new directory yet. If necessary, schedule a maintenance window to migrate host bind mounts and restart the existing stack without changing its data. Keep `CommunityCAD-Dev` and backups intact until the unified deployment has been tested and all data is accounted for.
+If the new `compose.yaml` isn't present or validation fails, **do not** run `docker compose up` from the new directory yet. If necessary, schedule a maintenance window to migrate host bind mounts and restart the existing stack without changing its data. Keep `CommunityCAD-Dev` and backups intact until the unified deployment has been tested and all data is accounted for.
 
 ### Day-to-day workflow (after the unified Compose setup has been verified)
 
@@ -131,7 +131,7 @@ These commands compile assets in the project directory. Verify the running app i
 
 #### Docker rebuild and Laravel updates
 
-**Only after completing and validating the migration** (and with `compose.yml` present in the Git checkout):
+**Only after completing and validating the migration** (and with `compose.yaml` present in the Git checkout):
 
 ```bash
 cd ~/Documents/CommunityCAD-Modernised
