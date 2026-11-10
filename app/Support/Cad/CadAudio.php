@@ -9,7 +9,9 @@ class CadAudio
 {
     public const EVENTS = [
         'call_assigned' => ['title' => 'Call assignment', 'description' => 'A unit is attached or dispatched to a call.', 'default' => 'addedtocall.mp3'],
-        'new_call' => ['title' => 'New call', 'description' => 'A new incident is created.', 'default' => 'newcall.mp3'],
+        'new_call' => ['title' => 'New dispatch', 'description' => 'A new incident is created.', 'default' => 'newcall.mp3'],
+        'dispatch_closed' => ['title' => 'Dispatch closed', 'description' => 'An assigned incident is closed.', 'default' => 'statusupdated.mp3'],
+        'dispatch_note' => ['title' => 'Dispatch note', 'description' => 'Dispatch adds a note or operational update to an incident.', 'default' => 'statusupdated.mp3'],
         'call_updated' => ['title' => 'Call status updated', 'description' => 'An incident changes status or core call details.', 'default' => 'statusupdated.mp3'],
         'call_activity_updated' => ['title' => 'Call Updated', 'description' => 'An attached call receives a new note or a responder joins, leaves or changes response status. Separate from call status updates.', 'default' => 'statusupdated.mp3'],
         'unit_status' => ['title' => 'Unit status updated by dispatch', 'description' => 'A dispatcher or authorised user changes another unit\'s status.', 'default' => 'statusupdated.mp3'],
@@ -30,9 +32,11 @@ class CadAudio
     public static function details(string $event): array
     {
         abort_unless(isset(self::EVENTS[$event]), 404);
-        $mode = self::setting($event, 'mode', 'default');
-        if (! in_array($mode, ['default', 'custom', 'muted'], true)) {
-            $mode = 'default';
+        // Legacy "default" settings now behave like Custom with the bundled
+        // fallback. Preserve muted and existing user-uploaded file settings.
+        $mode = self::setting($event, 'mode', 'custom');
+        if (! in_array($mode, ['custom', 'muted'], true)) {
+            $mode = 'custom';
         }
         $volume = (int) self::setting($event, 'volume', '100');
         $file = self::setting($event, 'file');
