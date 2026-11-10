@@ -25,7 +25,8 @@ class CadAudioPublisher
 
     public static function callUpdated(Call $call): void
     {
-        if ($call->wasChanged('status')
+        $changedFields = array_diff(array_keys($call->getChanges()), ['updated_at']);
+        if ($changedFields
             && $call->status !== 'PANIC'
             && $call->getOriginal('status') !== 'PANIC') {
             // The panic event is separately prioritized: don't also play a
