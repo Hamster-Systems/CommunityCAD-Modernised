@@ -89,8 +89,8 @@ Only after verifying the project name, named volumes, environment and container 
 cd ~/Documents/CommunityCAD-Modernised
 docker compose up -d --build --no-deps app
 docker compose ps
-docker compose exec -T app php artisan optimize:clear
-docker compose exec -T app php artisan view:cache
+docker compose exec -T -u www-data app php artisan optimize:clear
+docker compose exec -T -u www-data app php artisan view:cache
 ```
 
 Check application login, stored data, uploaded files and SMTP settings. Run `php artisan migrate --force` only when an intended schema update is required and the database backup is confirmed. Keep the original `CommunityCAD-Dev` directory and backups until the unified deployment works fully.
@@ -104,8 +104,8 @@ git fetch origin
 git switch develop
 git pull --ff-only origin develop
 docker compose up -d --build --no-deps app
-docker compose exec -T app php artisan optimize:clear
-docker compose exec -T app php artisan view:cache
+docker compose exec -T -u www-data app php artisan optimize:clear
+docker compose exec -T -u www-data app php artisan view:cache
 ```
 
 For frontend changes, rebuild Laravel Mix assets. If npm is installed locally, run `npm ci && npm run dev`. Otherwise use disposable Node:
@@ -123,6 +123,29 @@ Compiled frontend files `public/css/app.css` and `public/js/app.js` can be modif
 sha256sum public/js/app.js public/css/app.css
 docker compose exec -T app sha256sum public/js/app.js public/css/app.css
 ```
+
+### Fix for recurring HTTP 500 after Docker rebuilds
+
+The unified image includes `docker/entrypoint.sh`. Every time the **app container starts**, the entrypoint repairs ownership/write permissions for Laravel's mounted compiled Blade view cache, sessions, framework cache, logs and `bootstrap/cache`. This prevents previously root-owned compiled Blade templates from breaking pages with `file_put_contents(...storage/framework/views/...): Permission denied` after an app rebuild. It does **not** clear the database or remove uploaded files.
+
+Run Laravel cache maintenance as Apache's PHP user (`www-data`) so newly compiled files remain writable:
+
+```bash
+cd ~/Documents/CommunityCAD-Modernised
+docker compose exec -T -u www-data app php artisan view:clear
+docker compose exec -T -u www-data app php artisan view:cache
+```
+
+If you ran Artisan as root *after* container startup and a permission error returns, restart/rebuild the app container to re-run the startup repair, or fix ownership of the specific cache directory. Keep the existing persistent volumes; never delete them to repair a view-cache error.
+
+To verify the **running** deployment no longer depends on the old folder, inspect the project name and the app container's bind mount, without exposing environment values:
+
+```bash
+docker compose ps
+docker inspect communitycad-modernised-app --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}'
+```
+
+The `.env` mount should point under `CommunityCAD-Modernised`. Both named volumes should retain the `communitycad-modernised-dev_...` names. A running container does not directly record the directory of its original Compose file; use `docker compose ls` to check its configuration path.
 
 ### Production considerations
 
