@@ -62,3 +62,31 @@ PR #34 merged only a BUSY text-colour improvement and Docker documentation, not 
 **Dispatcher workspace:** Future dedicated dispatcher console is tracked in GitHub issue #45. The current implementation does not redesign dispatch.
 
 **Draft PR:** Changes committed, but not yet tested against the running Docker development installation. Migrate with a database backup first.
+
+
+## Directed audio and panic display follow-up (10 November)
+
+### Audio isolation
+- Call status/field updates use the attached-unit recipient set; users not assigned to the incident cannot hear that call-update tone.
+- Call notes added via both `CallLogController::store` and `CallChat::postNote` now explicitly publish the call-update event to current attached units (the call logger touches timestamps only, which is intentionally not a sound trigger).
+- Assignment audio takes precedence over the incidental AVL → BUSY status change, preventing two overlapping tones when assigned to a call.
+- The feed only includes matching `target_user_id` records plus global panic; historic unscoped non-panic events are filtered server-side.
+- Default/custom/muted settings and volume still come from the existing Admin CAD Audio configuration.
+
+### Panic flashing isolation
+- `cad-panic-row` animates **table-cell backgrounds**, not the row, cell or its children’s opacity. Interactive menus, text, tooltips and buttons no longer dim with the panic pulse.
+- Unit rows calculate a deterministic animation offset from the unit ID; incident rows use a call ID offset. Different units are usually out of phase instead of pulsing together.
+- CSS is scoped to the CAD layout; no global Tailwind rebuild is required.
+- `prefers-reduced-motion` displays a non-animated, readable panic highlight.
+
+### QA matrix
+- [ ] Unit A changes status: A hears its own status sound, B remains silent.
+- [ ] A is attached: only A hears assignment tone; no duplicate BUSY tone.
+- [ ] A and B attached to call 1, C attached to call 2: note/status updates on call 1 sound for A+B but not C.
+- [ ] A panics: A+B+C hear global panic, no simultaneous status tone.
+- [ ] Two units panic: their table backgrounds pulse out of phase; the incident and unit rows do not cause dropdowns, tooltip or action menus to fade.
+- [ ] Hold open an incident action menu while panic is flashing; its background, text and focus remain legible.
+- [ ] Confirm sound playback with two separate browser accounts and Admin CAD Audio custom/mute settings.
+- [ ] Verify reduced-motion UI (no flashing), Livewire refresh and Firefox console.
+
+**Implementation committed to PR #44, not yet browser/integration verified.**
