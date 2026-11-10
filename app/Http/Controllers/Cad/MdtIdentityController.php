@@ -7,7 +7,6 @@ use App\Models\Civilian;
 use App\Models\MdtIdentity;
 use App\Models\UserDepartment;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class MdtIdentityController extends Controller
 {
@@ -58,7 +57,7 @@ class MdtIdentityController extends Controller
         $allowed = $membership->department->mdt_subdivisions ?? [];
         foreach ($subdivisions as $subdivision) {
             if (! in_array($subdivision, $allowed, true)) {
-                throw \\Illuminate\\Validation\\ValidationException::withMessages([
+                throw \Illuminate\Validation\ValidationException::withMessages([
                     'subdivisions' => 'One or more subdivisions are not available in the selected department.',
                 ]);
             }
