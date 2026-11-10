@@ -1,0 +1,52 @@
+name: communitycad-modernised-dev
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: communitycad-modernised-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8096:80"
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/var/www/html/.env:ro
+      - app-storage:/var/www/html/storage
+      - app-cache:/var/www/html/bootstrap/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - communitycad-internal
+
+  db:
+    image: mariadb:10.11
+    container_name: communitycad-modernised-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: communitycad_dev
+      MARIADB_USER: communitycad
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'healthcheck.sh --connect --innodb_initialized'
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - communitycad-internal
+
+networks:
+  communitycad-internal:
+    driver: bridge
+
+volumes:
+  mariadb-data:
+  app-storage:
+  app-cache:
