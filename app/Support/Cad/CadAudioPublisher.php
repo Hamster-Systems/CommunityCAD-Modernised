@@ -50,11 +50,12 @@ class CadAudioPublisher
      */
     public static function noteAdded(Call $call, string $category = 'NOTE'): void
     {
-        // Dispatch-authored notes have a dedicated sound; ordinary Call Notes,
-        // situation reports and witness notes use Call Updated.
+        // Dispatch notes, Call Notes, situation and witness updates all
+        // share the Call Updated announcement. Suppress the author's own
+        // sound while keeping the notification for other assigned users.
         self::notifyAttachedUnits(
             $call,
-            strtoupper($category) === 'DISPATCH' ? 'dispatch_note' : 'call_activity_updated',
+            'call_activity_updated',
             auth()->id() === null ? null : (int) auth()->id()
         );
     }
