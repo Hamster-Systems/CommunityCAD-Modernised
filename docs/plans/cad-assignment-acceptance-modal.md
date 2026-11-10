@@ -137,3 +137,19 @@ PR #34 merged only a BUSY text-colour improvement and Docker documentation, not 
 - [ ] Unit B goes On Scene: B hears Unit status, A hears Call Updated, C hears nothing.
 - [ ] Dispatcher manually changes call priority: attached units hear the existing Call status updated slot, not Call Updated.
 - [ ] Panic remains global and no extra call-update sound is emitted.
+
+
+## Self-initiated vs dispatcher-initiated unit status audio (10 November)
+
+- Introduced a **Unit status updated (self)** CAD Audio setting with independent custom file, mute, preview and volume. Intended voice line: **"Your status has been updated."**
+- Retained the existing `unit_status` event and existing admin custom audio/settings for **Unit status updated by dispatch**, whose voice line remains **"Your status has been updated by dispatch."**
+- `CadAudioPublisher::unitUpdated` determines who initiated the active-unit status change by checking the authenticated actor against the target `ActiveUnit.user_id`. Self changes emit `unit_status_self`; other users/system-issued changes emit `unit_status`. Both are directed to the status-affected user only.
+- Assignment, panic, call status and shared Call Updated audio logic remains unchanged. Both unit-status slots use the bundled `statusupdated.mp3` as a temporary default until the respective custom sound is uploaded.
+- No schema migration required. Admin CAD Audio lists the new event automatically from the allowlist.
+
+### QA
+- [ ] Unit A changes its own status in MDT: only A receives `unit_status_self`.
+- [ ] Dispatcher changes A's status: only A receives `unit_status` using the pre-existing dispatch clip.
+- [ ] A is attached to B's call and changes status: B receives the separate Call Updated sound; A only hears its self-status sound.
+- [ ] Panic and call assignment still suppress overlapping status sounds.
+- [ ] Upload/preview/mute/volume settings for the self slot are independent of the existing dispatch unit-status slot.
