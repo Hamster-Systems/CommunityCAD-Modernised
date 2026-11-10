@@ -29,8 +29,12 @@ class VerifyLocalAccountEmail extends Notification
 
         return (new MailMessage)
             ->subject('Verify your CommunityCAD email')
-            ->line('Confirm your email address before signing in with your CommunityCAD password.')
-            ->action('Verify email address', $url)
-            ->line('This verification link expires after 24 hours. If you did not register, you can ignore this message.');
+            ->view(
+                ['html' => 'emails.verify-account', 'text' => 'emails.verify-account-text'],
+                [
+                    'communityName' => config('mail.from.name') ?: 'CommunityCAD',
+                    'verificationUrl' => $url,
+                ]
+            );
     }
 }
