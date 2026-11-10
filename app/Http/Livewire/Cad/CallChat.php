@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Cad;
 use App\Models\Call;
 use App\Models\CallLog;
 use App\Support\Cad\CallActivityLogger;
+use App\Support\Cad\CadAudioPublisher;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -57,6 +58,7 @@ class CallChat extends Component
         abort_if($call->status === 'CLO' || str_starts_with($call->status, 'CLO-'), 422, 'This incident has been closed.');
 
         CallActivityLogger::record($call, $this->entryType, $message);
+        CadAudioPublisher::noteAdded($call);
         $this->note = '';
         $this->resetPage();
         $this->emit('incidentUpdated');
