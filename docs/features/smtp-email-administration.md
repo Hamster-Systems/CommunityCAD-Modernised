@@ -44,3 +44,13 @@ Log in as the configured owner and visit `/admin/settings/smtp`. Save a mail con
 - Verify successful email verification with SMTP enabled and `.env` fallback when disabled.
 - Confirm UI on mobile and desktop and document providers' app-password requirements.
 - Later PR: configurable email templates and optional delivery logs, without exposing sensitive message data.
+
+
+## Branded HTML emails
+- SMTP test messages now use `emails.smtp-test` with `emails.smtp-test-text` plain-text alternative.
+- Local-account verification notifications now use `emails.verify-account` with `emails.verify-account-text`.
+- Shared header/footer partials provide consistent CommunityCAD styling, with email-client-friendly table layout and inline CSS. Text is Blade-escaped; verification links are signed and unchanged.
+- The existing configured From name is used for branding. No inline images or externally hosted assets are required, avoiding broken email logos.
+- This is a code-based template milestone; admin-editable templates, previews and delivery history remain future work.
+
+QA: send an SMTP test email to Thunderbird and other major clients; inspect multipart HTML/plain-text content, dark/light rendering, verify link behaviour and mobile layout. Run `php artisan view:cache` after deploying new Blade views.
