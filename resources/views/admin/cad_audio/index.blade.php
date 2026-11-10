@@ -4,11 +4,8 @@
     <style>
         /* Scoped styles: stable even if the existing Tailwind bundle misses
            modern utility classes. Never affect other Admin Portal pages. */
-        .cad-audio-page { width:100%; max-width:1150px; margin:0 auto; }
+        .cad-audio-page { width:100%; max-width:1280px; margin:0 auto; }
         .cad-audio-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
-        @media (min-width:950px) {
-            .cad-audio-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-        }
         .cad-audio-card { min-width:0; border:1px solid #334155; border-radius:12px; background:#152234; padding:20px; }
         .cad-audio-card select,
         .cad-audio-card input[type=file] {
@@ -33,8 +30,7 @@
 
         /* Three even columns on wide admin pages: nine voice cards form
            three complete rows instead of an orphan and a blank half-row. */
-        .cad-audio-page { max-width:1280px; }
-        .cad-audio-grid { grid-template-columns:minmax(0,1fr); align-items:stretch; }
+        .cad-audio-grid { align-items:stretch; }
         @media (min-width:740px) {
             .cad-audio-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .cad-audio-grid > .cad-audio-card:last-child:nth-child(odd) { grid-column:1/-1; }
