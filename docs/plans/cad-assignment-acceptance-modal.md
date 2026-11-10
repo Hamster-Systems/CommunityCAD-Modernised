@@ -196,3 +196,15 @@ New voice event categories use existing bundled recordings as **temporary fallba
 - No migration or frontend compilation required.
 
 **QA**: A and B assigned to the same call. A posts a NOTE: A hears nothing; B hears Call Updated. B posts DISPATCH-category activity: B hears nothing; A hears Dispatch Note. A posts while not attached: assigned B still hears the note, A does not. A alone on the call: no unnecessary sound. Confirm timestamps and activity visibility are unchanged.
+
+
+## Dispatch Note consolidation / alert tones section separation (10 November)
+
+This supersedes the earlier separate Dispatch Note audio proposal:
+- DISPATCH-category incident notes, regular Call Notes, situation notes and witness notes all use the existing **Call Updated** (`call_activity_updated`) sound setting. The separate `dispatch_note` event is removed from the audio allowlist and admin interface.
+- The Call Updated uploaded recording, mute state, and volume remain unchanged; **old Dispatch Note setting rows and custom files are not deleted**, avoiding destructive configuration changes.
+- The note's author is excluded from playback; only other units attached to the call hear the alert. The Activity and Call Notes UI continue to display the recorded note.
+- **Call status updated** (`call_updated`) remains distinct and continues to handle direct status/priority/field edits.
+- The Department & alert tones placeholder now has a dedicated visual section separator: large vertical gap, border divider and a separate panel background. These tones are still future functionality only.
+
+QA: with A+B attached, A posts DISPATCH or NOTE category; B hears the existing Call Updated recording, A hears nothing; unrelated C hears nothing. Check Audio Admin contains one Call Updated and no Dispatch Note card; previously uploaded Call Updated MP3 remains configured. Verify the separator remains visible at desktop and narrow widths. No migrations required.
