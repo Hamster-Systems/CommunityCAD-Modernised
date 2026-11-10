@@ -18,9 +18,12 @@ class CallUnitAssignmentService
             $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);
             $call = Call::query()->lockForUpdate()->findOrFail($call->id);
 
-            // An off-duty unit can receive an assignment invitation while
-            // signed into CAD. They stay off duty until they explicitly
-            // accept it; merely attaching a call never changes duty state.
+            // An off-duty unit can receive an invitation while signed in,
+            // but only if the acceptance UI is enabled. Never silently
+            // attach off-duty units when the prompt is disabled.
+            abort_if(str_starts_with($unit->status, 'OFFDTY')
+                && ! config('cad.prompt_enroute_on_assignment', true), 409,
+                'Select Available before assigning the unit.');
             abort_if($unit->is_panic, 409, 'Clear panic before attaching to a new call.');
             abort_if(in_array($call->status, ['CLR', 'CLO'], true)
                 || str_starts_with($call->status, 'CLO-'), 409, 'The call is no longer open.');
