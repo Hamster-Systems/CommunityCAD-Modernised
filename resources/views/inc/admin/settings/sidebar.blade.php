@@ -22,6 +22,10 @@
         href="{{ route('admin.cad_audio.index') }}">CAD Audio</a>
 
     <div class="settings-sidebar-group">Integrations</div>
+    @can('is_owner_user')
+        <a class="settings-sidebar-link {{ request()->is('admin/settings/smtp') ? 'is-active' : '' }}"
+            href="{{ route('admin.settings.smtp') }}">SMTP / Email</a>
+    @endcan
     <a class="settings-sidebar-link {{ request()->is('admin/settings/discord_roles') ? 'is-active' : '' }}"
         href="{{ route('admin.settings.discord_roles') }}">Discord roles</a>
     <a class="settings-sidebar-link {{ request()->is('admin/settings/discord') ? 'is-active' : '' }}"
