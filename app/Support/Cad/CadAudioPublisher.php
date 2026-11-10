@@ -16,10 +16,11 @@ class CadAudioPublisher
     {
         // New calls are dispatcher notifications, not a tone for every patrol
         // unit that happens to have CAD open.
-        foreach (ActiveUnit::query()->where('department_type', 2)
+        $dispatcher = ActiveUnit::query()->where('department_type', 2)
             ->where('status', 'not like', 'OFFDTY%')
-            ->whereNotNull('user_id')->distinct()->pluck('user_id') as $userId) {
-            self::publish('new_call', (int) $userId, $call->id);
+            ->whereNotNull('user_id')->oldest()->first();
+        if ($dispatcher) {
+            self::publish('new_call', (int) $dispatcher->user_id, $call->id);
         }
     }
 
