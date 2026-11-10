@@ -28,21 +28,17 @@ class CadAudioController extends Controller
     {
         abort_unless(isset(CadAudio::EVENTS[$event]), 404);
         $validated = $request->validate([
-            'mode' => ['required', 'in:default,custom,muted'],
+            'mode' => ['required', 'in:custom,muted'],
             'volume' => ['required', 'integer', 'between:0,100'],
             'sound' => ['nullable', 'file', 'mimes:mp3,ogg,wav', 'max:2048'],
         ]);
 
         $previous = CadAudio::details($event);
-        if ($request->hasFile('sound') && $validated['mode'] !== 'custom') {
-            throw ValidationException::withMessages([
-                'mode' => 'Select Custom uploaded sound when uploading a file.',
-            ]);
-        }
-        if ($validated['mode'] === 'custom' && ! $request->hasFile('sound') && ! $previous['has_custom']) {
-            throw ValidationException::withMessages([
-                'sound' => 'Upload an MP3, OGG or WAV file to select Custom audio.',
-            ]);
+        // Every enabled notification already has a bundled default sound.
+        // Uploading a file automatically enables Custom, even if the last
+        // saved state was Muted. No preliminary mode change is required.
+        if ($request->hasFile('sound')) {
+            $validated['mode'] = 'custom';
         }
 
         $newPath = null;
@@ -82,7 +78,7 @@ class CadAudioController extends Controller
                 foreach ([
                 'mode' => $validated['mode'],
                 'volume' => (string) $validated['volume'],
-                'file' => $validated['mode'] === 'custom' ? ($newPath ?: $previous['file']) : '',
+                'file' => $newPath ?: ($previous['file'] ?? ''),
             ] as $attribute => $value) {
                 CadSetting::updateOrCreate(
                     ['name' => 'cad_audio_' . $event . '_' . $attribute],
@@ -98,7 +94,8 @@ class CadAudioController extends Controller
             throw $exception;
         }
 
-        if ($previous['file'] && $previous['file'] !== ($validated['mode'] === 'custom' ? ($newPath ?: $previous['file']) : '')) {
+        // Muting must NOT delete the user's uploaded recording.
+        if ($newPath && $previous['file'] && $previous['file'] !== $newPath) {
             Storage::disk('local')->delete($previous['file']);
         }
 
@@ -111,7 +108,7 @@ class CadAudioController extends Controller
         abort_unless(isset(CadAudio::EVENTS[$event]), 404);
         $previous = CadAudio::details($event);
         DB::transaction(function () use ($event) {
-            foreach (['mode' => 'default', 'volume' => '100', 'file' => ''] as $attribute => $value) {
+            foreach (['mode' => 'custom', 'volume' => '100', 'file' => ''] as $attribute => $value) {
                 CadSetting::updateOrCreate(
                     ['name' => 'cad_audio_' . $event . '_' . $attribute],
                     ['value' => $value, 'type' => 'text']
@@ -137,7 +134,7 @@ class CadAudioController extends Controller
         $settings = CadAudio::details($event);
         abort_if($settings['mode'] === 'muted', 404);
 
-        if ($settings['mode'] === 'custom' && $settings['file']) {
+        if ($settings['file']) {
             $path = Storage::disk('local')->path($settings['file']);
         } else {
             $path = public_path('audio/' . CadAudio::EVENTS[$event]['default']);
