@@ -132,7 +132,11 @@ class CadAudioController extends Controller
         abort_unless(auth()->user()?->active_unit || auth()->user()?->can('cad_settings'), 403);
 
         $settings = CadAudio::details($event);
-        abort_if($settings['mode'] === 'muted', 404);
+        // Administrators may inspect the saved recording even while a
+        // notification is muted. The live CAD playback route must remain
+        // unavailable when muted.
+        $isAdminPreview = request()->routeIs('admin.cad_audio.preview');
+        abort_if($settings['mode'] === 'muted' && ! $isAdminPreview, 404);
 
         if ($settings['file']) {
             $path = Storage::disk('local')->path($settings['file']);
