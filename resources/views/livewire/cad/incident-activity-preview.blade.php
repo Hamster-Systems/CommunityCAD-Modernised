@@ -2,9 +2,7 @@
     <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
         <div>
             <h2 class="text-sm font-bold uppercase tracking-wide">Recent Activity</h2>
-            <p class="mt-1 text-xs text-slate-400">Latest updates · Refreshes automatically</p>
         </div>
-        <span class="rounded border border-sky-800 px-2 py-1 text-xs text-sky-300">LIVE</span>
     </div>
     <div class="mt-3 space-y-2">
         @forelse ($events as $event)
