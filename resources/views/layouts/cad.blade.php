@@ -34,26 +34,41 @@
         .cad-status-busy > td span {
             color: #ffb347 !important;
         }
-        /* Animate the actual table cells/text, not a <tr> color that
-           child elements may override. Reduced motion remains high-contrast. */
-        @keyframes cad-panic-flash {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: .16; }
+        /* Panic highlighting is a CELL BACKGROUND animation, never opacity
+           on a cell or parent. Opacity would dim popup menus, buttons,
+           tooltips and other content nested inside the affected cell. */
+        @keyframes cad-panic-cell-pulse {
+            0%, 47% { background-color: rgba(180, 20, 24, .36); }
+            48%, 100% { background-color: rgba(180, 20, 24, .07); }
         }
-        .cad-panic-row > td,
-        .cad-panic-call {
-            color: #ff4040 !important;
+        .cad-panic-row > td {
+            color: #ff6969 !important;
             font-weight: 800 !important;
-            animation: cad-panic-flash 900ms steps(1, end) infinite;
+            animation: cad-panic-cell-pulse 1480ms steps(1, end) infinite;
+            animation-delay: var(--cad-panic-offset, 0ms);
         }
-        .cad-panic-row > td a,
-        .cad-panic-row > td span {
+        .cad-panic-row > td > a,
+        .cad-panic-row > td > span {
             color: inherit;
         }
+        /* Standalone panic labels remain red, but not animated as an entire
+           container: interactive children must stay legible and stable. */
+        .cad-panic-call {
+            color: #ff6969 !important;
+            font-weight: 800 !important;
+        }
+        /* Menus stay visually independent of the state of their parent row. */
+        .cad-panic-row [role="menu"],
+        .cad-panic-row [data-cad-popup] {
+            color: #fff !important;
+            font-weight: normal !important;
+            animation: none !important;
+            opacity: 1 !important;
+        }
         @media (prefers-reduced-motion: reduce) {
-            .cad-panic-row > td, .cad-panic-call {
+            .cad-panic-row > td {
                 animation: none !important;
-                opacity: 1;
+                background-color: rgba(180, 20, 24, .25);
             }
         }
     </style>
