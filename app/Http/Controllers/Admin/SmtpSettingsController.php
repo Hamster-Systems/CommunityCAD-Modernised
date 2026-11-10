@@ -70,9 +70,13 @@ class SmtpSettingsController extends Controller
 
         try {
             SmtpConfiguration::apply($settings);
-            Mail::raw('This is a test email from your CommunityCAD SMTP settings. No further action is required.', function ($message) use ($data) {
-                $message->to($data['recipient'])->subject('CommunityCAD SMTP test');
-            });
+            Mail::send(
+                ['html' => 'emails.smtp-test', 'text' => 'emails.smtp-test-text'],
+                ['communityName' => $settings->from_name],
+                function ($message) use ($data) {
+                    $message->to($data['recipient'])->subject('CommunityCAD SMTP test');
+                }
+            );
         } catch (\Throwable $exception) {
             // Do not expose transport exceptions or passwords to the browser.
             // Admins can diagnose their SMTP host, port and server logs.
