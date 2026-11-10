@@ -37,4 +37,10 @@ RUN composer install \
     && chown -R www-data:www-data \
        storage bootstrap/cache
 
+# Repair writable Laravel directories after Docker mounts persistent volumes.
+# Apache itself continues to run its workers as www-data.
+COPY docker/entrypoint.sh /usr/local/bin/communitycad-entrypoint
+RUN chmod 755 /usr/local/bin/communitycad-entrypoint
+ENTRYPOINT ["/usr/local/bin/communitycad-entrypoint"]
+
 EXPOSE 80
