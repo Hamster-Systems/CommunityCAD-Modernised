@@ -22,15 +22,12 @@ class CallNotes extends Component
         $this->compact = $compact;
     }
 
-    public function addDispatchNote(): void
+    public function addCallNote(): void
     {
         abort_unless(auth()->check(), 403);
-        abort_unless(
-            auth()->user()->can('admin_access')
-            || (int) auth()->user()->active_unit?->department_type === 2,
-            403,
-            'Only dispatchers or authorised administrators can post dispatch call notes.'
-        );
+        // Any signed-in CAD unit may add a call note, not only dispatch.
+        // Do not allow authenticated portal users with no active CAD identity.
+        abort_unless(auth()->user()->active_unit, 403, 'Sign into CAD to post a call note.');
 
         $this->validate(['message' => 'required|string|min:1|max:2000']);
         $message = trim($this->message);
@@ -42,7 +39,7 @@ class CallNotes extends Component
 
         // One canonical activity record: the dedicated notes panel and the
         // Activity feed show the same author, timestamp, and original text.
-        CallActivityLogger::record($call, 'DISPATCH', $message);
+        CallActivityLogger::record($call, 'NOTE', $message);
         CadAudioPublisher::noteAdded($call);
 
         $this->reset('message');
@@ -64,8 +61,7 @@ class CallNotes extends Component
 
         $call = Call::findOrFail($this->callId);
         $canPost = ! $this->compact && auth()->check()
-            && (auth()->user()->can('admin_access')
-                || (int) auth()->user()->active_unit?->department_type === 2)
+            && auth()->user()->active_unit
             && $call->status !== 'CLO'
             && ! str_starts_with($call->status, 'CLO-');
 
