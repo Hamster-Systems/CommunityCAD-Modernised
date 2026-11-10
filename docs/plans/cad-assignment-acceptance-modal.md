@@ -90,3 +90,17 @@ PR #34 merged only a BUSY text-colour improvement and Docker documentation, not 
 - [ ] Verify reduced-motion UI (no flashing), Livewire refresh and Firefox console.
 
 **Implementation committed to PR #44, not yet browser/integration verified.**
+
+
+## Co-responder audio propagation fix (10 November)
+
+**Observed:** Direct changes to a call already played for attached units, but UNIT activity records from a new assignment, arrival on scene or response-stage changes only made a sound for the unit performing the action.
+
+**Change:**
+- `CadAudioPublisher::unitActivity(call, actorUserId)` publishes `call_updated` to **other** currently attached units, excluding the actor.
+- `CallUnitAssignmentService` calls it on attach and detach, after the assignment and activity record are saved.
+- `UnitResponseStatusService` calls it on response/status changes including En Route, On Scene, Available and Unavailable detachment.
+- Automatic response-stage progression now uses `updateQuietly` to prevent a second notification via the Call model observer after the unit-activity event. Direct call edits still use normal model updates and continue to sound for all attached units.
+- The responding unit continues hearing its own `call_assigned` / `unit_status` notification instead of a duplicate `call_updated` sound.
+
+**QA:** With A+B on call 1 and C on call 2: attach A to call 1 (B hears call update, A hears assignment); B sets ONSCN (A hears call update, B hears status); a direct call edit sounds for A+B, not C; detaching B sounds for A, not C; activating panic remains global. Ensure one sound per action per participant.
