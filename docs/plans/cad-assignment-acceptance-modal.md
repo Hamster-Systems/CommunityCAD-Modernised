@@ -185,3 +185,14 @@ New voice event categories use existing bundled recordings as **temporary fallba
 - [ ] Call closure emits exactly one `dispatch_closed` event to users attached at closure time.
 - [ ] Ordinary call status/priority edits still emit `call_updated`, unit statuses and panic remain properly directed.
 - [ ] Frontend displays the distinct notification cards plus the nonfunctional future tones placeholder, without extra tone settings.
+
+
+## Suppress self-notification for call-note author (10 November)
+
+- When a signed-in unit submits a Call Note through the Call Notes tab, full Activity composer or standard call note endpoint, the submitting user's account is excluded from that note's audible `call_activity_updated` event.
+- The other currently attached users still receive the event; unrelated units remain silent. The same author exclusion applies to `DISPATCH`-category entries using `dispatch_note`.
+- The note remains visible to the author and all other users in both Call Notes and Activity; this is only sound suppression, not filtering or hiding history.
+- Direct changes to call status/details and unit statuses keep their existing sound behaviour; panic remains global.
+- No migration or frontend compilation required.
+
+**QA**: A and B assigned to the same call. A posts a NOTE: A hears nothing; B hears Call Updated. B posts DISPATCH-category activity: B hears nothing; A hears Dispatch Note. A posts while not attached: assigned B still hears the note, A does not. A alone on the call: no unnecessary sound. Confirm timestamps and activity visibility are unchanged.
