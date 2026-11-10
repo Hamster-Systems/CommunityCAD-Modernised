@@ -11,41 +11,40 @@
             <div class="admin-card !w-full">
                 <div class="grid gap-2 text-sm md:grid-cols-2">
                     <div class="flex">
-                        <p class="px-2 font-bold">Discord Name:</p>
-                        <p class="px-2">{{ $user->discord }}</p>
-                    </div>
-                    <div class="flex">
-                        <p class="px-2 font-bold">Display Name:</p>
-                        <p class="px-2">{{ $user->display_name }}</p>
-                    </div>
-                    <div class="flex">
-                        <p class="px-2 font-bold">Real Name</p>
-                        <p class="px-2">{{ $user->real_name }}</p>
-                    </div>
-                    <div class="flex">
-                        <p class="px-2 font-bold">Discord Username</p>
-                        <p class="px-2">{{ $user->discord_username }}</p>
-                    </div>
-                    <div class="flex">
-                        <p class="px-2 font-bold">Steam Hex</p>
-                        <p class="px-2">{{ $user->steam_hex }}</p>
-                    </div>
-                    <div class="flex">
-                        <p class="px-2 font-bold">Discord ID</p>
+                        <p class="px-2 font-bold">CommunityCAD account ID</p>
                         <p class="px-2">{{ $user->id }}</p>
                     </div>
                     <div class="flex">
-                        <p class="px-2 font-bold">Steam ID</p>
-                        <p class="px-2">{{ $user->steam_id }}</p>
+                        <p class="px-2 font-bold">Display name</p>
+                        <p class="px-2">{{ $user->display_name ?: $user->preferred_name }}</p>
                     </div>
-
+                    <div class="flex">
+                        <p class="px-2 font-bold">Email</p>
+                        <p class="px-2">{{ $user->email ?: 'Not provided' }}</p>
+                    </div>
+                    <div class="flex">
+                        <p class="px-2 font-bold">Real name</p>
+                        <p class="px-2">{{ $user->real_name ?: 'Not provided' }}</p>
+                    </div>
+                    @if ($user->discord_name)
+                        <div class="flex">
+                            <p class="px-2 font-bold">Connected Discord</p>
+                            <p class="px-2">{{ $user->discord }}</p>
+                        </div>
+                    @endif
+                    @if ($user->steam_id)
+                        <div class="flex">
+                            <p class="px-2 font-bold">Connected Steam ID</p>
+                            <p class="px-2">{{ $user->steam_id }}</p>
+                        </div>
+                    @endif
                     <div class="flex">
                         <p class="px-2 font-bold">Birthday</p>
-                        <p class="px-2">{{ $user->birthday->format('M d, Y') }}</p>
+                        <p class="px-2">{{ $user->birthday?->format('M d, Y') ?? 'Not provided' }}</p>
                     </div>
                     <div class="flex">
                         <p class="px-2 font-bold">Age</p>
-                        <p class="px-2">{{ $user->age }}</p>
+                        <p class="px-2">{{ $user->age ?? 'Unavailable' }}</p>
                     </div>
                 </div>
             </div>
@@ -116,11 +115,11 @@
                     </li>
                     <li class="py-3">
                         <p>Account since</p>
-                        <p class="ml-auto text-sm">{{ $user->created_at->format('M d, Y') }}</p>
+                        <p class="ml-auto text-sm">{{ $user->created_at?->format('M d, Y') ?? 'Unavailable' }}</p>
                     </li>
                     <li class="py-3">
                         <p>Last login</p>
-                        <p class="ml-auto text-sm">{{ $user->last_login->format('M d, Y H:i') }}</p>
+                        <p class="ml-auto text-sm">{{ $user->last_login?->format('M d, Y H:i') ?? 'Never' }}</p>
                     </li>
 
                     <li class="py-3">
@@ -260,7 +259,7 @@
                             <div class="flex items-center justify-between">
                                 <p @click="open = !open" class="text-white select-none">
                                     From:
-                                    {{ $note->giver_user->discord }}
+                                    {{ $note->giver_user?->preferred_name ?? 'CommunityCAD System' }}
                                     <span
                                         class="block -mt-1 text-xs tracking-widest">{{ $note->created_at->format('m/d/Y H:i') }}</span>
                                 </p>
@@ -304,7 +303,7 @@
 
                             <div class="flex items-center justify-between">
                                 <p @click="open = !open" class="text-white select-none">
-                                    From: {{ $accommodation->giver_user->discord }}
+                                    From: {{ $accommodation->giver_user?->preferred_name ?? 'CommunityCAD System' }}
                                     <span
                                         class="block -mt-1 text-xs tracking-widest">{{ $accommodation->created_at->format('m/d/Y H:i') }}</span>
                                 </p>
@@ -351,10 +350,10 @@
 
                             <div class="flex items-center justify-between">
                                 <p @click="open = !open" class="text-white select-none">From:
-                                    {{ $da->giver_user->discord }}
+                                    {{ $da->giver_user?->preferred_name ?? 'CommunityCAD System' }}
                                     <span class="block -mt-1 text-xs tracking-widest">
                                         {{ $da->created_at->format('m/d/Y H:i') }}
-                                        | Level: {{ $da_types[$da->disciplinary_action_type_id] }}
+                                        | Level: {{ $da_types[$da->disciplinary_action_type_id] ?? 'Unknown' }}
                                     </span>
                                 </p>
                                 @can('user_manage_user_disciplinary_actions')
@@ -391,7 +390,7 @@
                     <p>Shows the last 5 actions.</p>
                     @foreach ($histories as $history)
                         <div class="admin-pill border-l-4 border-blue-600 cursor-default">
-                            <p class="text-white">Actioned by: {{ $history->user->preferred_name }}
+                            <p class="text-white">Actioned by: {{ $history->user?->preferred_name ?? 'CommunityCAD System' }}
                                 <span
                                     class="block -mt-1 text-xs tracking-widest">{{ $history->created_at->format('m/d/Y H:i:s') }}</span>
                             </p>
