@@ -92,7 +92,13 @@
                 </div>
             </div>
         </div>
-        @livewire('cad.unit-status-strip')
+        {{-- Dispatch keeps its existing dispatcher control row while on duty.
+             The shared status strip is only shown to an unavailable dispatcher,
+             so the two controls never appear together. Patrol/Fire unchanged. --}}
+        @if ((int) auth()->user()->active_unit->department_type !== 2
+            || str_starts_with(auth()->user()->active_unit->status, 'OFFDTY'))
+            @livewire('cad.unit-status-strip')
+        @endif
         <div class="flex justify-between max-w-7xl mx-auto mt-2">
             <div class="flex items-center text-gray-300 space-x-4">
                 {{-- <a class="hover:underline" href="#">Firearm Database</a> --}}
