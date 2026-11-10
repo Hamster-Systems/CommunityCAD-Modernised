@@ -16,6 +16,20 @@ use Illuminate\Support\Str;
 
 class DepartmentController extends Controller
 {
+    private function subdivisionOptions(?string $raw): array
+    {
+        $options = preg_split('/\\r\\n|\\r|\\n/', $raw ?? '');
+        $options = array_values(array_unique(array_filter(array_map('trim', $options))));
+        // Reject overlong names and unbounded sets in the web form request
+        // rather than silently truncating administrators' changes.
+        if (count($options) > 40 || collect($options)->contains(fn ($v) => mb_strlen($v) > 80)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'subdivision_options' => 'Enter up to 40 subdivisions, each no longer than 80 characters.',
+            ]);
+        }
+        return $options;
+    }
+
     public function index(): View
     {
         $departments = Cache::remember('departments', 5, function () {
@@ -44,6 +58,8 @@ class DepartmentController extends Controller
     public function store(DepartmentRequest $request): RedirectResponse
     {
         $input = $request->validated();
+        $input['mdt_subdivisions'] = $this->subdivisionOptions($input['subdivision_options'] ?? null);
+        unset($input['subdivision_options']);
         $input['slug'] = Str::slug($input['name']);
 
         if (Department::where('slug', $input['slug'])->count() != 0) {
@@ -101,6 +117,8 @@ class DepartmentController extends Controller
     public function update(DepartmentRequest $request, Department $department): RedirectResponse
     {
         $input = $request->validated();
+        $input['mdt_subdivisions'] = $this->subdivisionOptions($input['subdivision_options'] ?? null);
+        unset($input['subdivision_options']);
         $input['slug'] = Str::slug($input['name']);
 
         if (Department::where('slug', $input['slug'])->count() != 0) {
