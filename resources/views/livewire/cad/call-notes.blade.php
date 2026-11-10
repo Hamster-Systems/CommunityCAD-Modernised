@@ -3,23 +3,23 @@
         <div>
             <h2 class="{{ $compact ? 'text-sm' : 'text-xl' }} font-bold">Call Notes</h2>
             <p class="mt-1 text-xs text-slate-400">
-                {{ $compact ? 'Latest operational information' : 'Dispatch information, situation updates and witness notes for this incident' }}
+                {{ $compact ? 'Latest operational information' : 'Operational information and notes shared by units and dispatch' }}
             </p>
         </div>
     </header>
 
     @if ($canPost)
-        <form wire:submit.prevent="addDispatchNote" class="rounded-lg border border-sky-800 bg-[#192d41] p-4">
+        <form wire:submit.prevent="addCallNote" class="rounded-lg border border-sky-800 bg-[#192d41] p-4">
             <label class="mb-2 block text-sm font-semibold text-sky-100" for="call-dispatch-note-{{ $callId }}">
-                Dispatch Call Note
+                New Call Note
             </label>
             <textarea id="call-dispatch-note-{{ $callId }}" rows="3" maxlength="2000" required
-                wire:model.defer="message" placeholder="Important information for units responding to this incident…"
+                wire:model.defer="message" placeholder="Add information or an update for units responding to this call…"
                 class="w-full rounded-md border border-slate-500 bg-slate-900 p-3 text-sm text-white"></textarea>
             @error('message') <p class="mt-1 text-xs text-red-300">{{ $message }}</p> @enderror
             <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p class="text-xs text-slate-400">Also recorded in Activity · Attached units receive their Call Updated notification</p>
-                <button type="submit" wire:loading.attr="disabled" wire:target="addDispatchNote"
+                <p class="text-xs text-slate-400">Saved as a Call Note in Activity · Assigned units are notified</p>
+                <button type="submit" wire:loading.attr="disabled" wire:target="addCallNote"
                     class="rounded-md bg-sky-700 px-4 py-2.5 text-sm font-semibold hover:bg-sky-600 disabled:opacity-50">
                     Post Call Note
                 </button>
@@ -55,7 +55,7 @@
             </article>
         @empty
             <p class="rounded-lg border border-dashed border-slate-600 p-4 text-sm text-slate-300">
-                No operational call notes yet. Status changes and assignments remain available in Activity.
+                No call notes yet. Add important information here; status changes and assignments remain in Activity.
             </p>
         @endforelse
     </div>
