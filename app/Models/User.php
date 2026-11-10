@@ -78,17 +78,16 @@ class User extends Authenticatable
             return $this->display_name;
         }
 
-        return $this->getDiscordAttribute();
+        return $this->localCredential?->username
+            ?? $this->discord_name
+            ?? 'CommunityCAD user';
     }
 
     public function getDiscordAttribute()
     {
-        if ($this->discriminator == 0) {
-            return $this->discord_name;
-        }
-
+        // Discord is an optional linked provider, not the account identity.
         if (!$this->discord_name) {
-            return $this->localCredential?->username ?? $this->display_name ?? 'CommunityCAD user';
+            return null;
         }
 
         return $this->discord_name.($this->discriminator ? '#'.$this->discriminator : '');
