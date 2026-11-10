@@ -112,7 +112,7 @@ class ActiveUnit extends Model
             case 'BUSY':
                 return 'cad-status-busy';
             case 'TRANS':
-                return 'text-violet-400';
+                return 'cad-status-transport';
                 break;
 
             case 'ENRUTE':
