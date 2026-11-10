@@ -27,14 +27,20 @@ class CadAudioPublisher
     public static function callUpdated(Call $call): void
     {
         $changedFields = array_diff(array_keys($call->getChanges()), ['updated_at']);
-        if ($changedFields
-            && $call->status !== 'PANIC'
-            && $call->getOriginal('status') !== 'PANIC') {
-            // The panic event is separately prioritized: don't also play a
-            // call-update sound for the same emergency transition.
-            // Only currently attached units hear a call update.
-            self::notifyAttachedUnits($call);
+        if (! $changedFields || $call->status === 'PANIC'
+            || $call->getOriginal('status') === 'PANIC') {
+            return;
         }
+
+        // Closure is a distinct audio event, delivered before the call's
+        // units are detached. Never play the normal status-update tone too.
+        if ($call->wasChanged('status')
+            && ($call->status === 'CLO' || str_starts_with($call->status, 'CLO-'))) {
+            self::notifyAttachedUnits($call, 'dispatch_closed');
+            return;
+        }
+
+        self::notifyAttachedUnits($call);
     }
 
     /**
@@ -42,9 +48,12 @@ class CadAudioPublisher
      * note. Activity uses a distinct configured sound from the incident's
      * own status/field update notifications.
      */
-    public static function noteAdded(Call $call): void
+    public static function noteAdded(Call $call, string $category = 'NOTE'): void
     {
-        self::notifyAttachedUnits($call);
+        // Dispatch-authored notes have a dedicated sound; ordinary Call Notes,
+        // situation reports and witness notes use Call Updated.
+        self::notifyAttachedUnits($call,
+            strtoupper($category) === 'DISPATCH' ? 'dispatch_note' : 'call_activity_updated');
     }
 
     /**
@@ -64,11 +73,11 @@ class CadAudioPublisher
         }
     }
 
-    private static function notifyAttachedUnits(Call $call): void
+    private static function notifyAttachedUnits(Call $call, string $event = 'call_updated'): void
     {
         foreach ($call->attached_units()->whereNotNull('user_id')
             ->distinct()->pluck('user_id') as $userId) {
-            self::publish('call_activity_updated', (int) $userId, $call->id);
+            self::publish($event, (int) $userId, $call->id);
         }
     }
 
