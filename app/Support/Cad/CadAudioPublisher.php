@@ -14,7 +14,13 @@ class CadAudioPublisher
 {
     public static function callCreated(Call $call): void
     {
-        self::publish('new_call', null, $call->id);
+        // New calls are dispatcher notifications, not a tone for every patrol
+        // unit that happens to have CAD open.
+        foreach (ActiveUnit::query()->where('department_type', 2)
+            ->where('status', 'not like', 'OFFDTY%')
+            ->whereNotNull('user_id')->distinct()->pluck('user_id') as $userId) {
+            self::publish('new_call', (int) $userId, $call->id);
+        }
     }
 
     public static function callUpdated(Call $call): void
@@ -24,7 +30,11 @@ class CadAudioPublisher
             && $call->getOriginal('status') !== 'PANIC') {
             // The panic event is separately prioritized: don't also play a
             // call-update sound for the same emergency transition.
-            self::publish('call_updated', null, $call->id);
+            // Only units actually attached to this call receive its update.
+            foreach ($call->attached_units()->whereNotNull('user_id')
+                ->distinct()->pluck('user_id') as $userId) {
+                self::publish('call_updated', (int) $userId, $call->id);
+            }
         }
     }
 
@@ -40,7 +50,7 @@ class CadAudioPublisher
         }
 
         if ($unit->wasChanged('status') && ! $unit->is_panic) {
-            self::publish('unit_status', null, null);
+            self::publish('unit_status', (int) $unit->user_id, null);
         }
 
         if ($unit->wasChanged('description')
