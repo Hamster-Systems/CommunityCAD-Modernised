@@ -58,7 +58,7 @@ class CallChat extends Component
         abort_if($call->status === 'CLO' || str_starts_with($call->status, 'CLO-'), 422, 'This incident has been closed.');
 
         CallActivityLogger::record($call, $this->entryType, $message);
-        CadAudioPublisher::noteAdded($call);
+        CadAudioPublisher::noteAdded($call, $this->entryType);
         $this->note = '';
         $this->resetPage();
         $this->emit('incidentUpdated');
