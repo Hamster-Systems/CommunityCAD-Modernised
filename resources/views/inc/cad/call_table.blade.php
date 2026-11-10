@@ -185,7 +185,9 @@
                         @endforeach
                     </div>
                 </td>
-                <td class="p-1 border border-slate-400">{{ $call->time }}m</td>
+                <td class="p-1 border border-slate-400 tabular-nums" title="Time since call created: {{ $call->created_at?->format('d M Y H:i:s') ?? 'Unknown' }}">
+                    {{ $call->time }}m
+                </td>
                 <td class="relative p-1 border border-slate-400" x-data="{ unitsOpen: false }">
                     <div class="flex justify-between">
                         <span>
