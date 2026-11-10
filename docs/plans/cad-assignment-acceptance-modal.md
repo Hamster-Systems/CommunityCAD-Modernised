@@ -153,3 +153,35 @@ PR #34 merged only a BUSY text-colour improvement and Docker documentation, not 
 - [ ] A is attached to B's call and changes status: B receives the separate Call Updated sound; A only hears its self-status sound.
 - [ ] Panic and call assignment still suppress overlapping status sounds.
 - [ ] Upload/preview/mute/volume settings for the self slot are independent of the existing dispatch unit-status slot.
+
+
+## CAD Audio categories and custom-first configuration (10 November)
+
+### Behaviour
+- **Custom audio** is the normal/default enabled mode. With no uploaded file, it plays the event's existing bundled MP3 automatically. Users can upload a replacement from the same form without first switching modes.
+- **Muted** is the only other mode. Muting retains the uploaded file; enabling Custom restores it. Uploading a file while muted automatically re-enables Custom.
+- Legacy saved `default` modes are read as `custom` without changing existing records. Existing custom recordings and per-event volume values are preserved. **Restore bundled sound** removes that event's custom recording and restores volume 100% and enabled Custom mode.
+- All sounds are private allowlisted routes with existing server-side file type validation. Event names and uploaded file paths remain server-owned.
+
+### Voice notifications
+- `new_call` — New dispatch
+- `call_updated` — Dispatch/call details updated
+- `dispatch_closed` — Dispatch closed, triggered by closing an assigned incident before detachment (not by ordinary status changes)
+- `dispatch_note` — Dispatch note submitted through Activity with category DISPATCH
+- `call_activity_updated` — Call Updated (Call Notes, other unit attach/detach and response activity)
+- `call_assigned` — Unit assigned to call
+- `unit_status` — Dispatcher changes another unit's status
+- `unit_status_self` — Unit updates their own status
+- `panic` — Global unit panic
+
+New voice event categories use existing bundled recordings as **temporary fallback audio** until an administrator uploads custom clips. Signal chirps, timer alerts, fire station tones and other department alert patterns belong in a later separate **Department & alert tones** table; no fire tones are enabled by this change.
+
+### Test matrix
+- [ ] Existing installations with `mode=default` load as Custom, with their bundled audio still audible.
+- [ ] Upload an MP3 directly from the Custom-first form and confirm preview and CAD feed both use it.
+- [ ] Mute a sound, then unmute: uploaded file still plays. Uploading another MP3 while muted activates Custom.
+- [ ] Restore bundled sound removes only that event's uploaded file and never alters another event's volume/settings.
+- [ ] Dispatch NOTE in Activity emits `dispatch_note` to attached units; regular Call Notes emit `call_activity_updated`.
+- [ ] Call closure emits exactly one `dispatch_closed` event to users attached at closure time.
+- [ ] Ordinary call status/priority edits still emit `call_updated`, unit statuses and panic remain properly directed.
+- [ ] Frontend displays the distinct notification cards plus the nonfunctional future tones placeholder, without extra tone settings.
