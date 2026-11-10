@@ -34,6 +34,14 @@
         .cad-status-busy > td span {
             color: #ffb347 !important;
         }
+        /* Transporting has its own violet unit colour; unlike generic
+           utility classes this also covers links/spans within roster cells. */
+        .cad-status-transport,
+        .cad-status-transport > td,
+        .cad-status-transport > td a,
+        .cad-status-transport > td span {
+            color: #c4a2ff !important;
+        }
         /* Panic highlighting is a CELL BACKGROUND animation, never opacity
            on a cell or parent. Opacity would dim popup menus, buttons,
            tooltips and other content nested inside the affected cell. */
