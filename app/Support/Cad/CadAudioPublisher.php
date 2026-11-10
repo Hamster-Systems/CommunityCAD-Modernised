@@ -32,11 +32,26 @@ class CadAudioPublisher
             && $call->getOriginal('status') !== 'PANIC') {
             // The panic event is separately prioritized: don't also play a
             // call-update sound for the same emergency transition.
-            // Only units actually attached to this call receive its update.
-            foreach ($call->attached_units()->whereNotNull('user_id')
-                ->distinct()->pluck('user_id') as $userId) {
-                self::publish('call_updated', (int) $userId, $call->id);
-            }
+            // Only currently attached units hear a call update.
+            self::notifyAttachedUnits($call);
+        }
+    }
+
+    /**
+     * Notify only the currently attached units about a newly added incident
+     * note. Changes recorded purely for audit/status by the call logger must
+     * not create additional sounds.
+     */
+    public static function noteAdded(Call $call): void
+    {
+        self::notifyAttachedUnits($call);
+    }
+
+    private static function notifyAttachedUnits(Call $call): void
+    {
+        foreach ($call->attached_units()->whereNotNull('user_id')
+            ->distinct()->pluck('user_id') as $userId) {
+            self::publish('call_updated', (int) $userId, $call->id);
         }
     }
 
@@ -51,13 +66,17 @@ class CadAudioPublisher
             return;
         }
 
-        if ($unit->wasChanged('status') && ! $unit->is_panic) {
-            self::publish('unit_status', (int) $unit->user_id, null);
+        // Attaching an Available unit often changes BOTH status (AVL->BUSY)
+        // and description. Play the assignment sound once, not two tones.
+        $assigned = $unit->wasChanged('description')
+            && preg_match('/^Added to call:\\s*(\\d+)$/', trim((string) $unit->description), $matches);
+        if ($assigned) {
+            self::publish('call_assigned', (int) $unit->user_id, (int) $matches[1]);
+            return;
         }
 
-        if ($unit->wasChanged('description')
-            && preg_match('/^Added to call:\\s*(\\d+)$/', trim((string) $unit->description), $matches)) {
-            self::publish('call_assigned', (int) $unit->user_id, (int) $matches[1]);
+        if ($unit->wasChanged('status') && ! $unit->is_panic) {
+            self::publish('unit_status', (int) $unit->user_id, null);
         }
     }
 
