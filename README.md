@@ -33,7 +33,7 @@ CommunityCAD-Modernised/
 └── README.md
 ```
 
-> **Current transition status:** This repository does **not yet ship a canonical `compose.yml` or Dockerfile**. The existing development server runs Docker Compose from `~/Documents/CommunityCAD-Dev`. The instructions below describe how to consolidate that **existing, working** deployment safely. Until its Compose configuration and mounts have been inspected and migrated, continue to run Docker commands from `CommunityCAD-Dev`. Merely updating the README does **not** change the running deployment. Do not remove that directory until all checks pass.
+> **Current transition status:** This repository now includes the **working PHP 8.2 Apache `Dockerfile`**, but does **not yet ship the existing server's `compose.yaml`**; it must be migrated from the current deployment. The existing development server runs Docker Compose from `~/Documents/CommunityCAD-Dev`. The instructions below describe how to consolidate that **existing, working** deployment safely. Until its Compose configuration and mounts have been inspected and migrated, continue to run Docker commands from `CommunityCAD-Dev`. Merely updating the README does **not** change the running deployment. Do not remove that directory until all checks pass.
 
 ### One-time migration from the previous two-folder setup
 
@@ -55,17 +55,22 @@ docker compose config --no-interpolate
 
 **CAUTION:** Compose configuration may contain secrets. Never post the full output or a populated `.env` publicly; redact passwords/tokens before sharing. Record the current Compose project name, build context, Dockerfile path, bind mount sources, named volumes, network names, `env_file` paths and container/service names. Review any `docker compose -f ...` flags already used in your deployment.
 
-**2. Copy, don't move, the working Docker deployment configuration.** Identify the actual Compose filename(s) and Dockerfile(s) in `CommunityCAD-Dev`, then copy those specific files into `CommunityCAD-Modernised` (place Dockerfiles/helper scripts under `docker/` if appropriate). For example, **only when the source file exists**:
+**2. Copy, don't move, the actual working Compose file.** On this development server the current deployment uses `CommunityCAD-Dev/compose.yaml` and a Dockerfile with PHP 8.2/Apache. That Dockerfile is now tracked at the repository root. Copy the existing Compose YAML, **not the whole deployment folder**:
 
 ```bash
 cd ~/Documents/CommunityCAD-Modernised
-# Example: adapt the source filename to the actual Compose file.
-cp -a ~/Documents/CommunityCAD-Dev/compose.yml ./compose.yml
+cp -n ~/Documents/CommunityCAD-Dev/compose.yaml ./compose.yaml
 ```
+
+**Do not commit `compose.yaml` yet**: the server-specific file may contain database credentials or private settings. Before adding a portable version to Git, review and remove all secrets and server-specific identifiers. You can use a sanitized example for sharing.
 
 Do not blindly copy the whole development directory over the Git checkout. Preserve local `.env` settings and all persistent data separately and securely; only copy a secret file if required and with restricted permissions. Never commit a populated `.env`, credentials or customer data.
 
-**3. Adjust paths in the copied Compose file.** Make the Docker build context, Dockerfile location and application bind mounts point to the **single project directory**. Confirm that persistent DB volumes, uploads and storage still reference the **original existing data** (or a carefully copied/migrated equivalent). Beware that relative host bind paths resolve from the Compose project directory; moving the YAML can silently change their meaning.
+**3. Adjust paths in the copied Compose file.** The existing deployment resolves its application build context to `/home/charleq/Documents/CommunityCAD-Modernised` and points at Dockerfile `../CommunityCAD-Dev/Dockerfile`. Once the Compose file is located in the Git checkout, change the app's build configuration to use `context: .` and `dockerfile: Dockerfile`, rather than a path referencing `CommunityCAD-Dev`. Keep the existing service names, MariaDB image, app port, and the project name `communitycad-modernised-dev`.
+
+On the current server the existing app configuration mounts `CommunityCAD-Dev/.env` into `/var/www/html/.env` **read-only**. Either retain that absolute mount temporarily or copy the secret file securely to `CommunityCAD-Modernised/.env`, then update the mount to `./.env:/var/www/html/.env:ro`. Check that only the file's path changes: its **contents, APP_KEY and database settings must stay unchanged**. Keep `.env` out of Git.
+
+The known persistent volumes are `communitycad-modernised-dev_mariadb-data`, `communitycad-modernised-dev_app-storage` and `communitycad-modernised-dev_app-cache`. Do not remove, rename or recreate them. Make sure new `docker compose config --format json` still resolves to the same named volumes. Confirm that persistent DB volumes, uploads and storage still reference the **original existing data** (or a carefully copied/migrated equivalent). Beware that relative host bind paths resolve from the Compose project directory; moving the YAML can silently change their meaning.
 
 **4. Keep the existing Compose project identity.** An implicit project name can change when the Compose working directory changes, causing Docker to create a **second** stack, network and named volumes. Before starting anything, retain the current project name through `name:`, `COMPOSE_PROJECT_NAME`, or the existing `-p` invocation, as appropriate. Check for container-name and port conflicts.
 
@@ -155,5 +160,5 @@ The historic `document.querySelector(...) is null` Markdown editor error can be 
 
 - Source files and Compose configuration can live together, but **runtime data and secrets must survive code updates**. Keep database storage in durable Docker volumes or separate managed storage, and configure writable Laravel storage/uploads as persistent.
 - Exclude `.env`, local Compose overrides, credentials, backups, runtime data and generated secrets from version control. Do not embed host-specific absolute paths in distributed Compose defaults.
-- A truly one-command production installer still requires a reviewed, supported Compose/Dockerfile configuration and first-install process; that work is **not yet completed** by this documentation update.
+- A truly one-command production installer still requires a reviewed, supported Compose configuration and first-install process; that work is **not yet completed** by this documentation update.
 - Test upgrade, backup/restore, permission and rollback procedures before declaring production support.
