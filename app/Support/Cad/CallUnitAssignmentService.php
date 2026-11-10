@@ -44,6 +44,7 @@ class CallUnitAssignmentService
 
             CallActivityLogger::record($call, 'UNIT',
                 'Unit ' . $unit->unit_callsign . ' attached to the call.');
+            CadAudioPublisher::unitActivity($call, (int) $unit->user_id);
         });
     }
 
@@ -72,6 +73,9 @@ class CallUnitAssignmentService
                 . ($unit->is_panic ? ' Unit panic remains active.' : ''));
 
             CallAssignmentStatusService::reopenIfUnassigned($call);
+            // The unit has already been detached. Notify remaining responders,
+            // not the departing unit which received its own status sound.
+            CadAudioPublisher::unitActivity($call, (int) $unit->user_id);
         });
     }
 }
