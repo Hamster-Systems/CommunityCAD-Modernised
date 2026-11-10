@@ -2,7 +2,7 @@
 
 @section('content')
     <section class="min-h-screen flex flex-col justify-center items-center" x-data="{ modalOpen: true }">
-        <div class="fixed top-0 left-0 flex items-center justify-center w-full h-full min-h-screen px-4 py-5 bg-black bg-opacity-90"
+        <div class="fixed inset-0 z-50 flex items-center justify-center w-full min-h-screen px-4 py-5 bg-black bg-opacity-90"
             x-show="modalOpen" x-transition>
             <div class="w-full max-w-[570px] rounded-[20px] bg-gray-400 py-10 px-6 md:py-[40px] md:px-[50px]">
                 <h3 class="pb-2 text-xl font-bold text-center sm:text-2xl">
@@ -23,9 +23,9 @@
                 </p>
                 <div class="flex flex-wrap -mx-3 text-center">
                     <div class="w-1/2 px-3">
-                        <a @click="modalOpen = false" class="secondary-button-md" href="#">
+                        <button type="button" @click="modalOpen = false" class="secondary-button-md">
                             Accept and Continue
-                        </a>
+                        </button>
                     </div>
                     <div class="w-1/2 px-3">
                         <a class="delete-button-md" href="{{ route('portal.dashboard') }}">
@@ -57,7 +57,11 @@
             </div>
         @endif
 
-        <div class="w-full max-w-3xl px-4 py-10 space-y-5">
+        {{-- Keep ALL identifier controls, including native selects and <details>,
+             hidden until the usage notice has been accepted. Inline display:none
+             avoids a flash of controls before Alpine initialises. --}}
+        <div class="w-full max-w-3xl px-4 py-10 space-y-5"
+            x-show="!modalOpen" style="display: none;">
             @if ($errors->any())
                 <div role="alert" class="mb-4 rounded-lg border border-red-500 bg-red-950/30 p-4 text-red-200">
                     <p class="font-semibold mb-2">Please review the identifier details:</p>
