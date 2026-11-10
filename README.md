@@ -11,82 +11,142 @@ Welcome to Community CAD!
 - **Suggestions/Bugs:** [GitHub - Issues](https://github.com/CommunityCAD/CommunityCAD/issues/new/choose)
 - **Discord Link:** [communitycad.app/discord](https://communitycad.app/discord)
 
-## Local development (Docker Compose)
+## Unified Docker development layout
 
-The development setup discussed here uses two directories on the same Linux machine:
+The repository now contains the Laravel application, `Dockerfile` and `compose.yaml` together. **This is a development configuration**, not a supported production installer. Its Compose project name is intentionally set to `communitycad-modernised-dev` to preserve the current development stack's Docker volumes.
 
-- `~/Documents/CommunityCAD-Modernised` — Git checkout containing Laravel, Blade templates, and frontend source.
-- `~/Documents/CommunityCAD-Dev` — Docker Compose development environment.
+```text
+CommunityCAD-Modernised/
+├── app/                 # Laravel source
+├── config/
+├── database/
+├── public/
+├── resources/
+├── routes/
+├── storage/
+├── Dockerfile           # PHP 8.2 / Apache image
+├── compose.yaml         # App + MariaDB, bound to localhost:8096
+├── .dockerignore
+├── .env                 # Private local environment — NOT committed
+├── artisan
+└── README.md
+```
 
-Your own paths may differ. Make sure the Compose build context or bind mounts actually point to the checkout whose files you update. **Do not run `docker compose` from the Git checkout unless it contains your Compose file.**
+The database is stored in persistent Docker volume `communitycad-modernised-dev_mariadb-data`; Laravel storage and framework cache use `communitycad-modernised-dev_app-storage` and `communitycad-modernised-dev_app-cache`. Do not remove these volumes or change the Compose project name during migration.
 
-### Update the development branch
+### Migrating the existing two-folder development deployment
 
-After testing and merging a feature into `develop`:
+The original deployment uses `~/Documents/CommunityCAD-Dev/compose.yaml`, its private `.env`, and a Dockerfile located there. The new `compose.yaml` replaces the old build paths with `context: .` and `dockerfile: Dockerfile`, while retaining the same project name, services, container names, volumes, internal network and `127.0.0.1:8096` port.
+
+**Before switching over:** back up the development database, application storage/uploads and the old `.env`. Verify backups before making changes. **Do not** use `docker compose down -v`, `migrate:fresh`, or delete `CommunityCAD-Dev`.
+
+If you previously copied `compose.yaml` into the Git checkout before this file was tracked, preserve that untracked file *outside the checkout* to avoid a Git pull conflict:
 
 ```bash
 cd ~/Documents/CommunityCAD-Modernised
+mv compose.yaml ~/Documents/CommunityCAD-Dev/compose-unified-local-backup.yaml
+git pull --ff-only origin docs/unified-communitycad-compose-layout
+```
+
+The `mv` step is only needed when the root `compose.yaml` is **untracked**; check `git status --short compose.yaml` first. Never overwrite locally customised settings without comparing them.
+
+Copy the original environment file securely and keep its secrets unchanged:
+
+```bash
+cd ~/Documents/CommunityCAD-Modernised
+if [ ! -e .env ]; then
+    cp -p ~/Documents/CommunityCAD-Dev/.env .env
+    chmod 600 .env
+else
+    echo "Existing .env found — compare safely; do not overwrite"
+fi
+```
+
+The new Compose file expects `./.env` for both variable substitution and the read-only application mount. Retain the same `APP_KEY`, `DB_PASSWORD` and `DB_ROOT_PASSWORD` from the old environment. A different `APP_KEY` prevents decryption of existing encrypted SMTP passwords.
+
+Validate before starting anything:
+
+```bash
+cd ~/Documents/CommunityCAD-Modernised
+docker compose config --quiet
+docker compose config --no-interpolate --format json | python3 -c '
+import json,sys
+cfg=json.load(sys.stdin)
+print("Project:", cfg["name"])
+for service, data in cfg["services"].items():
+    print("Service:", service)
+    print("Build:", data.get("build"))
+    print("Volumes:", [(v.get("source"),v.get("target")) for v in data.get("volumes",[])])
+print("Volume names:", {k:v.get("name") for k,v in cfg.get("volumes",{}).items()})
+'
+```
+
+Expected project: `communitycad-modernised-dev`. Expected volume names: `communitycad-modernised-dev_mariadb-data`, `communitycad-modernised-dev_app-storage`, `communitycad-modernised-dev_app-cache`. The app's bind mount should now read `CommunityCAD-Modernised/.env`; build context and Dockerfile should be inside `CommunityCAD-Modernised`. **Do not share a full resolved Compose config or `.env` publicly**, as it may expose secrets.
+
+Only after verifying the project name, named volumes, environment and container mappings, switch over during a suitable maintenance window:
+
+```bash
+cd ~/Documents/CommunityCAD-Modernised
+docker compose up -d --build --no-deps app
+docker compose ps
+docker compose exec -T -u www-data app php artisan optimize:clear
+docker compose exec -T -u www-data app php artisan view:cache
+```
+
+Check application login, stored data, uploaded files and SMTP settings. Run `php artisan migrate --force` only when an intended schema update is required and the database backup is confirmed. Keep the original `CommunityCAD-Dev` directory and backups until the unified deployment works fully.
+
+### Normal development workflow (after migration)
+
+```bash
+cd ~/Documents/CommunityCAD-Modernised
+git status -sb
 git fetch origin
 git switch develop
 git pull --ff-only origin develop
+docker compose up -d --build --no-deps app
+docker compose exec -T -u www-data app php artisan optimize:clear
+docker compose exec -T -u www-data app php artisan view:cache
 ```
 
-To test an unmerged feature instead, switch to that feature branch and run `git pull --ff-only`. Check `git status -sb` first and preserve any local edits before switching branches.
-
-### Compile the frontend (Node.js and npm available)
-
-Laravel Mix generates both `public/js/app.js` and `public/css/app.css`. A Docker Compose app rebuild does **not necessarily** compile them.
+For frontend changes, rebuild Laravel Mix assets. If npm is installed locally, run `npm ci && npm run dev`. Otherwise use disposable Node:
 
 ```bash
-cd ~/Documents/CommunityCAD-Modernised
-npm ci
-npm run dev
-```
-
-Use `npm run prod` for optimised assets when appropriate.
-
-### Compile the frontend WITHOUT installing npm on the host
-
-If the Linux VM has Docker but no Node.js/npm, run npm inside a disposable Node container:
-
-```bash
-cd ~/Documents/CommunityCAD-Modernised
-
-docker run --rm \
-  --user "$(id -u):$(id -g)" \
-  -e HOME=/tmp \
-  -e npm_config_cache=/tmp/.npm \
-  -v "$PWD:/app" \
-  -w /app \
-  node:20-bookworm \
+docker run --rm --user "$(id -u):$(id -g)" \
+  -e HOME=/tmp -e npm_config_cache=/tmp/.npm \
+  -v "$PWD:/app" -w /app node:20-bookworm \
   sh -c 'npm ci && npm run dev'
 ```
 
-This compiles assets in the Git checkout, not automatically inside a separately mounted Compose project. Ensure the app container uses these outputs.
-
-### Rebuild and clear Laravel caches
+Compiled frontend files `public/css/app.css` and `public/js/app.js` can be modified by the build: preserve their changes before switching branches. Confirm the running image contains the right assets by comparing checksums:
 
 ```bash
-cd ~/Documents/CommunityCAD-Dev
-
-docker compose up -d --build --no-deps app
-docker compose exec -T app php artisan migrate --force
-docker compose exec -T app php artisan optimize:clear
-docker compose exec -T app php artisan view:cache
-```
-
-**Database safety:** Back up the database before applying new migrations. Avoid `migrate:fresh`, destructive resets, and testing migrations against a live CAD.
-
-### Verify that the running container has the right assets
-
-```bash
-cd ~/Documents/CommunityCAD-Modernised
 sha256sum public/js/app.js public/css/app.css
-
-cd ~/Documents/CommunityCAD-Dev
 docker compose exec -T app sha256sum public/js/app.js public/css/app.css
 ```
 
-If hashes differ, inspect the Compose build context, image contents, and bind mounts before investigating styling changes. In Firefox, hard-refresh the CAD with **Ctrl+Shift+R** after rebuilding assets.
+### Fix for recurring HTTP 500 after Docker rebuilds
 
-The `document.querySelector(...) is null` error from the shared Markdown editor is commonly caused by a stale compiled `public/js/app.js`: the source `resources/js/app.js` already guards editor initialisation on pages without the editor.
+The unified image includes `docker/entrypoint.sh`. Every time the **app container starts**, the entrypoint repairs ownership/write permissions for Laravel's mounted compiled Blade view cache, sessions, framework cache, logs and `bootstrap/cache`. This prevents previously root-owned compiled Blade templates from breaking pages with `file_put_contents(...storage/framework/views/...): Permission denied` after an app rebuild. It does **not** clear the database or remove uploaded files.
+
+Run Laravel cache maintenance as Apache's PHP user (`www-data`) so newly compiled files remain writable:
+
+```bash
+cd ~/Documents/CommunityCAD-Modernised
+docker compose exec -T -u www-data app php artisan view:clear
+docker compose exec -T -u www-data app php artisan view:cache
+```
+
+If you ran Artisan as root *after* container startup and a permission error returns, restart/rebuild the app container to re-run the startup repair, or fix ownership of the specific cache directory. Keep the existing persistent volumes; never delete them to repair a view-cache error.
+
+To verify the **running** deployment no longer depends on the old folder, inspect the project name and the app container's bind mount, without exposing environment values:
+
+```bash
+docker compose ps
+docker inspect communitycad-modernised-app --format '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}'
+```
+
+The `.env` mount should point under `CommunityCAD-Modernised`. Both named volumes should retain the `communitycad-modernised-dev_...` names. A running container does not directly record the directory of its original Compose file; use `docker compose ls` to check its configuration path.
+
+### Production considerations
+
+This Compose deployment is intentionally a **development** installation. A production release still needs production-oriented secret handling, deployment settings, image build/update/rollback processes, writable storage strategy, backups and security testing. Keep `.env` out of Git, store durable data outside image layers, and do not expose MariaDB publicly.

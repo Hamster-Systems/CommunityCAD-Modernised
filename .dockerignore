@@ -1,0 +1,21 @@
+# Never bake local secrets or runtime data into the application image.
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+npm-debug.log
+yarn-error.log
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/debugbar/*
+public/storage
+*.sql
+*.sql.gz
+*.bak
+*.backup
+backups
