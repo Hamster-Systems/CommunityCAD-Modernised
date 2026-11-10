@@ -47,6 +47,23 @@ class CadAudioPublisher
         self::notifyAttachedUnits($call);
     }
 
+    /**
+     * Unit activity (attachment, detachment, responding/on scene) should
+     * sound on OTHER attached units' CAD sessions. The acting unit receives
+     * its own call-assigned or unit-status sound from the ActiveUnit observer,
+     * so it must not hear an extra call-update tone for the same action.
+     */
+    public static function unitActivity(Call $call, ?int $actingUserId): void
+    {
+        foreach ($call->attached_units()->whereNotNull('user_id')
+            ->distinct()->pluck('user_id') as $userId) {
+            if ($actingUserId !== null && (int) $userId === $actingUserId) {
+                continue;
+            }
+            self::publish('call_updated', (int) $userId, $call->id);
+        }
+    }
+
     private static function notifyAttachedUnits(Call $call): void
     {
         foreach ($call->attached_units()->whereNotNull('user_id')
