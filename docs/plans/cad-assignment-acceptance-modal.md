@@ -36,3 +36,29 @@ This branch builds on the already-merged assignment prompt (PR #28), without res
 
 ## Location / Postal recovery
 PR #34 merged only a BUSY text-colour improvement and Docker documentation, not the earlier Location/Postal work. Its description says the earlier changes were rolled back to a `backup/pr34-before-visual-rollback-20261109` ref. That ref is not currently reachable as a GitHub branch from the connector, so it must be located through local Git history/reflog, a commit SHA or other preserved backup before any selective restoration. Do not restore the old entire layout/CSS change blindly.
+
+
+## 10 November — CAD Update Modernization corrections
+
+**Prompt behaviour:**
+- Keep the original compact, inline En Route prompt for units that are already on duty and assigned to a call.
+- The blocking callout **modal is shown only if that signed-in unit is unavailable/off duty** (`OFFDTY`), offering explicit on-duty/En Route acceptance or decline. Merely dispatching them never changes their duty state.
+
+**Sound notification routing:**
+- Panic is the only intentionally global sound event.
+- Unit status and call assignment tones are targeted to the affected unit's signed-in account.
+- Incident status/field updates are sent to units attached to the same incident, not the entire CAD. Timestamp-only changes do not ring.
+- New-call tones go to on-duty dispatchers rather than every patrol unit.
+- The audio-feed endpoint allows only targeted events or global panic, so older untargeted audio records cannot be played by unrelated units.
+- Verify 2+ browser profiles representing unrelated units and 2 units attached to the same call.
+
+**Per-department subdivisions:**
+- Admin → Manage Departments → Edit (and Create) now configures available MDT subdivisions separately per department, one name per line.
+- Additive migration stores each department's list as JSON and initially copies legacy options to existing departments to preserve current identifiers.
+- MDT identity forms display only the chosen department's entries and validate membership/option ownership on submission. Changing the selected department clears incompatible selections.
+- These settings are no longer read from global `cad.mdt_subdivisions` at runtime (the old setting is used only during data migration).
+- Verify existing subdivision data and each department's administrative configuration after migration.
+
+**Dispatcher workspace:** Future dedicated dispatcher console is tracked in GitHub issue #45. The current implementation does not redesign dispatch.
+
+**Draft PR:** Changes committed, but not yet tested against the running Docker development installation. Migrate with a database backup first.
