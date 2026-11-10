@@ -6,7 +6,6 @@
                 {{ $compact ? 'Latest operational information' : 'Dispatch information, situation updates and witness notes for this incident' }}
             </p>
         </div>
-        <span class="rounded border border-sky-800 bg-sky-950 px-2 py-1 text-xs font-semibold text-sky-200">LIVE</span>
     </header>
 
     @if ($canPost)
@@ -51,7 +50,7 @@
                         {{ $note->created_at?->format('d M Y · H:i') }}
                     </time>
                 </div>
-                <p class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-white">{{ $compact ? \\Illuminate\\Support\\Str::limit($body, 150) : $body }}</p>
+                <p class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-white">{{ $compact ? \Illuminate\Support\Str::limit($body, 150) : $body }}</p>
                 <p class="mt-2 text-xs text-slate-300">From {{ $note->from ?: 'CommunityCAD System' }}</p>
             </article>
         @empty
