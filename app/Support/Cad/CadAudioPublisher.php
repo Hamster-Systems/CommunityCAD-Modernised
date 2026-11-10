@@ -93,7 +93,13 @@ class CadAudioPublisher
         }
 
         if ($unit->wasChanged('status') && ! $unit->is_panic) {
-            self::publish('unit_status', (int) $unit->user_id, null);
+            // Distinguish a unit choosing its OWN status from a dispatcher
+            // changing someone else's. Keep the existing unit_status event
+            // and its custom audio configuration for dispatcher updates.
+            $selfInitiated = auth()->check()
+                && (int) auth()->id() === (int) $unit->user_id;
+            self::publish($selfInitiated ? 'unit_status_self' : 'unit_status',
+                (int) $unit->user_id, null);
         }
     }
 
