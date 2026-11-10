@@ -104,3 +104,19 @@ PR #34 merged only a BUSY text-colour improvement and Docker documentation, not 
 - The responding unit continues hearing its own `call_assigned` / `unit_status` notification instead of a duplicate `call_updated` sound.
 
 **QA:** With A+B on call 1 and C on call 2: attach A to call 1 (B hears call update, A hears assignment); B sets ONSCN (A hears call update, B hears status); a direct call edit sounds for A+B, not C; detaching B sounds for A, not C; activating panic remains global. Ensure one sound per action per participant.
+
+
+## Transporting status colour + call age (10 November)
+
+- Transporting uses a distinct violet selected-state control in the shared MDT toolbar. Unit roster rows use a scoped `cad-status-transport` class with readable violet text instead of relying on the previously compiled utility class.
+- The `Call::time` accessor now measures elapsed **whole minutes from `calls.created_at`**, not from `updated_at`. Calls remain aged when their notes, assignments, status or priority change.
+- `Call::age_seconds` provides non-negative integer elapsed seconds so future age-based priority rules can share the same source of truth; **no automatic priority escalation is enabled in this PR**.
+- The call TIME table cell retains the existing minute display and provides a tooltip with the incident creation timestamp. Unit roster TIME is untouched and continues to reflect last unit update.
+
+### Regression tests
+- [ ] Choose Transporting on an assigned unit: button is violet and unit roster text remains readable, including inside dispatch.
+- [ ] Change unit to another state: Transporting active colour clears.
+- [ ] Create a call, wait >1 minute, add a note/change status/priority/attach a unit: call TIME continues increasing instead of returning to 0.
+- [ ] Unit status TIME continues to reflect last unit status update as before.
+- [ ] Historical calls retain their created timestamp and no database migration is necessary.
+- [ ] Verify reduced-motion and panic styles do not obscure the Transporting state.
