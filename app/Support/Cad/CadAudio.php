@@ -12,7 +12,8 @@ class CadAudio
         'new_call' => ['title' => 'New call', 'description' => 'A new incident is created.', 'default' => 'newcall.mp3'],
         'call_updated' => ['title' => 'Call status updated', 'description' => 'An incident changes status or core call details.', 'default' => 'statusupdated.mp3'],
         'call_activity_updated' => ['title' => 'Call Updated', 'description' => 'An attached call receives a new note or a responder joins, leaves or changes response status. Separate from call status updates.', 'default' => 'statusupdated.mp3'],
-        'unit_status' => ['title' => 'Unit status updated', 'description' => 'A unit changes its response status.', 'default' => 'statusupdated.mp3'],
+        'unit_status' => ['title' => 'Unit status updated by dispatch', 'description' => 'A dispatcher or authorised user changes another unit\'s status.', 'default' => 'statusupdated.mp3'],
+        'unit_status_self' => ['title' => 'Unit status updated (self)', 'description' => 'The signed-in unit changes its own status. Upload a recording saying “Your status has been updated.”', 'default' => 'statusupdated.mp3'],
         'panic' => ['title' => 'Panic alert', 'description' => 'A unit activates its emergency panic button.', 'default' => 'panic_button.mp3'],
     ];
 
