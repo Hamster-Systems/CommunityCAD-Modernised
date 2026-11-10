@@ -18,8 +18,9 @@ class CallUnitAssignmentService
             $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);
             $call = Call::query()->lockForUpdate()->findOrFail($call->id);
 
-            abort_if(str_starts_with($unit->status, 'OFFDTY'), 409,
-                'Select Available before assigning the unit.');
+            // An off-duty unit can receive an assignment invitation while
+            // signed into CAD. They stay off duty until they explicitly
+            // accept it; merely attaching a call never changes duty state.
             abort_if($unit->is_panic, 409, 'Clear panic before attaching to a new call.');
             abort_if(in_array($call->status, ['CLR', 'CLO'], true)
                 || str_starts_with($call->status, 'CLO-'), 409, 'The call is no longer open.');
@@ -29,9 +30,9 @@ class CallUnitAssignmentService
             }
 
             $call->attached_units()->syncWithoutDetaching([$unit->id]);
-            // Attaching an available unit makes it Busy until it chooses
-            // Mark En Route or Keep Current Status from the FMS prompt.
-            // Preserve other response stages when already responding.
+            // Available units become Busy while awaiting a response.
+            // Off-duty units remain OFFDTY until they accept the callout.
+            // Preserve existing response stages when already responding.
             $attributes = ['description' => 'Added to call: ' . $call->id];
             if ($unit->status === 'AVL') {
                 $attributes['status'] = 'BUSY';
