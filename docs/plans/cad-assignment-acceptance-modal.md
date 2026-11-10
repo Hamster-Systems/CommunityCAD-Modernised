@@ -208,3 +208,21 @@ This supersedes the earlier separate Dispatch Note audio proposal:
 - The Department & alert tones placeholder now has a dedicated visual section separator: large vertical gap, border divider and a separate panel background. These tones are still future functionality only.
 
 QA: with A+B attached, A posts DISPATCH or NOTE category; B hears the existing Call Updated recording, A hears nothing; unrelated C hears nothing. Check Audio Admin contains one Call Updated and no Dispatch Note card; previously uploaded Call Updated MP3 remains configured. Verify the separator remains visible at desktop and narrow widths. No migrations required.
+
+
+## Compact Sonoran-inspired audio recording field (10 November)
+
+- Replaced the large native **Replace recording** file picker with a compact, read-only **current recording link** (authenticated preview endpoint) alongside an **Upload** control.
+- The link opens the currently configured sound without exposing its private storage pathname or leaking public storage URLs. Uploaded and bundled recordings both resolve through the same allowlisted preview route.
+- The upload control uses the existing secure MP3/OGG/WAV file input and original save endpoint. After choosing a file, its name appears, with a reminder to press **Save audio**.
+- Admin preview is now permitted even while the sound is muted, so the visible link always works for authorised administrators; the normal CAD audio stream remains 404 while muted.
+- File validation, 2 MB limit, private storage, per-event volume, mute, source badges, and restore-bundled behaviour remain unchanged.
+- No schema migration or frontend build.
+
+### QA
+- [ ] Link opens the existing bundled or uploaded MP3 in a separate tab using authenticated admin route.
+- [ ] Upload button invokes the file picker; selected name appears; Save audio persists replacement.
+- [ ] Upload while muted re-enables the notification as previously supported.
+- [ ] Muted admin preview link works, but muted regular CAD stream still fails as intended.
+- [ ] At 320px width the URL truncates inside its field without shifting the upload button or overflowing the card.
+- [ ] Keyboard focus can reach both the link and upload input.
