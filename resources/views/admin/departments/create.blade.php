@@ -96,6 +96,15 @@
 
             </div>
 
+            <div class="rounded-lg border border-slate-600 p-4">
+                <label class="block font-semibold text-white" for="subdivision_options">MDT subdivisions for this department</label>
+                <p class="mt-1 mb-2 text-sm text-slate-300">One subdivision per line. These options appear only when an MDT identity uses this department. Leave blank for no subdivisions (General).</p>
+                <textarea class="text-input w-full min-h-32" rows="5" maxlength="4000"
+                    id="subdivision_options" name="subdivision_options"
+                    placeholder="Patrol&#10;Traffic&#10;Investigations">{{ old('subdivision_options', '') }}</textarea>
+                <x-input-error :messages="$errors->get('subdivision_options')" class="mt-2" />
+            </div>
+
             <div class="mt-4">
                 <button class="inline-block w-1/3 mr-5 new-button-md">Create</button>
                 <a class="w-1/3 delete-button-md" href="{{ route('admin.department.index') }}">Cancel</a>
