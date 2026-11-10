@@ -42,5 +42,6 @@ RUN composer install \
 COPY docker/entrypoint.sh /usr/local/bin/communitycad-entrypoint
 RUN chmod 755 /usr/local/bin/communitycad-entrypoint
 ENTRYPOINT ["/usr/local/bin/communitycad-entrypoint"]
+CMD ["apache2-foreground"]
 
 EXPOSE 80
