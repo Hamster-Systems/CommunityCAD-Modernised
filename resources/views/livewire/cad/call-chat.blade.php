@@ -38,7 +38,7 @@
             </span>
         </div>
         <div class="mt-3 flex flex-wrap gap-2" aria-label="Filter incident events">
-            @foreach (['ALL' => 'All', 'CALL' => 'Calls', 'UNIT' => 'Units', 'PERSON' => 'People', 'VEHICLE' => 'Vehicles', 'REPORT' => 'Reports', 'NOTE' => 'Notes', 'SITUATION' => 'Situation', 'DISPATCH' => 'Dispatch', 'WITNESS' => 'Witness'] as $code => $label)
+            @foreach (['ALL' => 'All', 'CALL' => 'Calls', 'UNIT' => 'Units', 'PERSON' => 'People', 'VEHICLE' => 'Vehicles', 'REPORT' => 'Reports', 'NOTE' => 'Call Notes', 'SITUATION' => 'Situation', 'DISPATCH' => 'Dispatch', 'WITNESS' => 'Witness'] as $code => $label)
                 <button type="button" wire:click="setFilter('{{ $code }}')"
                     aria-pressed="{{ $filter === $code ? 'true' : 'false' }}"
                     class="rounded-md border px-3 py-2 text-xs font-semibold transition
@@ -114,7 +114,7 @@
                 <span aria-hidden="true" class="absolute -left-[21px] top-6 h-2.5 w-2.5 rounded-full border-2 border-sky-400 bg-[#182639] md:-left-[29px]"></span>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <span class="rounded-md border px-2.5 py-1 text-xs font-bold tracking-wide {{ $styles[$category] ?? $styles['NOTE'] }}">
-                        {{ $category === 'SITUATION' ? 'SITUATION UPDATE' : ($category === 'WITNESS' ? 'WITNESS STATEMENT' : ($category === 'DISPATCH' ? 'DISPATCH UPDATE' : $category)) }}
+                        {{ $category === 'SITUATION' ? 'SITUATION UPDATE' : ($category === 'WITNESS' ? 'WITNESS STATEMENT' : ($category === 'DISPATCH' ? 'DISPATCH UPDATE' : ($category === 'NOTE' ? 'CALL NOTE' : $category))) }}
                     </span>
                     <time class="text-xs text-slate-400" datetime="{{ $entry->created_at?->toIso8601String() }}"
                         title="{{ $entry->created_at?->format('d M Y H:i:s') }}">
