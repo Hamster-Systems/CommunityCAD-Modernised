@@ -1,63 +1,37 @@
 @extends('layouts.cad_simple')
 
 @section('content')
-    <section class="min-h-screen flex flex-col justify-center items-center" x-data="{ modalOpen: true }">
-        <div class="fixed top-0 left-0 flex items-center justify-center w-full h-full min-h-screen px-4 py-5 bg-black bg-opacity-90"
-            x-show="modalOpen" x-transition>
-            <div class="w-full max-w-[570px] rounded-[20px] bg-gray-400 py-10 px-6 md:py-[40px] md:px-[50px]">
-                <h3 class="pb-2 text-xl font-bold text-center sm:text-2xl">
-                    System Use Notification
-                </h3>
-                <p class="mb-5 leading-relaxed text-justify">
-                    Users of this system are advised they are accessing a restricted information system that is governed by
-                    applicable agency policies, local laws, state laws, federal laws, and other regulations. Usage may be
-                    monitored, recorded, and subject to audit.
-                </p>
-                <p class="mb-5 leading-relaxed text-justify">
-                    Unauthorized use of this system is prohibited. Unauthorized users may be subject to criminal and/or
-                    civil penalties. Continuing to use this system indicates the user's consent to the monitoring and
-                    recording of all actions within the system.
-                </p>
-                <p class="mb-5 leading-relaxed">
-                    Must be on desktop computer.
-                </p>
-                <div class="flex flex-wrap -mx-3 text-center">
-                    <div class="w-1/2 px-3">
-                        <a @click="modalOpen = false" class="secondary-button-md" href="#">
-                            Accept and Continue
-                        </a>
-                    </div>
-                    <div class="w-1/2 px-3">
-                        <a class="delete-button-md" href="{{ route('portal.dashboard') }}">
-                            Decline and Exit
-                        </a>
-                    </div>
+    <section class="min-h-screen flex flex-col justify-center items-center" x-data="{ modalOpen: true }">        @if (empty($available_departments))
+            {{-- Do not render the identifier form at all when access is denied.
+                 A native select can appear above modal backdrops in some browsers. --}}
+            <div class="fixed inset-0 z-50 flex min-h-screen items-center justify-center bg-black px-4 py-5">
+                <div class="w-full max-w-[570px] rounded-[20px] bg-gray-400 px-6 py-10 md:px-[50px]">
+                    <h3 class="pb-2 text-center text-xl font-bold sm:text-2xl">System Use Notification</h3>
+                    <p class="mb-5 leading-relaxed">You do not have access to this system. Contact your supervisor to gain access.</p>
+                    <a class="delete-button-md" href="{{ route('portal.dashboard') }}">Exit</a>
                 </div>
             </div>
-        </div>
-
-        @if (empty($available_departments))
-            <div class="fixed top-0 left-0 flex items-center justify-center w-full h-full min-h-screen px-4 py-5 bg-black bg-opacity-90"
-                x-transition>
-                <div class="w-full max-w-[570px] rounded-[20px] bg-gray-400 py-10 px-6 md:py-[40px] md:px-[50px]">
-                    <h3 class="pb-2 text-xl font-bold text-center sm:text-2xl">
-                        System Use Notification
-                    </h3>
+        @else
+            <div class="fixed inset-0 z-40 flex items-center justify-center bg-black/90 px-4 py-5"
+                x-show="modalOpen" x-transition>
+                <div class="w-full max-w-[570px] rounded-[20px] bg-gray-400 px-6 py-10 md:px-[50px]">
+                    <h3 class="pb-2 text-center text-xl font-bold sm:text-2xl">System Use Notification</h3>
                     <p class="mb-5 leading-relaxed text-justify">
-                        You do not have access to this system. Contact your supervisor to gain access.
+                        Users of this system are advised they are accessing a restricted information system governed by agency policies and applicable laws. Usage may be monitored and audited.
                     </p>
-                    <div class="flex flex-wrap -mx-3 text-center">
-                        <div class="w-1/2 px-3">
-                            <a class="delete-button-md" href="{{ route('portal.dashboard') }}">
-                                Exit
-                            </a>
-                        </div>
+                    <p class="mb-5 leading-relaxed">Unauthorized use is prohibited. You must use a desktop computer.</p>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" @click="modalOpen = false" class="secondary-button-md">Accept and Continue</button>
+                        <a class="delete-button-md" href="{{ route('portal.dashboard') }}">Decline and Exit</a>
                     </div>
                 </div>
             </div>
-        @endif
 
-        <div class="w-full max-w-3xl px-4 py-10 space-y-5">
+        {{-- Keep ALL identifier controls, including native selects and <details>,
+             hidden until the usage notice has been accepted. Inline display:none
+             avoids a flash of controls before Alpine initialises. --}}
+        <div class="w-full max-w-3xl px-4 py-10 space-y-5"
+            x-show="!modalOpen" style="display: none;">
             @if ($errors->any())
                 <div role="alert" class="mb-4 rounded-lg border border-red-500 bg-red-950/30 p-4 text-red-200">
                     <p class="font-semibold mb-2">Please review the identifier details:</p>
@@ -112,6 +86,8 @@
                 </div>
             @endif
         </div>
+
+        @endif
 
 @include('cad.partials.identity-form-script')
 <script>

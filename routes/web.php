@@ -25,7 +25,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('/', 'pages.home')->name('home');
+// Approved members enter the actual portal dashboard rather than a
+// second welcome page. Applicants/non-members keep their onboarding screen.
+Route::get('/', function () {
+    if (auth()->check() && (int) auth()->user()->account_status === 3) {
+        return redirect()->route('portal.dashboard');
+    }
+
+    return auth()->check() ? view('pages.home') : view('pages.login');
+})->name('home');
 Route::view('/new_ticket', 'new_ticket')->name('');
 
 // Route::view('/ingame_login', 'pages.login')->name('ingame_login');

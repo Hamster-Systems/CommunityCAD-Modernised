@@ -25,12 +25,22 @@ class AuthController extends Controller
         $user->touch('last_login');
         $user->update(['email' => $discordUser->email]);
 
-        return redirect()->intended('account/'.$user->id)->with('success', 'Welcome Back!'); // redirect to site
+        // Approved members land on the operational dashboard; applicants and
+        // unapproved accounts retain their current account/onboarding flow.
+        $destination = (int) $user->account_status === 3
+            ? route('portal.dashboard')
+            : route('account.show', $user->id);
+
+        return redirect()->intended($destination)->with('success', 'Welcome Back!');
     }
 
     protected function findOrNewUser($discordUser)
     {
-        $user = User::where('id', $discordUser->getId())->first();
+        // Legacy Discord-backed accounts retain their original IDs. A new
+        // local-only user can never be claimed just because an ID matches.
+        $user = User::where('id', $discordUser->getId())
+            ->whereDoesntHave('localCredential')
+            ->first();
 
         if ($discordUser->user['discriminator'] == 0) {
 

@@ -40,11 +40,11 @@
                     </div>
                     <div class="grid grid-cols-2">
                         <div class="px-4 py-2 font-bold">Birthday</div>
-                        <div class="px-4 py-2">{{ $application->user->birthday->format('M d, Y') }}</div>
+                        <div class="px-4 py-2">{{ $application->user->birthday?->format('M d, Y') ?? 'Not provided' }}</div>
                     </div>
                     <div class="grid grid-cols-2">
                         <div class="px-4 py-2 font-bold">Age</div>
-                        <div class="px-4 py-2">{{ $application->user->age }}</div>
+                        <div class="px-4 py-2">{{ $application->user->age ?? 'Unavailable' }}</div>
                     </div>
                 </div>
             </div>
@@ -236,7 +236,7 @@
             <div class="">
                 @foreach ($histories as $history)
                     <div class="p-3 my-2 border-2 border-gray-900">
-                        <p class="text-white">Actioned by: {{ $history->user->preferred_name }} at
+                        <p class="text-white">Actioned by: {{ $history->user?->preferred_name ?? 'CommunityCAD System' }} at
                             {{ $history->created_at->format('m/d/Y H:i:s') }}
                         </p>
                         <div>

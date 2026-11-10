@@ -82,7 +82,9 @@
             @guest
                 @if (!session('id'))
                     <a class="px-4 py-2 mt-2 font-semibold rounded-lg cursor-pointer dark:text-white md:mt-0 dark:hover:text-gray-300 hover:text-gray-400"
-                        href="{{ route('auth.discord') }}">{{ __('Login/Apply') }}</a>
+                        href="{{ route('auth.login') }}">{{ __('Sign in') }}</a>
+                    <a class="px-4 py-2 mt-2 font-semibold rounded-lg bg-sky-700 text-white hover:bg-sky-600 md:mt-0"
+                        href="{{ route('auth.register') }}">{{ __('Create account') }}</a>
                 @else
                     <div x-data="{ open: false }" class="relative z-50">
                         <a class="cursor-pointer discord-link" @click="open = !open">

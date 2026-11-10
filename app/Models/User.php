@@ -30,6 +30,11 @@ class User extends Authenticatable
         'reapply_date' => 'date',
     ];
 
+    public function localCredential()
+    {
+        return $this->hasOne(LocalAccountCredential::class);
+    }
+
     public function applications()
     {
         return $this->hasMany('App\Models\Application');
@@ -62,10 +67,9 @@ class User extends Authenticatable
 
     public function getAgeAttribute()
     {
-        $birthday = $this->birthday;
-        $age = Carbon::parse($birthday)->age;
-
-        return $age;
+        // Local accounts can be created before a date of birth is collected.
+        // Never interpret a missing birthday as today's date or a valid age.
+        return $this->birthday?->age;
     }
 
     public function getPreferredNameAttribute()
@@ -74,16 +78,19 @@ class User extends Authenticatable
             return $this->display_name;
         }
 
-        return $this->getDiscordAttribute();
+        return $this->localCredential?->username
+            ?? $this->discord_name
+            ?? 'CommunityCAD user';
     }
 
     public function getDiscordAttribute()
     {
-        if ($this->discriminator == 0) {
-            return $this->discord_name;
+        // Discord is an optional linked provider, not the account identity.
+        if (!$this->discord_name) {
+            return null;
         }
 
-        return $this->discord_name.'#'.$this->discriminator;
+        return $this->discord_name.($this->discriminator ? '#'.$this->discriminator : '');
     }
 
     public function getStatusNameAttribute()

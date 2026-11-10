@@ -24,7 +24,19 @@ class ApplicationController extends Controller
         abort_unless(auth()->user()->account_status == 1, 403);
 
         $data = $request->validated();
-        $data['user_id'] = auth()->user()->id;
+        $user = $request->user();
+
+        // Date of birth is account profile information, not an application
+        // database column. First-party users supply it on their first application.
+        $birthday = $data['birthday'] ?? null;
+        unset($data['birthday']);
+
+        if (!$user->birthday && $birthday) {
+            $user->update(['birthday' => $birthday]);
+            $user->refresh();
+        }
+
+        $data['user_id'] = $user->id;
         $application = Application::create($data);
 
         History::create([
@@ -34,7 +46,7 @@ class ApplicationController extends Controller
             'description' => 'Application Created.',
         ]);
 
-        if (auth()->user()->age < get_setting('minimum_age')) {
+        if ($user->age !== null && (int) get_setting('minimum_age', 0) > 0 && $user->age < (int) get_setting('minimum_age')) {
             History::create([
                 'subject_type' => 'application',
                 'subject_id' => $application->id,

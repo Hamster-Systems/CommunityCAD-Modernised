@@ -24,7 +24,8 @@ class ApplicationRequest extends FormRequest
     public function rules()
     {
         return [
-            'department_id' => 'required|numeric',
+            'department_id' => 'required|integer|exists:departments,id',
+            'birthday' => [auth()->user()?->birthday ? 'nullable' : 'required', 'date', 'before:today'],
             'why_join_department' => 'required|min:50',
             'experience_department' => 'required|min:50',
             'department_duties' => 'required|min:50',
