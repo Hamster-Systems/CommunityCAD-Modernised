@@ -10,7 +10,8 @@ class CadAudio
     public const EVENTS = [
         'call_assigned' => ['title' => 'Call assignment', 'description' => 'A unit is attached or dispatched to a call.', 'default' => 'addedtocall.mp3'],
         'new_call' => ['title' => 'New call', 'description' => 'A new incident is created.', 'default' => 'newcall.mp3'],
-        'call_updated' => ['title' => 'Call status updated', 'description' => 'An incident changes status.', 'default' => 'statusupdated.mp3'],
+        'call_updated' => ['title' => 'Call status updated', 'description' => 'An incident changes status or core call details.', 'default' => 'statusupdated.mp3'],
+        'call_activity_updated' => ['title' => 'Call Updated', 'description' => 'An attached call receives a new note or a responder joins, leaves or changes response status. Separate from call status updates.', 'default' => 'statusupdated.mp3'],
         'unit_status' => ['title' => 'Unit status updated', 'description' => 'A unit changes its response status.', 'default' => 'statusupdated.mp3'],
         'panic' => ['title' => 'Panic alert', 'description' => 'A unit activates its emergency panic button.', 'default' => 'panic_button.mp3'],
     ];
