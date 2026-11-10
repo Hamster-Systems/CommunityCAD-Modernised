@@ -39,8 +39,8 @@ class CadAudioPublisher
 
     /**
      * Notify only the currently attached units about a newly added incident
-     * note. Changes recorded purely for audit/status by the call logger must
-     * not create additional sounds.
+     * note. Activity uses a distinct configured sound from the incident's
+     * own status/field update notifications.
      */
     public static function noteAdded(Call $call): void
     {
@@ -49,7 +49,7 @@ class CadAudioPublisher
 
     /**
      * Unit activity (attachment, detachment, responding/on scene) should
-     * sound on OTHER attached units' CAD sessions. The acting unit receives
+     * sound on OTHER attached units' CAD sessions, using Call Updated. The acting unit receives
      * its own call-assigned or unit-status sound from the ActiveUnit observer,
      * so it must not hear an extra call-update tone for the same action.
      */
@@ -60,7 +60,7 @@ class CadAudioPublisher
             if ($actingUserId !== null && (int) $userId === $actingUserId) {
                 continue;
             }
-            self::publish('call_updated', (int) $userId, $call->id);
+            self::publish('call_activity_updated', (int) $userId, $call->id);
         }
     }
 
@@ -68,7 +68,7 @@ class CadAudioPublisher
     {
         foreach ($call->attached_units()->whereNotNull('user_id')
             ->distinct()->pluck('user_id') as $userId) {
-            self::publish('call_updated', (int) $userId, $call->id);
+            self::publish('call_activity_updated', (int) $userId, $call->id);
         }
     }
 
