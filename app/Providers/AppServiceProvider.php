@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\Call;
 use App\Models\Cad\ActiveUnit;
 use App\Support\Cad\CadAudioPublisher;
+use App\Support\Mail\SmtpConfiguration;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        SmtpConfiguration::boot();
+
         Call::created([CadAudioPublisher::class, 'callCreated']);
         Call::updated([CadAudioPublisher::class, 'callUpdated']);
         ActiveUnit::updated([CadAudioPublisher::class, 'unitUpdated']);
