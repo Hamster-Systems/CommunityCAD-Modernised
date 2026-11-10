@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const checkbox = label.querySelector('input[type="checkbox"]');
                 const visible = allowed.has(label.dataset.subdivisionOption);
                 label.hidden = !visible;
+                label.style.display = visible ? '' : 'none';
                 if (checkbox) {
                     checkbox.disabled = !visible;
                     if (!visible) checkbox.checked = false;
