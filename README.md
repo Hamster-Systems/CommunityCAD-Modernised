@@ -17,13 +17,15 @@ Welcome to Community CAD!
 - **Discord community:** Coming soon
 - **Feature requests / bug reports:** [CommunityCAD-Modernised Issues](https://github.com/Hamster-Systems/CommunityCAD-Modernised/issues/new/choose)
 
-## Original CommunityCAD credits
+## Requirements
 
-This project is built upon the **original open-source CommunityCAD codebase** developed and released by the **[CommunityCAD project and its contributors](https://github.com/CommunityCAD/CommunityCAD)**. Full credit for the original CAD/MDT application, its foundations and original functionality belongs to those developers.
+- **Linux server** — a machine or VPS to host CommunityCAD.
+- **Internet connection** — for setup, updates and access to the CAD.
+- **Network access** — port forwarding (if self-hosted behind a router) or a reverse proxy to make the web application reachable.
+- **Domain name (recommended)** — makes accessing the CAD easier and allows you to configure HTTPS with a valid certificate.
 
-**Hamster Systems** is independently modernising and extending that existing project. Our enhancements do not make us the original creators of CommunityCAD, and this repository is **not an official release of or endorsed by the original CommunityCAD team**.
-
-Thank you to the original developers and everyone who contributed to making the source code available. Please refer to the [original repository and its contribution history](https://github.com/CommunityCAD/CommunityCAD/graphs/contributors) for upstream contributors. Existing third-party attribution and applicable copyright/license notices must continue to be respected.
+> [!NOTE]
+> The modernised installer and supported production requirements are still being developed. A domain is recommended, not mandatory. Use HTTPS when exposing the CAD to the internet.
 
 ## Unified Docker development layout
 
@@ -164,3 +166,11 @@ The `.env` mount should point under `CommunityCAD-Modernised`. Both named volume
 ### Production considerations
 
 This Compose deployment is intentionally a **development** installation. A production release still needs production-oriented secret handling, deployment settings, image build/update/rollback processes, writable storage strategy, backups and security testing. Keep `.env` out of Git, store durable data outside image layers, and do not expose MariaDB publicly.
+
+## Original CommunityCAD credits
+
+This project is built upon the **original open-source CommunityCAD codebase** developed and released by the **[CommunityCAD project and its contributors](https://github.com/CommunityCAD/CommunityCAD)**. Full credit for the original CAD/MDT application, its foundations and original functionality belongs to those developers.
+
+**Hamster Systems** is independently modernising and extending that existing project. Our enhancements do not make us the original creators of CommunityCAD, and this repository is **not an official release of or endorsed by the original CommunityCAD team**.
+
+Thank you to the original developers and everyone who contributed to making the source code available. Please refer to the [original repository and its contribution history](https://github.com/CommunityCAD/CommunityCAD/graphs/contributors) for upstream contributors. Existing third-party attribution and applicable copyright/license notices must continue to be respected.
