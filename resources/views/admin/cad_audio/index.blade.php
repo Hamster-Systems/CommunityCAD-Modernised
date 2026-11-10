@@ -58,6 +58,14 @@
         /* Distinct section boundary; no tone panel touching the last voice card. */
         .cad-audio-tones-separator { margin:52px 0 28px; padding-top:24px; border-top:2px solid #40566f; }
         .cad-audio-tones-panel { background:#101c2a; border:1px solid #3d5169; border-radius:12px; padding:22px; }
+        .cad-audio-card .cad-audio-file-row { display:flex;align-items:stretch;gap:8px;min-width:0;margin-top:8px; }
+        .cad-audio-card .cad-audio-file-link { display:flex;align-items:center;min-width:0;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border:1px solid #52657e;border-radius:7px;background:#26374e;color:#dbeafe;padding:10px 12px;font:12px system-ui,sans-serif;text-decoration:underline;text-underline-offset:2px; }
+        .cad-audio-card .cad-audio-file-link:hover { background:#324966;color:white; }
+        .cad-audio-card .cad-audio-file-upload { flex:none;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid #6366f1;border-radius:7px;background:#4338ca;color:white;padding:9px 12px;font:600 12px system-ui,sans-serif;cursor:pointer; }
+        .cad-audio-card .cad-audio-file-upload:hover { background:#5b50e2; }
+        .cad-audio-card .cad-audio-file-upload:focus-within { outline:2px solid #38bdf8;outline-offset:2px; }
+        .cad-audio-card .cad-audio-file-upload input[type=file] { position:absolute;width:1px;height:1px;padding:0;margin:-1px;border:0;opacity:0;overflow:hidden;clip-path:inset(50%); }
+        .cad-audio-card .cad-audio-file-name { overflow-wrap:anywhere; }
         .cad-audio-card .cad-audio-preview { margin-top:auto; }
         @media (max-width:959px) { .cad-audio-card > header {min-height:0;} }
     </style>
@@ -142,15 +150,26 @@
                         </select>
 
                         <div>
-                            <label for="sound-{{ $event }}" class="block text-sm font-semibold text-slate-200">
-                                Replace recording
-                            </label>
-                            <input type="file" id="sound-{{ $event }}" name="sound" accept=".mp3,.ogg,.wav,audio/mpeg,audio/ogg,audio/wav"
-                                class="mt-2 block w-full rounded-md border border-slate-500 bg-[#24344a] p-2 text-sm text-white file:mr-3 file:rounded file:border-0 file:bg-indigo-600 file:px-3 file:py-1 file:text-white">
-                            <p class="mt-1 text-xs text-slate-400">
-                                MP3, OGG or WAV · maximum 2 MB.
-                                {{ $settings['has_custom'] ? 'Your uploaded recording is saved. You can replace it here.' : 'Currently using the included recording. Upload a file to replace it.' }}
-                            </p>
+                            <span class="block text-sm font-semibold text-slate-200">Audio recording</span>
+                            <div class="cad-audio-file-row">
+                                <a class="cad-audio-file-link" href="{{ route('admin.cad_audio.preview', $event) }}"
+                                    target="_blank" rel="noopener noreferrer"
+                                    title="Open current {{ $settings['title'] }} recording in a new tab"
+                                    aria-label="Open current {{ $settings['title'] }} recording">
+                                    {{ route('admin.cad_audio.preview', $event) }}
+                                </a>
+                                <label class="cad-audio-file-upload" for="sound-{{ $event }}" title="Upload a replacement recording">
+                                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>
+                                    </svg>
+                                    Upload
+                                    <input type="file" id="sound-{{ $event }}" name="sound"
+                                        accept=".mp3,.ogg,.wav,audio/mpeg,audio/ogg,audio/wav"
+                                        aria-label="Choose replacement recording for {{ $settings['title'] }}"
+                                        onchange="document.getElementById('sound-name-{{ $event }}').textContent = this.files && this.files.length ? 'Selected: ' + this.files[0].name + ' · Click Save audio to apply.' : 'MP3, OGG or WAV · maximum 2 MB.'">
+                                </label>
+                            </div>
+                            <p id="sound-name-{{ $event }}" class="cad-audio-file-name mt-2 text-xs text-slate-400" aria-live="polite">MP3, OGG or WAV · maximum 2 MB. {{ $settings['has_custom'] ? 'Uploaded recording active.' : 'Bundled recording active.' }}</p>
                         </div>
 
                         <div>
