@@ -4,6 +4,11 @@
 > **DEVELOPMENT BRANCH — HIGHLY EXPERIMENTAL / NOT PRODUCTION-READY.**
 > This repository is an independent development effort to modernise CommunityCAD. This branch contains work-in-progress changes that may be broken, incomplete, unreviewed or incompatible with existing data. Features, APIs, database schemas, deployment procedures and behaviour may change without notice. Some functionality may be incomplete, unstable or untested. **Do not deploy to a live/production CAD or rely on it for real emergency services.** Back up your data before testing upgrades. This project is not the official CommunityCAD release.
 
+> [!IMPORTANT]
+> **Help shape CommunityCAD — feature requests and feedback wanted!**
+> We're actively looking for suggestions on what you would like to see added, improved, restored or changed in this modernised CAD. Whether it's a missing feature, a better dispatcher/MDT workflow, accessibility, integrations or a bug you've encountered, **we want your input**.
+> **[Request a feature or share feedback](https://github.com/Hamster-Systems/CommunityCAD-Modernised/issues/new/choose)** — check existing issues first to avoid duplicates, and describe your idea, why it would help, and any examples or screenshots you can share. Requests are welcome, but aren't guarantees of implementation.
+>
 Welcome to Community CAD!
 
 - **Website:** [communitycad.app](https://communitycad.app)
