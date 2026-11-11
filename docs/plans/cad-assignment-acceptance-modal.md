@@ -243,3 +243,32 @@ QA: with A+B attached, A posts DISPATCH or NOTE category; B hears the existing C
 - [ ] Confirm setting either field via a trusted data source displays the stored value on the appropriate roster/queue.
 - [ ] Confirm patrol and dispatcher unit tables match, and narrow screens remain usable.
 - [ ] Follow-up integration: add server-authorised call postal entry and FiveM-driven unit location updates, plus tenant-admin field visibility controls; do not expose arbitrary client-side location editing.
+
+
+## Issue #33 — Compact New Call modal on /cad/call (11 November)
+
+Implemented in the **existing PR #44 branch**; left Issue #33 open pending browser QA.
+
+- Added a compact **phone-icon New Call** action alongside the Recent Calls heading, with an accessible `Create call` label, keyboard focus styling, and no removal/change to the existing dispatcher presence controls.
+- Opens a dark, responsive overlay dialog without leaving `/cad/call`. The dialog embeds the **existing** `cad.call-create-screen` Livewire component so the full form, nature list, source/priority/type/status, narrative, linked-civilian search and associated roles remain in one place.
+- Reuses `cad.call.store`, the existing `CallStoreRequest` validation, controller persistence and `CallActivityLogger` activity record. The controller returns **201 JSON** when called by the modal, retaining redirects for the original standalone create page.
+- Inline validation errors are shown without dismissing the modal. Submit is disabled during the request to prevent accidental double-click submissions.
+- After success, the dialog closes, an **Open created call** link appears, and the Recent/Older call-list grids refresh from a same-origin HTML GET without a full navigation or replaying page-load audio. A Livewire `incidentUpdated` event is also emitted for listening CAD components.
+- Cancel/close/Escape protects unsaved edits with a confirmation, returns keyboard focus to the phone action, and clears the form/linked civilians after discard or save. Modal focus is cycled using Tab/Shift+Tab, and the background call list is inert while open.
+- Fixed an existing priority-selector issue where Priority 4/5 options had incorrectly submitted value 3.
+- The existing create-call route and the original navigation link remain available until the replacement is verified in real-world use.
+
+### QA acceptance checklist
+- [ ] Patrol and dispatcher can reach /cad/call and launch the dialog via mouse or keyboard.
+- [ ] Existing dispatcher offline/presence controls still work.
+- [ ] All required fields, caller search, linked-civilian selection and statuses submit through existing endpoint.
+- [ ] Invalid address/city/narrative keeps dialog open with useful validation and no call created.
+- [ ] Double-click Create sends exactly one request and creates exactly one incident; inspect Activity log.
+- [ ] After successful submission, modal closes; new call appears in Recent Calls with an Open created call action, without a full page reload.
+- [ ] Reopen after cancel/submit starts empty; cancel with changes asks for confirmation.
+- [ ] Escape and close icon work, Tab stays inside modal, and focus returns to New Call.
+- [ ] Verify stacking, scrolling and error feedback on desktop and narrow/mobile displays.
+- [ ] Original /cad/call/create form still submits and redirects as before, including corrected Priority 4/5.
+- [ ] Confirm no new audio plays unexpectedly for the person who created the call.
+
+No database migration or frontend compilation was added specifically for Issue #33; this branch already contains other migrations from previous enhancements.
