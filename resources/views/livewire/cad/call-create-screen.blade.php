@@ -1,6 +1,25 @@
 <div class="{{ $modal ? 'cad-modal-call-fields w-full' : 'max-w-7xl mx-auto p-2' }}">
     @unless ($modal)
         <h1 class="text-xl font-bold text-white">Create Call</h1>
+        <style>
+            /* Keep the legacy standalone create page usable too. */
+            .cad-call-address-grid, .cad-call-detail-grid, .cad-call-status-grid {
+                display: grid; gap: 12px; width: 100%; align-items: start;
+            }
+            .cad-call-address-grid { grid-template-columns: 2fr 1.3fr 1fr; }
+            .cad-call-detail-grid { grid-template-columns: 1.5fr 1fr; }
+            .cad-call-status-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+            .cad-call-field { min-width: 0; }
+            .cad-call-field input, .cad-call-field select, .cad-call-field textarea {
+                width:100%; min-width:0; box-sizing:border-box;
+            }
+            .cad-call-caller-section { display:flex; flex-direction:column; gap:10px; }
+            .cad-call-section-heading { display:flex; align-items:center; justify-content:space-between; }
+            .cad-call-linked-person, .cad-call-search-results { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+            @media (max-width:680px) {
+                .cad-call-address-grid, .cad-call-detail-grid, .cad-call-status-grid { grid-template-columns:1fr; }
+            }
+        </style>
     @endunless
     <form action="{{ route('cad.call.store') }}"
         class="{{ $modal ? 'space-y-4 text-white cursor-default' : 'p-2 mt-5 space-y-2 text-white border border-white rounded cursor-default' }}" method="POST">
