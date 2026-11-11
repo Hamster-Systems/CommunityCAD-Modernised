@@ -91,11 +91,11 @@
             <section role="dialog" aria-modal="true" aria-labelledby="cad-new-call-title" aria-describedby="cad-new-call-desc"
                 x-ref="dialog" @keydown.tab="trapFocus($event)" @submit.capture.prevent="submitCall($event)"
                 @input.capture="dirty = true" @change.capture="dirty = true"
-                class="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-500 bg-[#162235] text-white shadow-2xl">
+                class="cad-new-call-dialog border border-slate-500 bg-[#162235] text-white shadow-2xl">
                 <header class="flex flex-none items-start justify-between gap-3 border-b border-slate-600 bg-[#1c3046] px-4 py-3 sm:px-6">
                     <div>
-                        <h2 id="cad-new-call-title" class="text-lg font-bold">New Call</h2>
-                        <p id="cad-new-call-desc" class="mt-1 text-xs text-slate-300">Enter incident details without leaving your CAD workspace.</p>
+                        <h2 id="cad-new-call-title" class="text-lg font-bold">Create 911 Call</h2>
+                        <p id="cad-new-call-desc" class="mt-1 text-xs text-slate-300">Record the essential incident information, then open the call to add details and dispatch units.</p>
                     </div>
                     <button type="button" @click="closeModal()" aria-label="Close new call dialog"
                         class="rounded-md border border-slate-500 p-2 text-white hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400">
@@ -114,33 +114,84 @@
             </section>
         </div>
         <style>
-            [x-cloak] { display:none !important; }
+            [x-cloak] { display: none !important; }
+            .cad-mdt-new-call-backdrop {
+                position: fixed; inset: 0; z-index: 120;
+                display: flex; align-items: center; justify-content: center;
+                padding: 16px; background: rgba(0,0,0,.82);
+            }
+            .cad-new-call-dialog {
+                display: flex; flex-direction: column; width: min(100%, 850px);
+                max-height: calc(100dvh - 32px); min-height: 0;
+                overflow: hidden; border-radius: 12px;
+            }
+            .cad-new-call-modal { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+            .cad-new-call-modal .cad-modal-call-fields,
+            .cad-new-call-modal .cad-modal-call-fields form { width: 100%; min-width: 0; }
+            .cad-new-call-modal .cad-modal-call-fields form {
+                display: flex; flex-direction: column; gap: 14px;
+            }
+            .cad-new-call-modal .cad-call-address-grid,
+            .cad-new-call-modal .cad-call-detail-grid,
+            .cad-new-call-modal .cad-call-status-grid {
+                display: grid; gap: 14px; align-items: start; width: 100%;
+            }
+            .cad-new-call-modal .cad-call-address-grid {
+                grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1fr);
+            }
+            .cad-new-call-modal .cad-call-detail-grid {
+                grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+            }
+            .cad-new-call-modal .cad-call-status-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .cad-new-call-modal .cad-call-field,
+            .cad-new-call-modal .cad-call-address-grid > *,
+            .cad-new-call-modal .cad-call-detail-grid > *,
+            .cad-new-call-modal .cad-call-status-grid > * {
+                min-width: 0; width: 100%; margin: 0;
+            }
+            .cad-new-call-modal .cad-modal-call-fields label {
+                display: block; font-size: 12px; font-weight: 600;
+                line-height: 1.5; margin: 0 0 5px; color: #cbd5e1;
+            }
             .cad-new-call-modal .text-input-sm,
             .cad-new-call-modal .select-input-sm,
             .cad-new-call-modal .textarea-input-sm {
-                display:block;width:100%;min-width:0;box-sizing:border-box;
-                border:1px solid #64748b;border-radius:7px;background:#24364d;
-                color:white;padding:10px 12px;font-size:14px;
+                display: block; width: 100%; min-width: 0;
+                box-sizing: border-box; padding: 10px 12px;
+                border: 1px solid #64748b; border-radius: 7px;
+                background: #24364d; color: #fff; font-size: 14px;
+                height: auto; min-height: 41px;
             }
-            .cad-new-call-modal textarea { min-height:82px; }
-            .cad-new-call-modal .cad-modal-call-fields form {display:flex; flex-direction:column;gap:12px;}
-            .cad-new-call-modal .cad-modal-call-fields label {font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:5px;}
-            .cad-new-call-modal .cad-modal-call-fields input:focus,
-            .cad-new-call-modal .cad-modal-call-fields select:focus,
-            .cad-new-call-modal .cad-modal-call-fields textarea:focus {
-                outline:2px solid #38bdf8;outline-offset:1px;
+            .cad-new-call-modal textarea.textarea-input-sm { min-height: 92px; resize: vertical; }
+            .cad-new-call-modal .cad-modal-call-fields h1 {
+                margin: 1px 0 3px; font-size: 13px; line-height: 1.5;
+                color: #93c5fd; letter-spacing: .05em;
+                text-transform: uppercase; font-weight: 700;
             }
-            .cad-new-call-modal .cad-modal-call-fields h1 {font-size:14px; margin:2px 0 8px;color:#93c5fd;letter-spacing:.05em;text-transform:uppercase;font-weight:700;}
-            .cad-new-call-modal .cad-modal-call-fields form > .flex {gap:12px;align-items:start;}
-            .cad-new-call-modal .cad-modal-call-fields form > .flex:first-of-type {
-                display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr);
+            .cad-new-call-modal .cad-call-caller-section {
+                display: flex; flex-direction: column; gap: 10px;
             }
-            .cad-new-call-modal .cad-modal-call-fields form > .flex > div {min-width:0;}
-            .cad-new-call-modal .cad-modal-call-fields .ml-3 {margin-left:0;}
-            @media (max-width:640px) {
-                .cad-new-call-modal .cad-modal-call-fields form > .flex {flex-direction:column;}
-                .cad-new-call-modal .cad-modal-call-fields form > .flex:first-of-type {grid-template-columns:minmax(0,1fr);}
-                .cad-new-call-modal .cad-modal-call-fields form > .flex > div {width:100%;}
+            .cad-new-call-modal .cad-call-section-heading {
+                display:flex;justify-content:space-between;align-items:center;
+            }
+            .cad-new-call-modal .cad-call-linked-person {
+                display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+            }
+            .cad-new-call-modal .cad-call-linked-person select { flex:1;min-width:130px; }
+            .cad-new-call-modal .cad-call-search-results { display:flex;flex-wrap:wrap;gap:8px; }
+            .cad-new-call-modal input:focus,
+            .cad-new-call-modal select:focus,
+            .cad-new-call-modal textarea:focus {
+                outline: 2px solid #38bdf8; outline-offset: 1px;
+            }
+            @media (max-width: 680px) {
+                .cad-mdt-new-call-backdrop { padding: 8px; }
+                .cad-new-call-dialog { max-height: calc(100dvh - 16px); }
+                .cad-new-call-modal .cad-call-address-grid,
+                .cad-new-call-modal .cad-call-detail-grid,
+                .cad-new-call-modal .cad-call-status-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
             }
         </style>
     </div>
@@ -214,6 +265,12 @@
                         }
                         this.createdUrl = result.url || '';
                         this.successMessage = result.message || 'Call created successfully.';
+                        // Initial intake ends here; dispatch continues on the
+                        // full incident workspace where units/people can be added.
+                        if (result.url) {
+                            window.location.assign(result.url);
+                            return;
+                        }
                         this.$nextTick(() => this.trigger?.focus());
                         try { await this.refreshCallLists(); } catch (_) { /* Success link remains available. */ }
                         if (window.Livewire && typeof window.Livewire.emit === 'function') {
@@ -223,7 +280,7 @@
                         this.errorMessage = error.message || 'Could not create the call.';
                     } finally {
                         this.submitting = false;
-                        if (button) { button.disabled = false; button.textContent = 'Create call'; }
+                        if (button) { button.disabled = false; button.textContent = 'Create & open call'; }
                     }
                 }
             };
