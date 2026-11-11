@@ -7,16 +7,24 @@
         @csrf
         <h1 class="text-xl font-semibold">Incident Location</h1>
         <div class="flex">
-            <div class="w-3/5">
-                <label class="block mr-2">Incident Address:</label>
-                <input @unless($modal) autofocus @endunless class="text-input-sm uppercase" name="location" type="text"
-                    value="{{ old('location') }}">
+            <div class="w-1/2">
+                <label class="block mr-2" for="cad-call-location-{{ $modal ? 'modal' : 'page' }}">Incident Address <span class="text-red-300">*</span></label>
+                <input id="cad-call-location-{{ $modal ? 'modal' : 'page' }}" required @unless($modal) autofocus @endunless
+                    class="text-input-sm uppercase" name="location" type="text" maxlength="255"
+                    placeholder="Street address or nearest landmark" value="{{ old('location') }}">
                 <x-input-error :messages="$errors->get('location')" class="mt-2" />
             </div>
-            <div class="w-2/5 ml-3">
-                <label class="block mr-2">City:</label>
-                <input class="text-input-sm uppercase" name="city" type="text" value="{{ old('city') }}">
+            <div class="w-1/3 ml-3">
+                <label class="block mr-2" for="cad-call-city-{{ $modal ? 'modal' : 'page' }}">City <span class="text-red-300">*</span></label>
+                <input id="cad-call-city-{{ $modal ? 'modal' : 'page' }}" required class="text-input-sm uppercase"
+                    name="city" type="text" maxlength="255" placeholder="City / area" value="{{ old('city') }}">
                 <x-input-error :messages="$errors->get('city')" class="mt-2" />
+            </div>
+            <div class="w-1/5 ml-3">
+                <label class="block mr-2" for="cad-call-postal-{{ $modal ? 'modal' : 'page' }}">Postal</label>
+                <input id="cad-call-postal-{{ $modal ? 'modal' : 'page' }}" class="text-input-sm uppercase"
+                    name="postal" type="text" maxlength="64" placeholder="Optional" value="{{ old('postal') }}">
+                <x-input-error :messages="$errors->get('postal')" class="mt-2" />
             </div>
         </div>
 
@@ -42,7 +50,7 @@
                         </select>
                     </div>
                 @empty
-                    <p></p>
+                    {{-- No linked callers yet. Keep this area compact. --}}
                 @endforelse
             </div>
         </div>
@@ -68,7 +76,7 @@
                         {{ $civilian->name }}
                     </a>
                 @empty
-                    <p></p>
+                    {{-- No matching caller results. --}}
                 @endforelse
             </div>
         </div>
