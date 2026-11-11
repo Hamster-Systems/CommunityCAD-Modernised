@@ -282,3 +282,23 @@ No database migration or frontend compilation was added specifically for Issue #
 - Removed the redundant lower-nav Create a call link **on the MDT only**. The standalone `/cad/call/create` route and New Call action on `/cad/call` remain available as fallbacks.
 - Applied explicit high-stacking overlay styles to avoid dependence on rebuilding Tailwind.
 - **QA:** test both dispatcher and patrol identities, panic controls, valid/invalid creation, focus/cancel, a refresh of MDT tables, and audio no-repeat. No new migration or npm build for this placement fix.
+
+
+## Issue #33 follow-up — New Call everywhere and modal usability (11 November)
+
+- Removed the visual **Dispatcher Online / On Call / Break / Offline** badge entirely from the shared CAD navigation on all pages, while retaining the underlying dispatcher status queries and panic/clear-panic controls.
+- The same **New Call** handset action now appears in the shared top-right CAD navigation on every signed-in CAD page rather than just MDT. Removed the redundant lower-nav **Create a call** link. The Calls queue's second header button was also removed.
+- Extracted the full New Call modal into a shared Blade partial for MDT and other CAD pages. The Calls queue retains its inline modal and automatically refreshed call-list display; its navbar phone button launches the same workflow.
+- Improved the modal's layout: more compact section spacing, removed empty Caller Info placeholders, clearer field labels/placeholders and focus states, mobile-friendly address grid, and streamlined section titles.
+- Added **optional Postal** to the incident-creation form and existing validation, storing the value in the nullable `calls.postal` field introduced by the earlier PR #44 migration. Does not guess postal information from addresses.
+- Existing server-side creation rules, call numbering, incident activity log, linked-civilian handling, response type, panic and dispatcher presence logic remain in place.
+- No frontend asset compilation required for these scoped Blade/CSS changes. Requires the **previously added postal/location schema migration** to have been run before using optional Postal.
+
+### Regression QA
+- [ ] Visit MDT, Calls queue, incident details, CAD Home, name search, vehicle search, report creation, and message centre: each shows a single New Call handset in the header and no dispatcher Online/Offline badge.
+- [ ] New Call opens on each page without navigation, with correct overlay layering and focus trapping.
+- [ ] Close/Cancel/Escape and unsaved-data confirmation work on all pages; no duplicate modal appears.
+- [ ] Create a call with optional postal and verify it appears in the MDT call queue; leaving postal blank displays Unavailable.
+- [ ] Linked civilian search, priority 1–5, incident nature, required fields and validation still work; duplicates aren't created by repeated clicks.
+- [ ] Panic and clear-panic buttons remain usable; no additional notification sound replay.
+- [ ] Verify the new address row, scrolling, keyboard focus and compact Caller Information section on mobile.
