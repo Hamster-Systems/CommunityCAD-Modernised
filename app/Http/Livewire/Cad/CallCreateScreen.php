@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class CallCreateScreen extends Component
 {
+    public bool $modal = false;
+
     public $civilian_search = '';
 
     public $civilians;
