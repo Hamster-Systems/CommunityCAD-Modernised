@@ -28,9 +28,30 @@
         <div class="cad-call-address-grid">
             <div class="cad-call-field">
                 <label class="block mr-2" for="cad-call-location-{{ $modal ? 'modal' : 'page' }}">Incident Address <span class="text-red-300">*</span></label>
-                <input id="cad-call-location-{{ $modal ? 'modal' : 'page' }}" required @unless($modal) autofocus @endunless
-                    class="text-input-sm uppercase" name="location" type="text" maxlength="255"
-                    placeholder="Street address or nearest landmark" value="{{ old('location') }}">
+                <div class="cad-address-picker" x-data="cadAddressSuggestions('{{ route('cad.addresses.suggest') }}')"
+                    @click.outside="visible = false">
+                    <input id="cad-call-location-{{ $modal ? 'modal' : 'page' }}" required @unless($modal) autofocus @endunless
+                        class="text-input-sm uppercase" name="location" type="text" maxlength="255" autocomplete="off"
+                        role="combobox" aria-autocomplete="list" :aria-expanded="visible && results.length > 0"
+                        aria-controls="cad-address-options-{{ $modal ? 'modal' : 'page' }}"
+                        x-model="query" @input.debounce.250ms="lookup()"
+                        @focus="if (results.length) visible = true"
+                        @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
+                        @keydown.enter="chooseActive($event)" @keydown.escape="visible = false"
+                        placeholder="Street address or nearest landmark" value="{{ old('location') }}">
+                    <div id="cad-address-options-{{ $modal ? 'modal' : 'page' }}" x-show="visible && results.length"
+                        x-cloak role="listbox" class="cad-address-options">
+                        <template x-for="(item, index) in results" :key="item.id">
+                            <button type="button" role="option" class="cad-address-option"
+                                :aria-selected="active === index"
+                                :class="{ 'cad-address-option-active': active === index }"
+                                @click="choose(item)">
+                                <span x-text="item.street" class="cad-address-option-street"></span>
+                                <span x-text="[item.city, item.postal].filter(Boolean).join(' · ')" class="cad-address-option-details"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
                 <x-input-error :messages="$errors->get('location')" class="mt-2" />
             </div>
             <div class="cad-call-field">
@@ -166,3 +187,67 @@
         @endunless
     </form>
 </div>
+
+@once
+<script>
+    function cadAddressSuggestions(endpoint) {
+        return {
+            query: '', results: [], visible: false, active: -1, sequence: 0,
+            async lookup() {
+                const term = this.query.trim();
+                const token = ++this.sequence;
+                this.active = -1;
+                if (term.length < 2) { this.results = []; this.visible = false; return; }
+                try {
+                    const response = await fetch(endpoint + '?q=' + encodeURIComponent(term), {
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) throw new Error('Lookup unavailable');
+                    const data = await response.json();
+                    if (token !== this.sequence) return;
+                    this.results = Array.isArray(data.results) ? data.results : [];
+                    this.visible = this.results.length > 0;
+                } catch (_) {
+                    if (token === this.sequence) { this.results = []; this.visible = false; }
+                }
+            },
+            move(direction) {
+                if (!this.results.length) return;
+                this.visible = true;
+                this.active = (this.active + direction + this.results.length) % this.results.length;
+                this.$nextTick(() => {
+                    const option = this.$el.querySelectorAll('.cad-address-option')[this.active];
+                    if (option) option.scrollIntoView({block: 'nearest'});
+                });
+            },
+            chooseActive(event) {
+                if (this.visible && this.active >= 0 && this.results[this.active]) {
+                    event.preventDefault();
+                    this.choose(this.results[this.active]);
+                }
+            },
+            choose(item) {
+                this.sequence++;
+                this.query = item.street;
+                this.results = [];
+                this.visible = false;
+                const form = this.$el.closest('form');
+                if (form) {
+                    for (const key of ['city', 'postal']) {
+                        if (item[key]) {
+                            const input = form.querySelector('[name="' + key + '"]');
+                            if (input) {
+                                input.value = item[key];
+                                input.dispatchEvent(new Event('input', {bubbles:true}));
+                            }
+                        }
+                    }
+                }
+                const input = this.$el.querySelector('input[name="location"]');
+                if (input) input.dispatchEvent(new Event('change', {bubbles:true}));
+            }
+        };
+    }
+</script>
+@endonce
