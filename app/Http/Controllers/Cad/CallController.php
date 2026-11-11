@@ -12,6 +12,7 @@ use App\Support\Cad\CallActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CallController extends Controller
@@ -31,7 +32,7 @@ class CallController extends Controller
         return view('cad.call.create');
     }
 
-    public function store(CallStoreRequest $request): RedirectResponse
+    public function store(CallStoreRequest $request): RedirectResponse|JsonResponse
     {
 
         $input = $request->validated();
