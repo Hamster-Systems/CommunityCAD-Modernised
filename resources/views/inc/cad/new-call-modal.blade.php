@@ -87,6 +87,25 @@
                 background: #24364d; color: #fff; font-size: 14px;
                 height: auto; min-height: 41px;
             }
+            .cad-new-call-modal .cad-address-picker { position: relative; min-width: 0; }
+            .cad-new-call-modal .cad-address-options {
+                position: absolute; z-index: 300; top: calc(100% + 4px);
+                left: 0; right: 0; max-height: 225px; overflow-y: auto;
+                border: 1px solid #5b7694; border-radius: 8px;
+                background: #14253a; box-shadow: 0 12px 25px rgba(0,0,0,.6);
+                overscroll-behavior: contain;
+            }
+            .cad-new-call-modal .cad-address-option {
+                display: flex; flex-direction: column; gap: 3px;
+                width: 100%; min-height: 45px; padding: 9px 12px;
+                text-align: left; border-bottom: 1px solid #334b66;
+                color: white; cursor: pointer; background: transparent;
+            }
+            .cad-new-call-modal .cad-address-option:last-child { border-bottom: 0; }
+            .cad-new-call-modal .cad-address-option:hover,
+            .cad-new-call-modal .cad-address-option-active { background: #24567a; }
+            .cad-new-call-modal .cad-address-option-street { font-weight: 700; font-size: 13px; }
+            .cad-new-call-modal .cad-address-option-details { font-size: 11px; color: #cbd5e1; }
             .cad-new-call-modal textarea.textarea-input-sm { min-height: 92px; resize: vertical; }
             .cad-new-call-modal .cad-modal-call-fields h1 {
                 margin: 1px 0 3px; font-size: 13px; line-height: 1.5;
