@@ -95,7 +95,7 @@
                 <header class="flex flex-none items-start justify-between gap-3 border-b border-slate-600 bg-[#1c3046] px-4 py-3 sm:px-6">
                     <div>
                         <h2 id="cad-new-call-title" class="text-lg font-bold">New Call</h2>
-                        <p id="cad-new-call-desc" class="mt-1 text-xs text-slate-300">Create a dispatch incident without leaving the call queue.</p>
+                        <p id="cad-new-call-desc" class="mt-1 text-xs text-slate-300">Enter incident details without leaving your CAD workspace.</p>
                     </div>
                     <button type="button" @click="closeModal()" aria-label="Close new call dialog"
                         class="rounded-md border border-slate-500 p-2 text-white hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400">
@@ -122,13 +122,24 @@
                 border:1px solid #64748b;border-radius:7px;background:#24364d;
                 color:white;padding:10px 12px;font-size:14px;
             }
-            .cad-new-call-modal textarea { min-height:90px; }
-            .cad-new-call-modal .cad-modal-call-fields h1 {font-size:15px; margin:4px 0;color:#93c5fd;}
-            .cad-new-call-modal .cad-modal-call-fields form > .flex {gap:12px;}
+            .cad-new-call-modal textarea { min-height:82px; }
+            .cad-new-call-modal .cad-modal-call-fields form {display:flex; flex-direction:column;gap:12px;}
+            .cad-new-call-modal .cad-modal-call-fields label {font-size:12px;font-weight:600;color:#cbd5e1;margin-bottom:5px;}
+            .cad-new-call-modal .cad-modal-call-fields input:focus,
+            .cad-new-call-modal .cad-modal-call-fields select:focus,
+            .cad-new-call-modal .cad-modal-call-fields textarea:focus {
+                outline:2px solid #38bdf8;outline-offset:1px;
+            }
+            .cad-new-call-modal .cad-modal-call-fields h1 {font-size:14px; margin:2px 0 8px;color:#93c5fd;letter-spacing:.05em;text-transform:uppercase;font-weight:700;}
+            .cad-new-call-modal .cad-modal-call-fields form > .flex {gap:12px;align-items:start;}
+            .cad-new-call-modal .cad-modal-call-fields form > .flex:first-of-type {
+                display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) minmax(0,1fr);
+            }
             .cad-new-call-modal .cad-modal-call-fields form > .flex > div {min-width:0;}
             .cad-new-call-modal .cad-modal-call-fields .ml-3 {margin-left:0;}
             @media (max-width:640px) {
                 .cad-new-call-modal .cad-modal-call-fields form > .flex {flex-direction:column;}
+                .cad-new-call-modal .cad-modal-call-fields form > .flex:first-of-type {grid-template-columns:minmax(0,1fr);}
                 .cad-new-call-modal .cad-modal-call-fields form > .flex > div {width:100%;}
             }
         </style>
