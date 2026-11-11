@@ -12,6 +12,7 @@ use App\Support\Cad\CallActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CallController extends Controller
@@ -31,7 +32,7 @@ class CallController extends Controller
         return view('cad.call.create');
     }
 
-    public function store(CallStoreRequest $request): RedirectResponse
+    public function store(CallStoreRequest $request): RedirectResponse|JsonResponse
     {
 
         $input = $request->validated();
@@ -39,6 +40,15 @@ class CallController extends Controller
         if (! isset($input['linked_civilians'])) {
             $call = Call::create($input);
             CallActivityLogger::record($call, 'CALL', 'Incident created.');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => true,
+                    'call_id' => $call->id,
+                    'url' => route('cad.call.show', $call->id),
+                    'message' => 'Call #' . $call->id . ' created.',
+                ], 201);
+            }
 
             return redirect()->route('cad.mdt');
         }
@@ -59,6 +69,15 @@ class CallController extends Controller
             $linked = \App\Models\Civilian::find($civilian_id);
             CallActivityLogger::record($call, 'PERSON', 'Person ' . ($linked ? trim($linked->first_name . ' ' . $linked->last_name) : '#' . $civilian_id) . ' linked as ' . $linked_civilians_types[$index] . '.');
             $index++;
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'call_id' => $call->id,
+                'url' => route('cad.call.show', $call->id),
+                'message' => 'Call #' . $call->id . ' created.',
+            ], 201);
         }
 
         return redirect()->route('cad.mdt');

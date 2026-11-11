@@ -61,7 +61,7 @@
             inactiveClasses: 'border-transparent text-slate-300 hover:bg-slate-800 hover:text-white'
         }">
             <nav class="cad-incident-tabs flex flex-wrap gap-1 rounded-lg border border-slate-700 bg-[#172232] p-1" aria-label="Incident sections">
-                @foreach (['Overview', 'People', 'Vehicles', 'Reports', 'Units', 'Activity'] as $index => $tabName)
+                @foreach (['Overview', 'People', 'Vehicles', 'Reports', 'Units', 'Activity', 'Call Notes'] as $index => $tabName)
                     <button type="button" :class="openTab === {{ $index + 1 }} ? activeClasses : inactiveClasses"
                         @click="openTab = {{ $index + 1 }}"
                         class="rounded-md border-b-2 px-4 py-3 text-sm font-semibold transition" :aria-selected="openTab === {{ $index + 1 }}">
@@ -70,8 +70,8 @@
                     </button>
                 @endforeach
             </nav>
-            <div class="cad-incident-main min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4" :class="{ 'cad-incident-expanded': openTab === 6 }">
-                <div x-show="openTab !== 6" class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
+            <div class="cad-incident-main min-w-0 rounded-lg border border-slate-700 bg-[#111b29] p-4" :class="{ 'cad-incident-expanded': openTab === 6 || openTab === 7 }">
+                <div x-show="openTab !== 6 && openTab !== 7" class="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-700 pb-3">
                     <h2 class="text-lg font-semibold">Incident records</h2>
                     <div class="text-xs text-slate-400">Call #{{ $call->id }} · {{ $myUnit->unit_callsign }}</div>
                 </div>
@@ -526,8 +526,16 @@
                 <section class="p-2 text-base leading-relaxed" x-show="openTab === 6" x-cloak>
                     @livewire('cad.call-chat', ['call' => $call])
                 </section>
+                <section class="p-3 text-base leading-relaxed" x-show="openTab === 7" x-cloak>
+                    @livewire('cad.call-notes', ['callId' => (int) $call->id], key('call-notes-full-'.$call->id))
+                </section>
             </div>
-            <div x-show="openTab !== 6" x-cloak class="cad-incident-preview min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3">
+            <div x-show="openTab !== 6 && openTab !== 7" x-cloak class="cad-incident-preview min-w-0 rounded-lg border border-slate-700 bg-[#172232] p-3">
+                @livewire('cad.call-notes', ['callId' => (int) $call->id, 'compact' => true], key('call-notes-preview-'.$call->id))
+                <button type="button" @click="openTab = 7; window.scrollTo({ top: 190, behavior: 'smooth' })"
+                    class="mb-4 mt-3 w-full rounded-md border border-sky-600/70 bg-sky-900/40 px-3 py-2.5 text-sm font-semibold text-sky-100 hover:bg-sky-800">
+                    Read all Call Notes
+                </button>
                 @livewire('cad.incident-activity-preview', ['callId' => (int) $call->id])
                 <button type="button" @click="openTab = 6; window.scrollTo({ top: 190, behavior: 'smooth' })"
                     class="mt-3 w-full rounded-md border border-indigo-500/70 bg-indigo-900/50 px-3 py-3 text-sm font-semibold text-indigo-100 hover:bg-indigo-800">

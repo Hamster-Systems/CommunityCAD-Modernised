@@ -18,7 +18,11 @@ class CallUnitAssignmentService
             $unit = ActiveUnit::query()->lockForUpdate()->findOrFail($unit->id);
             $call = Call::query()->lockForUpdate()->findOrFail($call->id);
 
-            abort_if(str_starts_with($unit->status, 'OFFDTY'), 409,
+            // An off-duty unit can receive an invitation while signed in,
+            // but only if the acceptance UI is enabled. Never silently
+            // attach off-duty units when the prompt is disabled.
+            abort_if(str_starts_with($unit->status, 'OFFDTY')
+                && ! config('cad.prompt_enroute_on_assignment', true), 409,
                 'Select Available before assigning the unit.');
             abort_if($unit->is_panic, 409, 'Clear panic before attaching to a new call.');
             abort_if(in_array($call->status, ['CLR', 'CLO'], true)
@@ -29,9 +33,9 @@ class CallUnitAssignmentService
             }
 
             $call->attached_units()->syncWithoutDetaching([$unit->id]);
-            // Attaching an available unit makes it Busy until it chooses
-            // Mark En Route or Keep Current Status from the FMS prompt.
-            // Preserve other response stages when already responding.
+            // Available units become Busy while awaiting a response.
+            // Off-duty units remain OFFDTY until they accept the callout.
+            // Preserve existing response stages when already responding.
             $attributes = ['description' => 'Added to call: ' . $call->id];
             if ($unit->status === 'AVL') {
                 $attributes['status'] = 'BUSY';
@@ -40,6 +44,7 @@ class CallUnitAssignmentService
 
             CallActivityLogger::record($call, 'UNIT',
                 'Unit ' . $unit->unit_callsign . ' attached to the call.');
+            CadAudioPublisher::unitActivity($call, (int) $unit->user_id);
         });
     }
 
@@ -68,6 +73,9 @@ class CallUnitAssignmentService
                 . ($unit->is_panic ? ' Unit panic remains active.' : ''));
 
             CallAssignmentStatusService::reopenIfUnassigned($call);
+            // The unit has already been detached. Notify remaining responders,
+            // not the departing unit which received its own status sound.
+            CadAudioPublisher::unitActivity($call, (int) $unit->user_id);
         });
     }
 }

@@ -31,8 +31,13 @@ class CadAudioEventsController extends Controller
             ->where('id', '>', (int) $data['since'])
             ->where('created_at', '>=', now()->subMinutes(2))
             ->where(function ($q) use ($user) {
-                $q->whereNull('target_user_id')
-                    ->orWhere('target_user_id', $user->id);
+                // Only panic is global. Untargeted historic call/unit events
+                // must never leak into unrelated CAD browser sessions.
+                $q->where('event', 'panic')
+                    ->orWhere(function ($targeted) use ($user) {
+                        $targeted->where('target_user_id', $user->id)
+                            ->where('event', '!=', 'panic');
+                    });
             })
             ->orderBy('id')
             ->limit(40)

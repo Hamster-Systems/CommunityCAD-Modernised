@@ -18,13 +18,18 @@
             $requiresCall = in_array($code, ['ENRUTE', 'ONSCN', 'TRANS'], true);
             $blocked = !$unit || $unit->is_panic || ($requiresCall && (!$hasOpenCall || str_starts_with($unit->status, 'OFFDTY')));
             $selected = $unit && ($code === 'UNAV' ? str_starts_with($unit->status, 'OFFDTY') : $unit->status === $code);
+            // Transporting is intentionally violet, distinct from the
+            // blue used for normal active/selected states.
+            $selectedStyle = $code === 'TRANS'
+                ? 'border-violet-300 bg-violet-800 text-white ring-1 ring-violet-400'
+                : 'border-sky-400 bg-sky-800 text-white ring-1 ring-sky-400';
         @endphp
         <button type="button" wire:click="changeStatus('{{ $code }}')"
             wire:loading.attr="disabled" wire:target="changeStatus"
             @disabled($blocked) aria-pressed="{{ $selected ? 'true' : 'false' }}"
             title="{{ $blocked && $requiresCall ? 'Attach to an open call first' : $label }}"
             class="rounded-md border px-3 py-2 text-xs font-semibold transition
-                {{ $selected ? 'border-sky-400 bg-sky-800 text-white ring-1 ring-sky-400' : 'border-slate-500 bg-slate-800 hover:bg-slate-700' }}
+                {{ $selected ? $selectedStyle : 'border-slate-500 bg-slate-800 hover:bg-slate-700' }}
                 disabled:cursor-not-allowed disabled:opacity-40">
             {{ $label }}
         </button>

@@ -27,6 +27,7 @@ class UnitResponseStatusService
                         CallAssignmentStatusService::reopenIfUnassigned($assignedCall);
                         CallActivityLogger::record($assignedCall, 'UNIT',
                             'Unit ' . $unit->unit_callsign . ' went unavailable and detached from the call.');
+                        CadAudioPublisher::unitActivity($assignedCall, (int) $unit->user_id);
                     }
                     $unit->update([
                         'status' => 'OFFDTY',
@@ -58,6 +59,7 @@ class UnitResponseStatusService
                     $assignedCall->attached_units()->detach($unit->id);
                     CallActivityLogger::record($assignedCall, 'UNIT',
                         'Unit ' . $unit->unit_callsign . ' became available and detached from the call.');
+                    CadAudioPublisher::unitActivity($assignedCall, (int) $unit->user_id);
                     CallAssignmentStatusService::reopenIfUnassigned($assignedCall);
                 }
                 if ($unit->status !== 'AVL') {
@@ -95,6 +97,7 @@ class UnitResponseStatusService
                     CallActivityLogger::record($call, 'UNIT',
                         'Unit ' . $unit->unit_callsign . ' status changed from ' .
                         $oldUnitStatus . ' to ' . $status . '.');
+                    CadAudioPublisher::unitActivity($call, (int) $unit->user_id);
                 }
             }
 
@@ -124,7 +127,9 @@ class UnitResponseStatusService
                 return;
             }
 
-            $lockedCall->update(['status' => $target]);
+            // Other responders have already received the unit-activity sound.
+            // Keep automatic call-stage progression from generating a duplicate.
+            $lockedCall->updateQuietly(['status' => $target]);
             CallActivityLogger::record($lockedCall, 'CALL',
                 'Automatically updated call status from ' . $oldCallStatus .
                 ' to ' . $target . ' when unit ' . $unit->unit_callsign .

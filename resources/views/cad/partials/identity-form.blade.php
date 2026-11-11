@@ -1,5 +1,8 @@
 @php
     $editing = (bool) ($editing ?? false);
+    $departmentSubdivisions = collect($available_departments)->mapWithKeys(fn ($membership) =>
+        [(string) $membership->id => ($membership->department?->mdt_subdivisions ?? [])])->all();
+    $subdivisions = collect($departmentSubdivisions)->flatMap(fn ($values) => $values)->unique()->values()->all();
     $selectedSubdivisions = old('subdivisions', $editing ? ($identity->subdivisions ?? ($identity->subdivision ? [$identity->subdivision] : [])) : []);
     $selectedCivilian = old('civilian_id', $editing ? $identity->civilian_id : null);
     $manualName = $editing && $identity->civilian
@@ -7,7 +10,8 @@
         : ($editing ? $identity->display_name : '');
 @endphp
 <form action="{{ $editing ? route('cad.identities.update', $identity, false) : route('cad.identities.store', [], false) }}"
-      method="POST" class="space-y-4" data-identifier-form>
+      method="POST" class="space-y-4" data-identifier-form
+      data-department-subdivisions='@json($departmentSubdivisions)'>
     @csrf
     @if ($editing) @method('PUT') @endif
     <div>
@@ -51,7 +55,8 @@
             </summary>
             <div class="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-400 bg-gray-100 p-2 text-black shadow-xl">
                 @foreach ($subdivisions as $subdivision)
-                    <label class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 hover:bg-gray-300">
+                    <label class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 hover:bg-gray-300"
+                        data-subdivision-option="{{ $subdivision }}">
                         <input type="checkbox" name="subdivisions[]" value="{{ $subdivision }}"
                                @checked(in_array($subdivision, (array) $selectedSubdivisions, true))
                                class="h-4 w-4">
@@ -60,7 +65,7 @@
                 @endforeach
             </div>
         </details>
-        <p class="mt-1 text-xs text-gray-400">Click to choose multiple options; click the dropdown again to close.</p>
+        <p class="mt-1 text-xs text-gray-400">Options belong to the selected department. You can select multiple or leave them all unchecked for General.</p>
     </fieldset>
     <div>
         <label for="identity_civilian" class="block text-sm mb-1">Link civilian (optional)</label>

@@ -74,6 +74,7 @@
             </th>
             <th class="p-1 border border-slate-400">Location</th>
             <th class="p-1 border border-slate-400">City</th>
+            <th class="p-1 border border-slate-400">Postal</th>
             <th class="p-1 border border-slate-400">Pri</th>
             <th class="p-1 border border-slate-400">Status</th>
             <th class="p-1 border border-slate-400">Time</th>
@@ -82,6 +83,7 @@
         @foreach ($calls as $call)
             <tr wire:key="mdt-call-row-{{ $call->id }}"
                 class="{{ $call->status === 'PANIC' ? 'cad-panic-row' : $call->status_info['color'] }} cursor-pointer hover:bg-slate-800/80"
+                style="--cad-panic-offset: -{{ ((int) $call->id % 11) * 133 }}ms"
                 x-data="{ contextOpen: false, contextX: 0, contextY: 0,
                     openContext(event) {
                         this.contextX = Math.max(8, Math.min(event.clientX, window.innerWidth - 258));
@@ -134,6 +136,7 @@
                 </td>
                 <td class="p-1 border border-slate-400">{{ $call->location }}</td>
                 <td class="p-1 border border-slate-400">{{ $call->city }}</td>
+                <td class="p-1 border border-slate-400">{{ filled($call->postal) ? $call->postal : 'Unavailable' }}</td>
                 <td class="relative p-1 border border-slate-400" x-data="{ statusOpen: false }">
                     <div class="flex justify-between">
                         <span>{{ $call->priority }}</span>
@@ -184,7 +187,9 @@
                         @endforeach
                     </div>
                 </td>
-                <td class="p-1 border border-slate-400">{{ $call->time }}m</td>
+                <td class="p-1 border border-slate-400 tabular-nums" title="Time since call created: {{ $call->created_at?->format('d M Y H:i:s') ?? 'Unknown' }}">
+                    {{ $call->time }}m
+                </td>
                 <td class="relative p-1 border border-slate-400" x-data="{ unitsOpen: false }">
                     <div class="flex justify-between">
                         <span>

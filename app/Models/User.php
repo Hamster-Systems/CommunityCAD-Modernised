@@ -62,10 +62,7 @@ class User extends Authenticatable
 
     public function getAgeAttribute()
     {
-        $birthday = $this->birthday;
-        $age = Carbon::parse($birthday)->age;
-
-        return $age;
+        return $this->birthday?->age;
     }
 
     public function getPreferredNameAttribute()
@@ -74,16 +71,16 @@ class User extends Authenticatable
             return $this->display_name;
         }
 
-        return $this->getDiscordAttribute();
+        return $this->discord_name ?: 'CommunityCAD user';
     }
 
     public function getDiscordAttribute()
     {
-        if ($this->discriminator == 0) {
-            return $this->discord_name;
+        if (!$this->discord_name) {
+            return null;
         }
 
-        return $this->discord_name.'#'.$this->discriminator;
+        return $this->discord_name.($this->discriminator ? '#'.$this->discriminator : '');
     }
 
     public function getStatusNameAttribute()

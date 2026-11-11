@@ -88,11 +88,26 @@
                     </a>
                 </div>
                 <div class="flex items-center">
+                    <button type="button"
+                            title="Create call" aria-label="Create call"
+                            onclick="window.dispatchEvent(new CustomEvent('cad-open-new-call'))"
+                            class="flex h-10 items-center gap-2 border border-sky-600 bg-[#164269] px-4 text-sm font-bold text-white hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400">
+                            <svg class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
+                            </svg>
+                            <span>New Call</span>
+                    </button>
                     @livewire('cad.dispatch-status')
                 </div>
             </div>
         </div>
-        @livewire('cad.unit-status-strip')
+        {{-- Dispatch keeps its existing dispatcher control row while on duty.
+             The shared status strip is only shown to an unavailable dispatcher,
+             so the two controls never appear together. Patrol/Fire unchanged. --}}
+        @if ((int) auth()->user()->active_unit->department_type !== 2
+            || str_starts_with(auth()->user()->active_unit->status, 'OFFDTY'))
+            @livewire('cad.unit-status-strip')
+        @endif
         <div class="flex justify-between max-w-7xl mx-auto mt-2">
             <div class="flex items-center text-gray-300 space-x-4">
                 {{-- <a class="hover:underline" href="#">Firearm Database</a> --}}
@@ -104,8 +119,6 @@
                         onclick="openExternalWindow('{{ route('cad.ten_code.index') }}')">10
                         Codes</a>
                 @endif
-                <a class="hover:underline @if (request()->is('cad/call/create')) font-bold underline text-white text-xl @endif"
-                    href="{{ route('cad.call.create') }}">Create a call</a>
                 <a class="hover:underline @if (request()->is('cad/report/create')) font-bold underline text-white text-xl @endif"
                     href="#" onclick="openExternalWindow('{{ route('cad.report.create') }}')">Create a
                     Report</a>

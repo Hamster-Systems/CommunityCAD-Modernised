@@ -14,4 +14,6 @@
             @livewire('cad.mdt.mdt-screen')
         @endif
     </div>
+
+    @include('inc.cad.new-call-modal')
 @endsection

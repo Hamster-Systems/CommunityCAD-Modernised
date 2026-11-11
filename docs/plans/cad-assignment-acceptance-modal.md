@@ -1,0 +1,350 @@
+# CAD assignment acceptance — modal upgrade
+
+This branch builds on the already-merged assignment prompt (PR #28), without resetting the MDT/CAD layout or audio subsystem.
+
+## Confirmed existing implementation
+- Shared `CallUnitAssignmentService::attach` is used by dispatcher and self-attach flows.
+- Shared `AlertBar` is included in `inc/cad/mdt-nav.blade.php`, and polls every five seconds.
+- Before this branch, the prompt was an **inline banner**, only allowed for on-duty units. The assignment service rejected units with status `OFFDTY`.
+- Accepted dispatch calls update unit response state via `UnitResponseStatusService` and advance incident response status where applicable.
+
+## Changes in this branch
+- Render a centered, keyboard-focus-visible, responsive callout **modal**, not an inline banner.
+- Show its call ID and **Accept · En Route**, an alternative action, and View Call.
+- Dispatch or self-attach of a signed-in off-duty unit creates an assignment *invitation* without changing duty state.
+- An off-duty unit must **explicitly accept** to go on duty and En Route. Duty + response transitions execute in a DB transaction.
+- Off-duty **Decline** removes the assignment and keeps the unit off duty.
+- Already-on-duty units can **Keep current status** without accidentally detaching.
+- Existing assigned-call audio, panic flags, other incident states and unit status toolbar remain unchanged.
+- Continue to use the existing `CAD_PROMPT_ENROUTE_ON_ASSIGNMENT` toggle and current 10-minute assignment description polling signal.
+
+## QA before merging
+- [ ] Dispatch adds an **on-duty** unit to a call: modal appears in that officer's other browser on home and MDT within 5 seconds.
+- [ ] Officer accepts: unit becomes ENRUTE, incident changes from RCVD to ENRT, assignment remains, activity log updated.
+- [ ] Officer selects Keep current status: on-duty assignment remains attached, status unchanged, no repeated modal.
+- [ ] Dispatcher attaches an **off-duty** but signed-in unit: modal appears, unit stays OFFDTY before response.
+- [ ] Officer accepts: becomes on duty + ENRUTE, and incident progresses as appropriate.
+- [ ] Officer declines: unit stays OFFDTY, call assignment removed, incident response status reopens if appropriate.
+- [ ] Self-attach on-duty/off-duty shows same modal (including redirects to call details).
+- [ ] Panic unit cannot accept; closed incidents cannot be assigned.
+- [ ] Assignment prompts do not leak to other officers' sessions.
+- [ ] Repeated polling does not repeat a handled prompt; re-assignment creates a new prompt.
+- [ ] Modal fits small screens; keyboard focus and screen readers tested.
+- [ ] No regressions to existing CAD activity, dispatch controls, clock, panic or audio notifications.
+
+**Important limitation:** The existing ten-minute, `active_units.description`-based assignment signal is not a durable notification queue. A future event-driven task (PR #35) can replace it. This draft has not been tested in the user's Docker environment.
+
+## Location / Postal recovery
+PR #34 merged only a BUSY text-colour improvement and Docker documentation, not the earlier Location/Postal work. Its description says the earlier changes were rolled back to a `backup/pr34-before-visual-rollback-20261109` ref. That ref is not currently reachable as a GitHub branch from the connector, so it must be located through local Git history/reflog, a commit SHA or other preserved backup before any selective restoration. Do not restore the old entire layout/CSS change blindly.
+
+
+## 10 November — CAD Update Modernization corrections
+
+**Prompt behaviour:**
+- Keep the original compact, inline En Route prompt for units that are already on duty and assigned to a call.
+- The blocking callout **modal is shown only if that signed-in unit is unavailable/off duty** (`OFFDTY`), offering explicit on-duty/En Route acceptance or decline. Merely dispatching them never changes their duty state.
+
+**Sound notification routing:**
+- Panic is the only intentionally global sound event.
+- Unit status and call assignment tones are targeted to the affected unit's signed-in account.
+- Incident status/field updates are sent to units attached to the same incident, not the entire CAD. Timestamp-only changes do not ring.
+- New-call tones go to on-duty dispatchers rather than every patrol unit.
+- The audio-feed endpoint allows only targeted events or global panic, so older untargeted audio records cannot be played by unrelated units.
+- Verify 2+ browser profiles representing unrelated units and 2 units attached to the same call.
+
+**Per-department subdivisions:**
+- Admin → Manage Departments → Edit (and Create) now configures available MDT subdivisions separately per department, one name per line.
+- Additive migration stores each department's list as JSON and initially copies legacy options to existing departments to preserve current identifiers.
+- MDT identity forms display only the chosen department's entries and validate membership/option ownership on submission. Changing the selected department clears incompatible selections.
+- These settings are no longer read from global `cad.mdt_subdivisions` at runtime (the old setting is used only during data migration).
+- Verify existing subdivision data and each department's administrative configuration after migration.
+
+**Dispatcher workspace:** Future dedicated dispatcher console is tracked in GitHub issue #45. The current implementation does not redesign dispatch.
+
+**Draft PR:** Changes committed, but not yet tested against the running Docker development installation. Migrate with a database backup first.
+
+
+## Directed audio and panic display follow-up (10 November)
+
+### Audio isolation
+- Call status/field updates use the attached-unit recipient set; users not assigned to the incident cannot hear that call-update tone.
+- Call notes added via both `CallLogController::store` and `CallChat::postNote` now explicitly publish the call-update event to current attached units (the call logger touches timestamps only, which is intentionally not a sound trigger).
+- Assignment audio takes precedence over the incidental AVL → BUSY status change, preventing two overlapping tones when assigned to a call.
+- The feed only includes matching `target_user_id` records plus global panic; historic unscoped non-panic events are filtered server-side.
+- Default/custom/muted settings and volume still come from the existing Admin CAD Audio configuration.
+
+### Panic flashing isolation
+- `cad-panic-row` animates **table-cell backgrounds**, not the row, cell or its children’s opacity. Interactive menus, text, tooltips and buttons no longer dim with the panic pulse.
+- Unit rows calculate a deterministic animation offset from the unit ID; incident rows use a call ID offset. Different units are usually out of phase instead of pulsing together.
+- CSS is scoped to the CAD layout; no global Tailwind rebuild is required.
+- `prefers-reduced-motion` displays a non-animated, readable panic highlight.
+
+### QA matrix
+- [ ] Unit A changes status: A hears its own status sound, B remains silent.
+- [ ] A is attached: only A hears assignment tone; no duplicate BUSY tone.
+- [ ] A and B attached to call 1, C attached to call 2: note/status updates on call 1 sound for A+B but not C.
+- [ ] A panics: A+B+C hear global panic, no simultaneous status tone.
+- [ ] Two units panic: their table backgrounds pulse out of phase; the incident and unit rows do not cause dropdowns, tooltip or action menus to fade.
+- [ ] Hold open an incident action menu while panic is flashing; its background, text and focus remain legible.
+- [ ] Confirm sound playback with two separate browser accounts and Admin CAD Audio custom/mute settings.
+- [ ] Verify reduced-motion UI (no flashing), Livewire refresh and Firefox console.
+
+**Implementation committed to PR #44, not yet browser/integration verified.**
+
+
+## Co-responder audio propagation fix (10 November)
+
+**Observed:** Direct changes to a call already played for attached units, but UNIT activity records from a new assignment, arrival on scene or response-stage changes only made a sound for the unit performing the action.
+
+**Change:**
+- `CadAudioPublisher::unitActivity(call, actorUserId)` publishes `call_updated` to **other** currently attached units, excluding the actor.
+- `CallUnitAssignmentService` calls it on attach and detach, after the assignment and activity record are saved.
+- `UnitResponseStatusService` calls it on response/status changes including En Route, On Scene, Available and Unavailable detachment.
+- Automatic response-stage progression now uses `updateQuietly` to prevent a second notification via the Call model observer after the unit-activity event. Direct call edits still use normal model updates and continue to sound for all attached units.
+- The responding unit continues hearing its own `call_assigned` / `unit_status` notification instead of a duplicate `call_updated` sound.
+
+**QA:** With A+B on call 1 and C on call 2: attach A to call 1 (B hears call update, A hears assignment); B sets ONSCN (A hears call update, B hears status); a direct call edit sounds for A+B, not C; detaching B sounds for A, not C; activating panic remains global. Ensure one sound per action per participant.
+
+
+## Transporting status colour + call age (10 November)
+
+- Transporting uses a distinct violet selected-state control in the shared MDT toolbar. Unit roster rows use a scoped `cad-status-transport` class with readable violet text instead of relying on the previously compiled utility class.
+- The `Call::time` accessor now measures elapsed **whole minutes from `calls.created_at`**, not from `updated_at`. Calls remain aged when their notes, assignments, status or priority change.
+- `Call::age_seconds` provides non-negative integer elapsed seconds so future age-based priority rules can share the same source of truth; **no automatic priority escalation is enabled in this PR**.
+- The call TIME table cell retains the existing minute display and provides a tooltip with the incident creation timestamp. Unit roster TIME is untouched and continues to reflect last unit update.
+
+### Regression tests
+- [ ] Choose Transporting on an assigned unit: button is violet and unit roster text remains readable, including inside dispatch.
+- [ ] Change unit to another state: Transporting active colour clears.
+- [ ] Create a call, wait >1 minute, add a note/change status/priority/attach a unit: call TIME continues increasing instead of returning to 0.
+- [ ] Unit status TIME continues to reflect last unit status update as before.
+- [ ] Historical calls retain their created timestamp and no database migration is necessary.
+- [ ] Verify reduced-motion and panic styles do not obscure the Transporting state.
+
+
+## Separate Call Updated audio setting (10 November)
+
+- The Admin CAD Audio page now has **three distinct slots**: `Call status updated` (existing `call_updated`), `Call Updated` (new `call_activity_updated`), and `Unit status updated` (existing `unit_status`).
+- Direct incident status/priority/core field edits retain the old `call_updated` sound and the customer’s existing upload/volume settings; personal unit status stays on `unit_status`.
+- Newly posted Call Notes / Activity notes and updates when other responders attach, detach or change their unit response status now emit `call_activity_updated`, with recipients restricted to the relevant attached users.
+- The new audio slot automatically appears from the `CadAudio::EVENTS` allowlist in Admin CAD Audio. It supports its own custom MP3/OGG/WAV, volume, mute, preview, and reset controls with persistent storage; no controller/route/schema changes needed.
+- The initial built-in fallback reuses the existing notification clip until an admin uploads the **"Your call has been updated"** custom MP3 to the new Call Updated slot. Existing configured audio is never overwritten.
+
+### Regression QA
+- [ ] Admin CAD Audio shows Call status updated, Call Updated, Unit status updated separately.
+- [ ] Upload Call Updated MP3, save, preview, confirm changes to its volume/mute do not modify the other two slots.
+- [ ] Unit A posts a Call Note: A+B attached units hear Call Updated; unrelated C hears nothing.
+- [ ] Unit B goes On Scene: B hears Unit status, A hears Call Updated, C hears nothing.
+- [ ] Dispatcher manually changes call priority: attached units hear the existing Call status updated slot, not Call Updated.
+- [ ] Panic remains global and no extra call-update sound is emitted.
+
+
+## Self-initiated vs dispatcher-initiated unit status audio (10 November)
+
+- Introduced a **Unit status updated (self)** CAD Audio setting with independent custom file, mute, preview and volume. Intended voice line: **"Your status has been updated."**
+- Retained the existing `unit_status` event and existing admin custom audio/settings for **Unit status updated by dispatch**, whose voice line remains **"Your status has been updated by dispatch."**
+- `CadAudioPublisher::unitUpdated` determines who initiated the active-unit status change by checking the authenticated actor against the target `ActiveUnit.user_id`. Self changes emit `unit_status_self`; other users/system-issued changes emit `unit_status`. Both are directed to the status-affected user only.
+- Assignment, panic, call status and shared Call Updated audio logic remains unchanged. Both unit-status slots use the bundled `statusupdated.mp3` as a temporary default until the respective custom sound is uploaded.
+- No schema migration required. Admin CAD Audio lists the new event automatically from the allowlist.
+
+### QA
+- [ ] Unit A changes its own status in MDT: only A receives `unit_status_self`.
+- [ ] Dispatcher changes A's status: only A receives `unit_status` using the pre-existing dispatch clip.
+- [ ] A is attached to B's call and changes status: B receives the separate Call Updated sound; A only hears its self-status sound.
+- [ ] Panic and call assignment still suppress overlapping status sounds.
+- [ ] Upload/preview/mute/volume settings for the self slot are independent of the existing dispatch unit-status slot.
+
+
+## CAD Audio categories and custom-first configuration (10 November)
+
+### Behaviour
+- **Custom audio** is the normal/default enabled mode. With no uploaded file, it plays the event's existing bundled MP3 automatically. Users can upload a replacement from the same form without first switching modes.
+- **Muted** is the only other mode. Muting retains the uploaded file; enabling Custom restores it. Uploading a file while muted automatically re-enables Custom.
+- Legacy saved `default` modes are read as `custom` without changing existing records. Existing custom recordings and per-event volume values are preserved. **Restore bundled sound** removes that event's custom recording and restores volume 100% and enabled Custom mode.
+- All sounds are private allowlisted routes with existing server-side file type validation. Event names and uploaded file paths remain server-owned.
+
+### Voice notifications
+- `new_call` — New dispatch
+- `call_updated` — Dispatch/call details updated
+- `dispatch_closed` — Dispatch closed, triggered by closing an assigned incident before detachment (not by ordinary status changes)
+- `dispatch_note` — Dispatch note submitted through Activity with category DISPATCH
+- `call_activity_updated` — Call Updated (Call Notes, other unit attach/detach and response activity)
+- `call_assigned` — Unit assigned to call
+- `unit_status` — Dispatcher changes another unit's status
+- `unit_status_self` — Unit updates their own status
+- `panic` — Global unit panic
+
+New voice event categories use existing bundled recordings as **temporary fallback audio** until an administrator uploads custom clips. Signal chirps, timer alerts, fire station tones and other department alert patterns belong in a later separate **Department & alert tones** table; no fire tones are enabled by this change.
+
+### Test matrix
+- [ ] Existing installations with `mode=default` load as Custom, with their bundled audio still audible.
+- [ ] Upload an MP3 directly from the Custom-first form and confirm preview and CAD feed both use it.
+- [ ] Mute a sound, then unmute: uploaded file still plays. Uploading another MP3 while muted activates Custom.
+- [ ] Restore bundled sound removes only that event's uploaded file and never alters another event's volume/settings.
+- [ ] Dispatch NOTE in Activity emits `dispatch_note` to attached units; regular Call Notes emit `call_activity_updated`.
+- [ ] Call closure emits exactly one `dispatch_closed` event to users attached at closure time.
+- [ ] Ordinary call status/priority edits still emit `call_updated`, unit statuses and panic remain properly directed.
+- [ ] Frontend displays the distinct notification cards plus the nonfunctional future tones placeholder, without extra tone settings.
+
+
+## Suppress self-notification for call-note author (10 November)
+
+- When a signed-in unit submits a Call Note through the Call Notes tab, full Activity composer or standard call note endpoint, the submitting user's account is excluded from that note's audible `call_activity_updated` event.
+- The other currently attached users still receive the event; unrelated units remain silent. The same author exclusion applies to `DISPATCH`-category entries using `dispatch_note`.
+- The note remains visible to the author and all other users in both Call Notes and Activity; this is only sound suppression, not filtering or hiding history.
+- Direct changes to call status/details and unit statuses keep their existing sound behaviour; panic remains global.
+- No migration or frontend compilation required.
+
+**QA**: A and B assigned to the same call. A posts a NOTE: A hears nothing; B hears Call Updated. B posts DISPATCH-category activity: B hears nothing; A hears Dispatch Note. A posts while not attached: assigned B still hears the note, A does not. A alone on the call: no unnecessary sound. Confirm timestamps and activity visibility are unchanged.
+
+
+## Dispatch Note consolidation / alert tones section separation (10 November)
+
+This supersedes the earlier separate Dispatch Note audio proposal:
+- DISPATCH-category incident notes, regular Call Notes, situation notes and witness notes all use the existing **Call Updated** (`call_activity_updated`) sound setting. The separate `dispatch_note` event is removed from the audio allowlist and admin interface.
+- The Call Updated uploaded recording, mute state, and volume remain unchanged; **old Dispatch Note setting rows and custom files are not deleted**, avoiding destructive configuration changes.
+- The note's author is excluded from playback; only other units attached to the call hear the alert. The Activity and Call Notes UI continue to display the recorded note.
+- **Call status updated** (`call_updated`) remains distinct and continues to handle direct status/priority/field edits.
+- The Department & alert tones placeholder now has a dedicated visual section separator: large vertical gap, border divider and a separate panel background. These tones are still future functionality only.
+
+QA: with A+B attached, A posts DISPATCH or NOTE category; B hears the existing Call Updated recording, A hears nothing; unrelated C hears nothing. Check Audio Admin contains one Call Updated and no Dispatch Note card; previously uploaded Call Updated MP3 remains configured. Verify the separator remains visible at desktop and narrow widths. No migrations required.
+
+
+## Compact Sonoran-inspired audio recording field (10 November)
+
+- Replaced the large native **Replace recording** file picker with a compact, read-only **current recording link** (authenticated preview endpoint) alongside an **Upload** control.
+- The link opens the currently configured sound without exposing its private storage pathname or leaking public storage URLs. Uploaded and bundled recordings both resolve through the same allowlisted preview route.
+- The upload control uses the existing secure MP3/OGG/WAV file input and original save endpoint. After choosing a file, its name appears, with a reminder to press **Save audio**.
+- Admin preview is now permitted even while the sound is muted, so the visible link always works for authorised administrators; the normal CAD audio stream remains 404 while muted.
+- File validation, 2 MB limit, private storage, per-event volume, mute, source badges, and restore-bundled behaviour remain unchanged.
+- No schema migration or frontend build.
+
+### QA
+- [ ] Link opens the existing bundled or uploaded MP3 in a separate tab using authenticated admin route.
+- [ ] Upload button invokes the file picker; selected name appears; Save audio persists replacement.
+- [ ] Upload while muted re-enables the notification as previously supported.
+- [ ] Muted admin preview link works, but muted regular CAD stream still fails as intended.
+- [ ] At 320px width the URL truncates inside its field without shifting the upload button or overflowing the card.
+- [ ] Keyboard focus can reach both the link and upload input.
+
+
+## Restore call Postal and unit Location columns (11 November)
+
+- Added a **Postal** column to the MDT call queue, between City and Priority.
+- Added a **Location** column to the active unit roster in both the patrol MDT and dispatcher CAD screen, between Status and Time.
+- New nullable `calls.postal` and `active_units.location` fields have an additive, backward-compatible migration. Existing records remain null and display **Unavailable** rather than fabricated location values.
+- Unit Location is reserved for future trusted location updates from the FiveM integration; it is **not inferred** from a unit's attached call, status or browser IP.
+- Call Postal is a separate incident field and must be supplied explicitly by the future call form/API integration; it is **not derived** from the incident street address.
+- No change to assignment, unit response statuses or the existing call-status audio. Existing call rows keep their creation-based TIME value.
+
+### QA
+- [ ] Back up the development database, then run `php artisan migrate --force` inside app container as `www-data`.
+- [ ] Confirm both new columns exist, and old calls/units display **Unavailable** without SQL/Blade errors.
+- [ ] Confirm setting either field via a trusted data source displays the stored value on the appropriate roster/queue.
+- [ ] Confirm patrol and dispatcher unit tables match, and narrow screens remain usable.
+- [ ] Follow-up integration: add server-authorised call postal entry and FiveM-driven unit location updates, plus tenant-admin field visibility controls; do not expose arbitrary client-side location editing.
+
+
+## Issue #33 — Compact New Call modal on /cad/call (11 November)
+
+Implemented in the **existing PR #44 branch**; left Issue #33 open pending browser QA.
+
+- Added a compact **phone-icon New Call** action alongside the Recent Calls heading, with an accessible `Create call` label, keyboard focus styling, and no removal/change to the existing dispatcher presence controls.
+- Opens a dark, responsive overlay dialog without leaving `/cad/call`. The dialog embeds the **existing** `cad.call-create-screen` Livewire component so the full form, nature list, source/priority/type/status, narrative, linked-civilian search and associated roles remain in one place.
+- Reuses `cad.call.store`, the existing `CallStoreRequest` validation, controller persistence and `CallActivityLogger` activity record. The controller returns **201 JSON** when called by the modal, retaining redirects for the original standalone create page.
+- Inline validation errors are shown without dismissing the modal. Submit is disabled during the request to prevent accidental double-click submissions.
+- After success, the dialog closes, an **Open created call** link appears, and the Recent/Older call-list grids refresh from a same-origin HTML GET without a full navigation or replaying page-load audio. A Livewire `incidentUpdated` event is also emitted for listening CAD components.
+- Cancel/close/Escape protects unsaved edits with a confirmation, returns keyboard focus to the phone action, and clears the form/linked civilians after discard or save. Modal focus is cycled using Tab/Shift+Tab, and the background call list is inert while open.
+- Fixed an existing priority-selector issue where Priority 4/5 options had incorrectly submitted value 3.
+- The existing create-call route and the original navigation link remain available until the replacement is verified in real-world use.
+
+### QA acceptance checklist
+- [ ] Patrol and dispatcher can reach /cad/call and launch the dialog via mouse or keyboard.
+- [ ] Existing dispatcher offline/presence controls still work.
+- [ ] All required fields, caller search, linked-civilian selection and statuses submit through existing endpoint.
+- [ ] Invalid address/city/narrative keeps dialog open with useful validation and no call created.
+- [ ] Double-click Create sends exactly one request and creates exactly one incident; inspect Activity log.
+- [ ] After successful submission, modal closes; new call appears in Recent Calls with an Open created call action, without a full page reload.
+- [ ] Reopen after cancel/submit starts empty; cancel with changes asks for confirmation.
+- [ ] Escape and close icon work, Tab stays inside modal, and focus returns to New Call.
+- [ ] Verify stacking, scrolling and error feedback on desktop and narrow/mobile displays.
+- [ ] Original /cad/call/create form still submits and redirects as before, including corrected Priority 4/5.
+- [ ] Confirm no new audio plays unexpectedly for the person who created the call.
+
+No database migration or frontend compilation was added specifically for Issue #33; this branch already contains other migrations from previous enhancements.
+
+
+## Issue #33 placement clarification — New Call replaces the MDT Dispatch Offline banner (11 November)
+
+- The requested primary action belongs at the **top-right of the main `/cad/mdt` navigation**, replacing the visible Dispatch Online/Offline status badge with a compact phone-icon **New Call** button.
+- The actual dispatcher presence calculation and Livewire polling are **not deleted**; its badge is simply hidden on `/cad/mdt`. Existing panic / clear-panic controls remain visible and functional.
+- Clicking the button opens the full shared create-call form in an overlay **on the MDT**, without leaving the unit/call table. The overlay submits through the existing `cad.call.store` endpoint and emits a Livewire update after creation; it provides an Open created call link.
+- Removed the redundant lower-nav Create a call link **on the MDT only**. The standalone `/cad/call/create` route and New Call action on `/cad/call` remain available as fallbacks.
+- Applied explicit high-stacking overlay styles to avoid dependence on rebuilding Tailwind.
+- **QA:** test both dispatcher and patrol identities, panic controls, valid/invalid creation, focus/cancel, a refresh of MDT tables, and audio no-repeat. No new migration or npm build for this placement fix.
+
+
+## Issue #33 follow-up — New Call everywhere and modal usability (11 November)
+
+- Removed the visual **Dispatcher Online / On Call / Break / Offline** badge entirely from the shared CAD navigation on all pages, while retaining the underlying dispatcher status queries and panic/clear-panic controls.
+- The same **New Call** handset action now appears in the shared top-right CAD navigation on every signed-in CAD page rather than just MDT. Removed the redundant lower-nav **Create a call** link. The Calls queue's second header button was also removed.
+- Extracted the full New Call modal into a shared Blade partial for MDT and other CAD pages. The Calls queue retains its inline modal and automatically refreshed call-list display; its navbar phone button launches the same workflow.
+- Improved the modal's layout: more compact section spacing, removed empty Caller Info placeholders, clearer field labels/placeholders and focus states, mobile-friendly address grid, and streamlined section titles.
+- Added **optional Postal** to the incident-creation form and existing validation, storing the value in the nullable `calls.postal` field introduced by the earlier PR #44 migration. Does not guess postal information from addresses.
+- Existing server-side creation rules, call numbering, incident activity log, linked-civilian handling, response type, panic and dispatcher presence logic remain in place.
+- No frontend asset compilation required for these scoped Blade/CSS changes. Requires the **previously added postal/location schema migration** to have been run before using optional Postal.
+
+### Regression QA
+- [ ] Visit MDT, Calls queue, incident details, CAD Home, name search, vehicle search, report creation, and message centre: each shows a single New Call handset in the header and no dispatcher Online/Offline badge.
+- [ ] New Call opens on each page without navigation, with correct overlay layering and focus trapping.
+- [ ] Close/Cancel/Escape and unsaved-data confirmation work on all pages; no duplicate modal appears.
+- [ ] Create a call with optional postal and verify it appears in the MDT call queue; leaving postal blank displays Unavailable.
+- [ ] Linked civilian search, priority 1–5, incident nature, required fields and validation still work; duplicates aren't created by repeated clicks.
+- [ ] Panic and clear-panic buttons remain usable; no additional notification sound replay.
+- [ ] Verify the new address row, scrolling, keyboard focus and compact Caller Information section on mobile.
+
+
+## Issue #33 follow-up — Two-stage 911 intake and modal layout correction (11 November)
+
+This replaces the earlier proposal of linking civilians inside the New Call modal:
+
+1. **Create 911 Call:** The header phone button opens a compact initial incident form with address, city, optional postal, nature, received-via, priority, type, initial status and a brief narrative. No person linking or other advanced incident editing is shown in the modal.
+2. **Open 911 Call:** On successful creation, the browser navigates to the newly created incident's existing full details screen. Dispatch can now add people/vehicles, record detailed notes and assign responding units using the existing incident tabs/actions.
+
+- Existing full `/cad/call/create` form retains civilian linking as a fallback; this is not a removal of the linking feature from the application.
+- The modal was intentionally simplified instead of introducing a premature 3–4 step wizard. A future guided 911 intake flow can build upon the established full incident workspace.
+- Corrected the screenshot's broken narrow address inputs by removing reliance on Tailwind `w-1/2` etc. inside a grid and defining explicit responsive **Address/City/Postal**, **Nature/Received Via**, and **Priority/Type/Status** grid layouts.
+- Removed the Caller Information gap from the modal, improved its maximum viewport height, field widths, labels, narrative spacing and mobile layout. Both the shared navbar modal and Calls queue modal receive the same responsive CSS.
+- Submission still uses `CallStoreRequest`, existing controller/activity logic and duplicate-click protection; the returned incident URL is the authority for navigation.
+- Existing required fields and optional postal DB migration remain unchanged. No additional database migration or frontend compilation for this refinement.
+
+### Updated QA
+- [ ] Modal on MDT/Home/Calls shows no person-linking search or empty Caller Information space.
+- [ ] Address, City, Postal, Nature, Received Via, Priority, Type and Status controls use the available width correctly at desktop and mobile sizes.
+- [ ] Create once: one call/Activity record created, dialog transitions directly to `/cad/call/{id}`.
+- [ ] Full incident workspace permits adding people, more details and units after creation.
+- [ ] Invalid input leaves modal open with errors; cancelled input leaves no new incident.
+- [ ] Standalone `/cad/call/create` still permits linking people and displays responsive fields.
+
+
+## CAD Settings imported street directory / New Call autocomplete (11 November)
+
+- Added **CAD Settings → CAD Address Directory** with admin-only CSV upload (2 MB max), Append/Update and Replace modes, unique-address deduplication, and count of stored records.
+- CSV requires a `street`, `address` or `location` header; optional `city` and `postal` (or `postcode`) headers. Example: `docs/examples/cad-addresses-example.csv`. Maximum 10,000 unique imported entries per file, imported transactionally. Replacing the directory is destructive and is labelled as such.
+- Added `cad_address_directory` table and `AddressDirectory` Eloquent model. New migration `2026_11_11_193000_create_cad_address_directory_table.php`; **run migration before using the importer or New Call form**.
+- Added authenticated, rate-limited `GET /cad/addresses/suggest?q=...` for searching imported entries by street, city or postal. Returns only administrator-imported data, not geocoded or inferred street records.
+- The 911 Call **Incident Address** field now displays a scrolling dropdown, showing **five results at a time** while permitting up to 20 matching results to be scrolled through. Minimum search length is two characters and input is debounced.
+- Clicking a result fills the **Incident Address** and, when supplied, **City/Postal** in the current form. Manual entry remains possible if no imported address matches.
+- Keyboard: Arrow Up/Down navigates matching results, Enter selects and Escape closes; listbox/combobox roles and focus states included.
+- Both global New Call modal and Calls queue modal share the same address-lookup component, with standalone Create Call support; no npm/Tailwind compilation needed.
+
+### Address import QA
+- [ ] Migrate and verify `cad_address_directory` table exists before visiting CAD Settings.
+- [ ] Import provided sample CSV; check count and lookup suggestions for Marina and Paleto.
+- [ ] Confirm imported street selection fills City and Postal when present, without overwriting manually typed data when no imported city/postal is present.
+- [ ] Confirm only five options are visible at once and menu scrolls for larger result sets.
+- [ ] Confirm keyboard operation, manual entry, escape, mobile layout and modal scroll/z-index.
+- [ ] Import a duplicate CSV in append mode: no duplicate addresses; replace mode removes old data atomically.
+- [ ] Attempt invalid headings/oversized files/unauthorised import: reject with meaningful errors.
+- [ ] Verify import and suggestions work for all CAD roles that may create a call, without exposing admin import capabilities.
+- [ ] Ensure existing New Call save and redirect to incident still work and no missing-column errors occur.

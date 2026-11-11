@@ -12,6 +12,28 @@ document.addEventListener('DOMContentLoaded', function () {
         updateSummary();
     });
     document.querySelectorAll('[data-identifier-form]').forEach(function (form) {
+        // Keep subdivision choices scoped to the selected MDT department.
+        const department = form.querySelector('[name="user_department_id"]');
+        const subdivisionDropdown = form.querySelector('[data-subdivision-dropdown]');
+        let optionsByDepartment = {};
+        try { optionsByDepartment = JSON.parse(form.dataset.departmentSubdivisions || '{}'); } catch (_) {}
+        function updateDepartmentSubdivisions() {
+            const allowed = new Set(optionsByDepartment[department?.value] || []);
+            subdivisionDropdown?.querySelectorAll('[data-subdivision-option]').forEach(function (label) {
+                const checkbox = label.querySelector('input[type="checkbox"]');
+                const visible = allowed.has(label.dataset.subdivisionOption);
+                label.hidden = !visible;
+                label.style.display = visible ? '' : 'none';
+                if (checkbox) {
+                    checkbox.disabled = !visible;
+                    if (!visible) checkbox.checked = false;
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        }
+        department?.addEventListener('change', updateDepartmentSubdivisions);
+        updateDepartmentSubdivisions();
+
         const civilianSelect = form.querySelector('[name="civilian_id"]');
         const nameField = form.querySelector('[name="display_name"]');
         const hint = form.querySelector('[data-name-hint]');

@@ -4,13 +4,15 @@
             <th class="border border-slate-400">Agency</th>
             <th class="border border-slate-400">Unit #</th>
             <th class="border border-slate-400">Status</th>
+            <th class="border border-slate-400">Location</th>
             <th class="border border-slate-400">Time</th>
             <th class="border border-slate-400">Call #</th>
             <th class="border border-slate-400">Description</th>
         </tr>
         @foreach ($active_units as $active_unit)
             @if ($active_unit->department_type != 2)
-                <tr class="{{ $active_unit->is_panic ? 'cad-panic-row' : $active_unit->display_status_text_color }}">
+                <tr class="{{ $active_unit->is_panic ? 'cad-panic-row' : $active_unit->display_status_text_color }}"
+                    style="--cad-panic-offset: -{{ ((int) $active_unit->id % 11) * 133 }}ms">
                     <td class="p-1 border border-slate-400">
                         {{ $active_unit->user_department?->department?->initials ?? '—' }}</td>
                     <td class="p-1 border border-slate-400">{{ $active_unit->unit_callsign }}
@@ -44,6 +46,7 @@
                                 wire:click="hard_offduty({{ $active_unit->id }})">Hard Off Duty</a>
                         </div>
                     </td>
+                    <td class="p-1 border border-slate-400">{{ filled($active_unit->location) ? $active_unit->location : 'Unavailable' }}</td>
                     <td class="p-1 border border-slate-400">{{ $active_unit->time }}m</td>
                     <td class="relative p-1 border border-slate-400" x-data="{ callsOpen: false }">
                         <div class="flex justify-between">

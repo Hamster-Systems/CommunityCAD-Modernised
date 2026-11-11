@@ -5,6 +5,7 @@ use App\Http\Controllers\Cad\BoloController;
 use App\Http\Controllers\Cad\CadController;
 use App\Http\Controllers\Cad\CallCivilianController;
 use App\Http\Controllers\Cad\CallController;
+use App\Http\Controllers\Cad\CadAddressLookupController;
 use App\Http\Controllers\Cad\CallUnitActionController;
 use App\Http\Controllers\Cad\UnitQuickStatusController;
 use App\Http\Controllers\Cad\GlobalUnitStatusController;
@@ -47,6 +48,7 @@ Route::middleware('cad.active_unit_check')->group(function () {
 
     Route::post('call/{call}/my-unit', CallUnitActionController::class)->name('call.my_unit');
     Route::post('call/{call}/my-status', UnitQuickStatusController::class)->name('call.my_status');
+    Route::get('addresses/suggest', CadAddressLookupController::class)->name('addresses.suggest')->middleware('throttle:120,1');
     Route::resource('call', CallController::class);
 
     Route::get('offduty', [OffDutyController::class, 'create'])->name('offduty.create');

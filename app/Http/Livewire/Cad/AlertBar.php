@@ -5,6 +5,8 @@ namespace App\Http\Livewire\Cad;
 use App\Models\Cad\ActiveUnit;
 use App\Models\Call;
 use App\Support\Cad\UnitResponseStatusService;
+use App\Support\Cad\CallUnitAssignmentService;
+use Illuminate\Support\Facades\DB;
 use App\Support\Cad\CadAudio;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -14,6 +16,8 @@ class AlertBar extends Component
     public $active_alerts = [];
 
     public ?int $pendingEnrouteCallId = null;
+
+    public bool $pendingAssignmentOffDuty = false;
 
     protected $listeners = ['updated-page' => '$refresh', 'incidentUpdated' => '$refresh'];
 
@@ -30,7 +34,6 @@ class AlertBar extends Component
     {
         if (! config('cad.prompt_enroute_on_assignment', true)
             || $unit->is_panic
-            || str_starts_with($unit->status, 'OFFDTY')
             || in_array($unit->status, ['ENRUTE', 'ONSCN', 'TRANS'], true)
             || ! preg_match('/^Added to call:\s*(\d+)$/', trim((string) $unit->description), $matches)
             || ! $unit->updated_at
@@ -57,15 +60,31 @@ class AlertBar extends Component
         $call = $this->currentAssignment($unit);
         abort_unless($call && (int) $call->id === $callId, 409, 'This assignment prompt has expired.');
 
+        abort_if($unit->is_panic, 409, 'Clear the active panic before changing status.');
+        $assignmentTimestamp = $unit->updated_at->format('Y-m-d H:i:s.u');
+        $wasOffDuty = str_starts_with($unit->status, 'OFFDTY');
+
         if ($markEnroute) {
-            abort_if($unit->is_panic, 409, 'Clear the active panic before changing status.');
-            app(UnitResponseStatusService::class)->change($unit, 'ENRUTE', $call);
+            // Explicit acceptance is the only point where an off-duty unit
+            // becomes on duty. Perform both transitions atomically so a failed
+            // En Route transition cannot leave the unit incorrectly on duty.
+            DB::transaction(function () use ($unit, $call, $wasOffDuty) {
+                $response = app(UnitResponseStatusService::class);
+                if ($wasOffDuty) {
+                    $response->change($unit, 'BUSY', $call);
+                }
+                $response->change($unit, 'ENRUTE', $call);
+            });
+        } elseif ($wasOffDuty) {
+            // Declining an invitation leaves the unit off duty, without an
+            // active assignment they cannot respond to.
+            app(CallUnitAssignmentService::class)->detach($unit, $call);
         }
-        // A negative answer deliberately does NOT call change(..., 'AVL'):
-        // the ordinary Available action would detach the assigned call.
-        session()->put($this->assignmentKey($unit, $callId),
-            $unit->updated_at->format('Y-m-d H:i:s.u'));
+        // Already-on-duty users can keep their current status and remain
+        // attached. Do NOT call the global Available action (it detaches).
+        session()->put($this->assignmentKey($unit, $callId), $assignmentTimestamp);
         $this->pendingEnrouteCallId = null;
+        $this->pendingAssignmentOffDuty = false;
         $this->emit('incidentUpdated');
         $this->emit('updated-page');
     }
@@ -74,6 +93,7 @@ class AlertBar extends Component
     {
         $this->active_alerts = [];
         $this->pendingEnrouteCallId = null;
+        $this->pendingAssignmentOffDuty = false;
         $unit = auth()->user()?->active_unit;
 
         if (! $unit) {
@@ -116,6 +136,7 @@ class AlertBar extends Component
         $assignment = $this->currentAssignment($unit);
         if ($assignment) {
             $this->pendingEnrouteCallId = (int) $assignment->id;
+            $this->pendingAssignmentOffDuty = str_starts_with($unit->status, 'OFFDTY');
         } elseif (! config('cad.prompt_enroute_on_assignment', true)
             && preg_match('/^Added to call:\s*(\d+)$/', trim((string) $unit->description), $matches)
             && $unit->updated_at && $unit->updated_at->gt(now()->subSeconds(15))) {

@@ -7,7 +7,6 @@ use App\Models\Civilian;
 use App\Models\MdtIdentity;
 use App\Models\UserDepartment;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class MdtIdentityController extends Controller
 {
@@ -31,7 +30,7 @@ class MdtIdentityController extends Controller
             'callsign' => ['required', 'string', 'max:32', 'regex:/^[a-zA-Z0-9][a-zA-Z0-9 -]*$/'],
             'rank' => ['required', 'string', 'max:80'],
             'subdivisions' => ['nullable', 'array', 'max:8'],
-            'subdivisions.*' => ['required', 'string', 'max:80', 'distinct', Rule::in(config('cad.mdt_subdivisions', []))],
+            'subdivisions.*' => ['required', 'string', 'max:80', 'distinct'],
             'civilian_id' => ['nullable', 'integer'],
         ]);
     }
@@ -55,6 +54,14 @@ class MdtIdentityController extends Controller
         }
 
         $subdivisions = array_values($validated['subdivisions'] ?? []);
+        $allowed = $membership->department->mdt_subdivisions ?? [];
+        foreach ($subdivisions as $subdivision) {
+            if (! in_array($subdivision, $allowed, true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'subdivisions' => 'One or more subdivisions are not available in the selected department.',
+                ]);
+            }
+        }
         return [
             'user_department_id' => $membership->id,
             'display_name' => $displayName,
@@ -97,7 +104,7 @@ class MdtIdentityController extends Controller
             ->orderBy('first_name')->orderBy('last_name')
             ->get(['id', 'first_name', 'last_name']);
 
-        $subdivisions = config('cad.mdt_subdivisions', []);
+        $subdivisions = $available_departments->flatMap(fn ($membership) => $membership->department->mdt_subdivisions ?? [])->unique()->values()->all();
 
         return view('cad.identifier-edit', compact('identity', 'available_departments', 'civilians', 'subdivisions'));
     }

@@ -12,6 +12,8 @@ class Department extends Model
 
     protected $guarded = [];
 
+    protected $casts = ['mdt_subdivisions' => 'array'];
+
     public function getRouteKeyName()
     {
         return 'slug';

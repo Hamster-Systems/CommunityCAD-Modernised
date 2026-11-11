@@ -8,6 +8,8 @@ use Livewire\Component;
 
 class CallCreateScreen extends Component
 {
+    public bool $modal = false;
+
     public $civilian_search = '';
 
     public $civilians;
@@ -15,6 +17,22 @@ class CallCreateScreen extends Component
     public $linked_civilians = [];
 
     public $call_natures = CallNatures::NATURECODES;
+
+    protected $listeners = ['resetCallComposer' => 'resetComposer'];
+
+    public function mount(bool $modal = false): void
+    {
+        $this->modal = $modal;
+    }
+
+    public function resetComposer(): void
+    {
+        $this->civilian_search = '';
+        $this->linked_civilians = [];
+        $this->civilians = collect();
+    }
+
+
 
     public function render()
     {

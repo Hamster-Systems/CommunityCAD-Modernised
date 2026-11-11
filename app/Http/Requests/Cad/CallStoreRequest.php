@@ -25,6 +25,7 @@ class CallStoreRequest extends FormRequest
             'nature' => 'required',
             'location' => 'required',
             'city' => 'required',
+            'postal' => 'nullable|string|max:64',
             'priority' => 'required|numeric',
             'status' => 'required',
             'source' => 'required',

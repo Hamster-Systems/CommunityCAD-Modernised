@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Cad\ActiveUnit;
 use App\Models\Cad\CallNatures;
 use App\Models\Cad\CallStatuses;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -53,14 +52,23 @@ class Call extends Model
         return $this->hasMany(CallVehicle::class);
     }
 
-    public function getTimeAttribute()
+    /**
+     * Incident age is based on creation, not the latest notes/status update.
+     * Keep this as the shared source for the CAD TIME column and eventual
+     * age-based priority rules; unit response timers remain independent.
+     */
+    public function getAgeSecondsAttribute(): int
     {
-        $updated_at = Carbon::parse($this->updated_at);
-        $now = Carbon::now(config('app.timezone'));
+        if (! $this->created_at) {
+            return 0;
+        }
 
-        $age = $updated_at->diffInMinutes($now);
+        return max(0, (int) $this->created_at->diffInSeconds(now()));
+    }
 
-        return $age;
+    public function getTimeAttribute(): int
+    {
+        return intdiv($this->age_seconds, 60);
     }
 
     public function getTypeNameAttribute()
