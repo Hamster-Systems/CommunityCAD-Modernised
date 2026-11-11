@@ -28,6 +28,10 @@
             </div>
         </div>
 
+        {{-- Keep civilian linking available on the standalone form. The quick
+             911 call modal records the incident first; people can be added
+             later on the full incident workspace. --}}
+        @unless ($modal)
         <section class="cad-call-caller-section">
             <div class="cad-call-section-heading">
                 <h1 class="text-xl font-semibold">Caller Information</h1>
@@ -70,6 +74,8 @@
                 </div>
             @endif
         </section>
+
+        @endunless
 
         <h1 class="text-xl font-semibold">Incident Details</h1>
         <div class="cad-call-detail-grid">
@@ -116,7 +122,7 @@
                 </select>
             </div>
             <div class="cad-call-field">
-                <label class="block mr-2 text-lg">Status:</label>
+                <label class="block mr-2 text-lg">Initial status:</label>
                 <select class="select-input-sm" name="status">
                     <option value="RCVD">RCVD - RECEIVED</option>
                     <option value="HLD">HLD - HOLD</option>
@@ -136,7 +142,7 @@
         @else
             <div class="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-600 bg-[#162235] px-2 py-3">
                 <button type="button" @click="$dispatch('cad-new-call-cancel')" class="rounded-lg border border-slate-500 px-4 py-2 font-semibold text-white hover:bg-slate-700">Cancel</button>
-                <button type="submit" class="rounded-lg bg-sky-700 px-5 py-2 font-semibold text-white hover:bg-sky-600">Create call</button>
+                <button type="submit" class="rounded-lg bg-sky-700 px-5 py-2 font-semibold text-white hover:bg-sky-600">Create &amp; open call</button>
             </div>
         @endunless
     </form>
