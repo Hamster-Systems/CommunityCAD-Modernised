@@ -302,3 +302,26 @@ No database migration or frontend compilation was added specifically for Issue #
 - [ ] Linked civilian search, priority 1–5, incident nature, required fields and validation still work; duplicates aren't created by repeated clicks.
 - [ ] Panic and clear-panic buttons remain usable; no additional notification sound replay.
 - [ ] Verify the new address row, scrolling, keyboard focus and compact Caller Information section on mobile.
+
+
+## Issue #33 follow-up — Two-stage 911 intake and modal layout correction (11 November)
+
+This replaces the earlier proposal of linking civilians inside the New Call modal:
+
+1. **Create 911 Call:** The header phone button opens a compact initial incident form with address, city, optional postal, nature, received-via, priority, type, initial status and a brief narrative. No person linking or other advanced incident editing is shown in the modal.
+2. **Open 911 Call:** On successful creation, the browser navigates to the newly created incident's existing full details screen. Dispatch can now add people/vehicles, record detailed notes and assign responding units using the existing incident tabs/actions.
+
+- Existing full `/cad/call/create` form retains civilian linking as a fallback; this is not a removal of the linking feature from the application.
+- The modal was intentionally simplified instead of introducing a premature 3–4 step wizard. A future guided 911 intake flow can build upon the established full incident workspace.
+- Corrected the screenshot's broken narrow address inputs by removing reliance on Tailwind `w-1/2` etc. inside a grid and defining explicit responsive **Address/City/Postal**, **Nature/Received Via**, and **Priority/Type/Status** grid layouts.
+- Removed the Caller Information gap from the modal, improved its maximum viewport height, field widths, labels, narrative spacing and mobile layout. Both the shared navbar modal and Calls queue modal receive the same responsive CSS.
+- Submission still uses `CallStoreRequest`, existing controller/activity logic and duplicate-click protection; the returned incident URL is the authority for navigation.
+- Existing required fields and optional postal DB migration remain unchanged. No additional database migration or frontend compilation for this refinement.
+
+### Updated QA
+- [ ] Modal on MDT/Home/Calls shows no person-linking search or empty Caller Information space.
+- [ ] Address, City, Postal, Nature, Received Via, Priority, Type and Status controls use the available width correctly at desktop and mobile sizes.
+- [ ] Create once: one call/Activity record created, dialog transitions directly to `/cad/call/{id}`.
+- [ ] Full incident workspace permits adding people, more details and units after creation.
+- [ ] Invalid input leaves modal open with errors; cancelled input leaves no new incident.
+- [ ] Standalone `/cad/call/create` still permits linking people and displays responsive fields.
