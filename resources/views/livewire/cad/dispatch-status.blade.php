@@ -1,71 +1,7 @@
 <div class="flex" wire:poll.5s>
-    {{-- Keep underlying dispatcher presence polling and panic controls intact.
-         Replace only the visual presence banner on the main MDT. --}}
-    @unless (request()->routeIs('cad.mdt'))
-    @switch($has_active_dispatch)
-        @case('AVL')
-            <div class="flex items-center py-1 px-5 text-black font-bold bg-green-600 h-10">
-                <svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                        <path
-                            d="M6 10H6.75C7.44036 10 8 10.5596 8 11.25V14.75C8 15.4404 7.44036 16 6.75 16H6C4.34315 16 3 14.6569 3 13C3 11.3431 4.34315 10 6 10ZM6 10V9C6 5.68629 8.68629 3 12 3C15.3137 3 18 5.68629 18 9V10M18 10H17.25C16.5596 10 16 10.5596 16 11.25V14.75C16 15.4404 16.5596 16 17.25 16H18M18 10C19.6569 10 21 11.3431 21 13C21 14.6569 19.6569 16 18 16M18 16L17.3787 18.4851C17.1561 19.3754 16.3562 20 15.4384 20H13"
-                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="#000000"></path>
-                    </g>
-                </svg>
-                <p>Online</p>
-            </div>
-        @break
+    {{-- Dispatcher presence status remains calculated in Livewire, but
+         the visible Online/Offline badge has been replaced with New Call. --}}
 
-        @case('CALL')
-            <div class="flex items-center py-1 px-5 text-black font-bold bg-yellow-600 h-10">
-                <svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                        <path
-                            d="M6 10H6.75C7.44036 10 8 10.5596 8 11.25V14.75C8 15.4404 7.44036 16 6.75 16H6C4.34315 16 3 14.6569 3 13C3 11.3431 4.34315 10 6 10ZM6 10V9C6 5.68629 8.68629 3 12 3C15.3137 3 18 5.68629 18 9V10M18 10H17.25C16.5596 10 16 10.5596 16 11.25V14.75C16 15.4404 16.5596 16 17.25 16H18M18 10C19.6569 10 21 11.3431 21 13C21 14.6569 19.6569 16 18 16M18 16L17.3787 18.4851C17.1561 19.3754 16.3562 20 15.4384 20H13"
-                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="#000000"></path>
-                    </g>
-                </svg>
-                <p>Online (On CALL)</p>
-            </div>
-        @break
-
-        @case('BRK')
-            <div class="flex items-center py-1 px-5 text-black font-bold bg-yellow-600 h-10">
-                <svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                        <path
-                            d="M6 10H6.75C7.44036 10 8 10.5596 8 11.25V14.75C8 15.4404 7.44036 16 6.75 16H6C4.34315 16 3 14.6569 3 13C3 11.3431 4.34315 10 6 10ZM6 10V9C6 5.68629 8.68629 3 12 3C15.3137 3 18 5.68629 18 9V10M18 10H17.25C16.5596 10 16 10.5596 16 11.25V14.75C16 15.4404 16.5596 16 17.25 16H18M18 10C19.6569 10 21 11.3431 21 13C21 14.6569 19.6569 16 18 16M18 16L17.3787 18.4851C17.1561 19.3754 16.3562 20 15.4384 20H13"
-                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="#000000"></path>
-                    </g>
-                </svg>
-                <p>Online (Break)</p>
-            </div>
-        @break
-
-        @default
-            <div class="flex items-center py-1 px-5 text-black font-bold bg-red-600 h-10">
-                <svg class="w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                    <g id="SVGRepo_iconCarrier">
-                        <path d="M4 4L20 20" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="#000000">
-                        </path>
-                        <path clip-rule="evenodd"
-                            d="M5.75921 4.67342C4.66139 5.97782 4 7.66167 4 9.5V11V17C4 17.5523 4.44772 18 5 18H7C8.65685 18 10 16.6569 10 15V13C10 11.3431 8.65685 10 7 10H6V9.5C6 8.21416 6.44125 7.03137 7.1806 6.09481L5.75921 4.67342ZM14.8362 10.922C15.3821 10.3537 16.1498 10 17 10H18V9.5C18 6.46243 15.5376 4 12.5 4H11.5C10.4721 4 9.51006 4.28198 8.68701 4.7728L7.24039 3.32618C8.45025 2.48986 9.91792 2 11.5 2H12.5C16.6421 2 20 5.35786 20 9.5V11V16.0858L18 14.0858V12H17C16.702 12 16.4345 12.1303 16.2513 12.3371L14.8362 10.922ZM14.0012 12.9154C14.0004 12.9435 14 12.9717 14 13V15C14 16.6569 15.3431 18 17 18H17.6126L17.5072 18.3162C17.3711 18.7246 16.9889 19 16.5585 19H13C12.4477 19 12 19.4477 12 20C12 20.5523 12.4477 21 13 21H16.5585C17.8498 21 18.9962 20.1737 19.4045 18.9487L19.562 18.4762L17.0858 16H17C16.4477 16 16 15.5523 16 15V14.9142L14.0012 12.9154ZM6 16V12H7C7.55228 12 8 12.4477 8 13V15C8 15.5523 7.55228 16 7 16H6Z"
-                            fill-rule="evenodd" fill="#000000"></path>
-                    </g>
-                </svg>
-                <p>Offline</p>
-            </div>
-        @break
-    @endswitch
-    @endunless
 
     @if (auth()->user()->active_unit->status != 'OFFDTY' && auth()->user()->active_unit->department_type != 2)
         @if (auth()->user()->active_unit->is_panic)
