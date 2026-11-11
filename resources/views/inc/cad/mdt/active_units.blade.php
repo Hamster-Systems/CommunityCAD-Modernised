@@ -4,6 +4,7 @@
             <th class="border border-slate-400">Agency</th>
             <th class="border border-slate-400">Unit #</th>
             <th class="border border-slate-400">Status</th>
+            <th class="border border-slate-400">Location</th>
             <th class="border border-slate-400">Time</th>
             <th class="border border-slate-400">Call #</th>
             <th class="border border-slate-400">Description</th>
@@ -21,6 +22,7 @@
                             <span>{{ $active_unit->status }}</span>
                         </div>
                     </td>
+                    <td class="p-1 border border-slate-400">{{ filled($active_unit->location) ? $active_unit->location : 'Unavailable' }}</td>
                     <td class="p-1 border border-slate-400">{{ $active_unit->time }}m</td>
                     <td class="relative p-1 border border-slate-400" x-data="{ callsOpen: false }">
                         <div class="flex justify-between">
