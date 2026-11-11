@@ -5,7 +5,7 @@
     <form action="{{ route('cad.call.store') }}"
         class="{{ $modal ? 'space-y-4 text-white cursor-default' : 'p-2 mt-5 space-y-2 text-white border border-white rounded cursor-default' }}" method="POST">
         @csrf
-        <h1 class="text-xl font-semibold">Location</h1>
+        <h1 class="text-xl font-semibold">Incident Location</h1>
         <div class="flex">
             <div class="w-3/5">
                 <label class="block mr-2">Incident Address:</label>
@@ -20,7 +20,10 @@
             </div>
         </div>
 
-        <h1 class="text-xl font-semibold">Caller Info</h1>
+        <div class="flex items-center justify-between gap-2">
+            <h1 class="text-xl font-semibold">Caller Information</h1>
+            <span class="text-xs text-slate-400">Optional</span>
+        </div>
         <div class="flex">
             <div class="w-full text-white space-y-2">
                 @forelse ($linked_civilians as $id => $name)
@@ -43,15 +46,14 @@
                 @endforelse
             </div>
         </div>
-        <hr>
         <div class="flex justify-between items-baseline">
             <div class="w-full">
-                <label class="block mr-2">Search:</label>
-                <input class="text-input-sm uppercase" wire:model.debounce='civilian_search'>
+                <label class="block mr-2">Find and link a person:</label>
+                <input class="text-input-sm uppercase" type="search" placeholder="Search by name (optional)" wire:model.debounce.400ms='civilian_search'>
             </div>
         </div>
         <div class="flex">
-            <div class="w-full my-3 text-white flex flex-wrap gap-2">
+            <div class="w-full text-white flex flex-wrap gap-2">
                 @forelse ($civilians as $civilian)
                     <a class="flex py-2 px-4 shadow-md no-underline rounded-full bg-green-600 text-white font-sans font-semibold text-sm border-green-600 btn-primary hover:text-white hover:bg-green-500 focus:outline-none active:shadow-none mr-2"
                         href="#"
@@ -71,10 +73,7 @@
             </div>
         </div>
 
-        <div class="flex">
-
-        </div>
-        <h1 class="text-xl font-semibold">CAD Incident</h1>
+        <h1 class="text-xl font-semibold">Incident Details</h1>
         <div class="flex">
             <div class="w-3/5">
                 <label class="block mr-2 text-lg">Nature:</label>
@@ -130,7 +129,7 @@
         <div class="flex">
             <div class="w-full">
                 <label class="block mr-2 text-lg">Narrative:</label>
-                <textarea class="textarea-input-sm uppercase" name="narrative">{{ old('narrative') }}</textarea>
+                <textarea class="textarea-input-sm uppercase" name="narrative" placeholder="Briefly describe the situation and information reported by the caller…">{{ old('narrative') }}</textarea>
                 <x-input-error :messages="$errors->get('narrative')" class="mt-2" />
             </div>
         </div>
