@@ -100,6 +100,13 @@
         </div>
     @endif
 
+    {{-- The MDT and Calls queue already mount the modal within their own
+         views. All other signed-in CAD pages share the same New Call dialog. --}}
+    @if (auth()->check() && auth()->user()->active_unit
+        && ! request()->routeIs('cad.mdt', 'cad.call.index'))
+        @include('inc.cad.new-call-modal')
+    @endif
+
     @livewireScripts
 
     <script src="{{ asset('js/cad-audio-live.js') }}" defer></script>
