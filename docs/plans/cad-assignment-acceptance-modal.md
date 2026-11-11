@@ -325,3 +325,26 @@ This replaces the earlier proposal of linking civilians inside the New Call moda
 - [ ] Full incident workspace permits adding people, more details and units after creation.
 - [ ] Invalid input leaves modal open with errors; cancelled input leaves no new incident.
 - [ ] Standalone `/cad/call/create` still permits linking people and displays responsive fields.
+
+
+## CAD Settings imported street directory / New Call autocomplete (11 November)
+
+- Added **CAD Settings → CAD Address Directory** with admin-only CSV upload (2 MB max), Append/Update and Replace modes, unique-address deduplication, and count of stored records.
+- CSV requires a `street`, `address` or `location` header; optional `city` and `postal` (or `postcode`) headers. Example: `docs/examples/cad-addresses-example.csv`. Maximum 10,000 unique imported entries per file, imported transactionally. Replacing the directory is destructive and is labelled as such.
+- Added `cad_address_directory` table and `AddressDirectory` Eloquent model. New migration `2026_11_11_193000_create_cad_address_directory_table.php`; **run migration before using the importer or New Call form**.
+- Added authenticated, rate-limited `GET /cad/addresses/suggest?q=...` for searching imported entries by street, city or postal. Returns only administrator-imported data, not geocoded or inferred street records.
+- The 911 Call **Incident Address** field now displays a scrolling dropdown, showing **five results at a time** while permitting up to 20 matching results to be scrolled through. Minimum search length is two characters and input is debounced.
+- Clicking a result fills the **Incident Address** and, when supplied, **City/Postal** in the current form. Manual entry remains possible if no imported address matches.
+- Keyboard: Arrow Up/Down navigates matching results, Enter selects and Escape closes; listbox/combobox roles and focus states included.
+- Both global New Call modal and Calls queue modal share the same address-lookup component, with standalone Create Call support; no npm/Tailwind compilation needed.
+
+### Address import QA
+- [ ] Migrate and verify `cad_address_directory` table exists before visiting CAD Settings.
+- [ ] Import provided sample CSV; check count and lookup suggestions for Marina and Paleto.
+- [ ] Confirm imported street selection fills City and Postal when present, without overwriting manually typed data when no imported city/postal is present.
+- [ ] Confirm only five options are visible at once and menu scrolls for larger result sets.
+- [ ] Confirm keyboard operation, manual entry, escape, mobile layout and modal scroll/z-index.
+- [ ] Import a duplicate CSV in append mode: no duplicate addresses; replace mode removes old data atomically.
+- [ ] Attempt invalid headings/oversized files/unauthorised import: reject with meaningful errors.
+- [ ] Verify import and suggestions work for all CAD roles that may create a call, without exposing admin import capabilities.
+- [ ] Ensure existing New Call save and redirect to incident still work and no missing-column errors occur.
