@@ -10,6 +10,24 @@
             .cad-call-detail-grid { grid-template-columns: 1.5fr 1fr; }
             .cad-call-status-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
             .cad-call-field { min-width: 0; }
+            .cad-address-picker { position: relative; min-width: 0; }
+            .cad-address-options {
+                position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+                z-index: 300; max-height: 225px; overflow-y: auto;
+                border: 1px solid #64748b; border-radius: 8px;
+                background: #14253a; box-shadow: 0 12px 25px rgba(0,0,0,.6);
+            }
+            .cad-address-option {
+                display: flex; flex-direction: column; gap: 3px;
+                width: 100%; min-height: 45px; padding: 9px 12px;
+                background: transparent; border-bottom: 1px solid #334b66;
+                color: white; text-align: left;
+            }
+            .cad-address-option:hover,
+            .cad-address-option-active { background: #24567a; }
+            .cad-address-option-street { font-weight: 700; font-size: 13px; }
+            .cad-address-option-details { color: #cbd5e1; font-size: 11px; }
+
             .cad-call-field input, .cad-call-field select, .cad-call-field textarea {
                 width:100%; min-width:0; box-sizing:border-box;
             }
