@@ -272,3 +272,13 @@ Implemented in the **existing PR #44 branch**; left Issue #33 open pending brows
 - [ ] Confirm no new audio plays unexpectedly for the person who created the call.
 
 No database migration or frontend compilation was added specifically for Issue #33; this branch already contains other migrations from previous enhancements.
+
+
+## Issue #33 placement clarification — New Call replaces the MDT Dispatch Offline banner (11 November)
+
+- The requested primary action belongs at the **top-right of the main `/cad/mdt` navigation**, replacing the visible Dispatch Online/Offline status badge with a compact phone-icon **New Call** button.
+- The actual dispatcher presence calculation and Livewire polling are **not deleted**; its badge is simply hidden on `/cad/mdt`. Existing panic / clear-panic controls remain visible and functional.
+- Clicking the button opens the full shared create-call form in an overlay **on the MDT**, without leaving the unit/call table. The overlay submits through the existing `cad.call.store` endpoint and emits a Livewire update after creation; it provides an Open created call link.
+- Removed the redundant lower-nav Create a call link **on the MDT only**. The standalone `/cad/call/create` route and New Call action on `/cad/call` remain available as fallbacks.
+- Applied explicit high-stacking overlay styles to avoid dependence on rebuilding Tailwind.
+- **QA:** test both dispatcher and patrol identities, panic controls, valid/invalid creation, focus/cancel, a refresh of MDT tables, and audio no-repeat. No new migration or npm build for this placement fix.
