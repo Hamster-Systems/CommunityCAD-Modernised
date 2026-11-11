@@ -74,6 +74,7 @@
             </th>
             <th class="p-1 border border-slate-400">Location</th>
             <th class="p-1 border border-slate-400">City</th>
+            <th class="p-1 border border-slate-400">Postal</th>
             <th class="p-1 border border-slate-400">Pri</th>
             <th class="p-1 border border-slate-400">Status</th>
             <th class="p-1 border border-slate-400">Time</th>
@@ -135,6 +136,7 @@
                 </td>
                 <td class="p-1 border border-slate-400">{{ $call->location }}</td>
                 <td class="p-1 border border-slate-400">{{ $call->city }}</td>
+                <td class="p-1 border border-slate-400">{{ filled($call->postal) ? $call->postal : 'Unavailable' }}</td>
                 <td class="relative p-1 border border-slate-400" x-data="{ statusOpen: false }">
                     <div class="flex justify-between">
                         <span>{{ $call->priority }}</span>
