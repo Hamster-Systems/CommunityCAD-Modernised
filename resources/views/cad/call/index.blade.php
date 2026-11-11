@@ -157,6 +157,11 @@
                     if (this.dirty && !window.confirm('Discard your unsaved call details?')) return;
                     this.open = false;
                     this.dirty = false;
+                    const form = this.$refs.dialog?.querySelector('form');
+                    if (form) form.reset();
+                    if (window.Livewire && typeof window.Livewire.emit === 'function') {
+                        window.Livewire.emit('resetCallComposer');
+                    }
                     this.$nextTick(() => this.$refs.launch?.focus());
                 },
                 trapFocus(event) {
@@ -197,6 +202,10 @@
                             throw new Error(result.message || 'Unable to create the call. Please check the fields.');
                         }
                         this.dirty = false; this.open = false;
+                        form.reset();
+                        if (window.Livewire && typeof window.Livewire.emit === 'function') {
+                            window.Livewire.emit('resetCallComposer');
+                        }
                         this.createdUrl = result.url || '';
                         this.successMessage = result.message || 'Call created successfully.';
                         this.$nextTick(() => this.$refs.launch?.focus());
