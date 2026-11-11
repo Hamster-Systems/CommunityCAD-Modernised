@@ -186,13 +186,16 @@
             </div>
         @endunless
     </form>
-</div>
 
 @once
 <script>
     function cadAddressSuggestions(endpoint) {
         return {
             query: '', results: [], visible: false, active: -1, sequence: 0,
+            init() {
+                const input = this.$el.querySelector('input[name="location"]');
+                this.query = input ? input.value : '';
+            },
             async lookup() {
                 const term = this.query.trim();
                 const token = ++this.sequence;
@@ -251,3 +254,5 @@
     }
 </script>
 @endonce
+
+</div>
