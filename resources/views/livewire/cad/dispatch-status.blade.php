@@ -1,4 +1,7 @@
 <div class="flex" wire:poll.5s>
+    {{-- Keep underlying dispatcher presence polling and panic controls intact.
+         Replace only the visual presence banner on the main MDT. --}}
+    @unless (request()->routeIs('cad.mdt'))
     @switch($has_active_dispatch)
         @case('AVL')
             <div class="flex items-center py-1 px-5 text-black font-bold bg-green-600 h-10">
@@ -62,6 +65,7 @@
             </div>
         @break
     @endswitch
+    @endunless
 
     @if (auth()->user()->active_unit->status != 'OFFDTY' && auth()->user()->active_unit->department_type != 2)
         @if (auth()->user()->active_unit->is_panic)
