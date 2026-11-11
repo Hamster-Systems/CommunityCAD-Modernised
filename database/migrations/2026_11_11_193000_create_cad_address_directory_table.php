@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('street', 255);
             $table->string('city', 255)->nullable();
             $table->string('postal', 64)->nullable();
-            $table->string('search_key', 570)->unique();
+            $table->string('search_key', 64)->unique();
             $table->timestamps();
             $table->index('street');
         });
