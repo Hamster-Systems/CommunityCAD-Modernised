@@ -1,13 +1,15 @@
-<div class="max-w-7xl mx-auto p-2">
-    <h1 class="text-xl font-bold text-white">Create Call</h1>
+<div class="{{ $modal ? 'cad-modal-call-fields w-full' : 'max-w-7xl mx-auto p-2' }}">
+    @unless ($modal)
+        <h1 class="text-xl font-bold text-white">Create Call</h1>
+    @endunless
     <form action="{{ route('cad.call.store') }}"
-        class="p-2 mt-5 space-y-2 text-white border border-white rounded cursor-default" method="POST">
+        class="{{ $modal ? 'space-y-4 text-white cursor-default' : 'p-2 mt-5 space-y-2 text-white border border-white rounded cursor-default' }}" method="POST">
         @csrf
         <h1 class="text-xl font-semibold">Location</h1>
         <div class="flex">
             <div class="w-3/5">
                 <label class="block mr-2">Incident Address:</label>
-                <input autofocus class="text-input-sm uppercase" name="location" type="text"
+                <input @unless($modal) autofocus @endunless class="text-input-sm uppercase" name="location" type="text"
                     value="{{ old('location') }}">
                 <x-input-error :messages="$errors->get('location')" class="mt-2" />
             </div>
@@ -104,8 +106,8 @@
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option selected value="3">3</option>
-                    <option value="3">4</option>
-                    <option value="3">5</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
                 </select>
             </div>
             <div class="w-1/3 ml-3">
@@ -132,6 +134,13 @@
                 <x-input-error :messages="$errors->get('narrative')" class="mt-2" />
             </div>
         </div>
-        <button class="button-md bg-gray-600 hover:bg-gray-500 text-white" type="submit">CREATE CALL</button>
+        @unless ($modal)
+            <button class="button-md bg-gray-600 hover:bg-gray-500 text-white" type="submit">CREATE CALL</button>
+        @else
+            <div class="sticky bottom-0 z-10 flex items-center justify-end gap-3 border-t border-slate-600 bg-[#162235] px-2 py-3">
+                <button type="button" @click="$dispatch('cad-new-call-cancel')" class="rounded-lg border border-slate-500 px-4 py-2 font-semibold text-white hover:bg-slate-700">Cancel</button>
+                <button type="submit" class="rounded-lg bg-sky-700 px-5 py-2 font-semibold text-white hover:bg-sky-600">Create call</button>
+            </div>
+        @endunless
     </form>
 </div>
