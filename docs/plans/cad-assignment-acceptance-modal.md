@@ -226,3 +226,20 @@ QA: with A+B attached, A posts DISPATCH or NOTE category; B hears the existing C
 - [ ] Muted admin preview link works, but muted regular CAD stream still fails as intended.
 - [ ] At 320px width the URL truncates inside its field without shifting the upload button or overflowing the card.
 - [ ] Keyboard focus can reach both the link and upload input.
+
+
+## Restore call Postal and unit Location columns (11 November)
+
+- Added a **Postal** column to the MDT call queue, between City and Priority.
+- Added a **Location** column to the active unit roster in both the patrol MDT and dispatcher CAD screen, between Status and Time.
+- New nullable `calls.postal` and `active_units.location` fields have an additive, backward-compatible migration. Existing records remain null and display **Unavailable** rather than fabricated location values.
+- Unit Location is reserved for future trusted location updates from the FiveM integration; it is **not inferred** from a unit's attached call, status or browser IP.
+- Call Postal is a separate incident field and must be supplied explicitly by the future call form/API integration; it is **not derived** from the incident street address.
+- No change to assignment, unit response statuses or the existing call-status audio. Existing call rows keep their creation-based TIME value.
+
+### QA
+- [ ] Back up the development database, then run `php artisan migrate --force` inside app container as `www-data`.
+- [ ] Confirm both new columns exist, and old calls/units display **Unavailable** without SQL/Blade errors.
+- [ ] Confirm setting either field via a trusted data source displays the stored value on the appropriate roster/queue.
+- [ ] Confirm patrol and dispatcher unit tables match, and narrow screens remain usable.
+- [ ] Follow-up integration: add server-authorised call postal entry and FiveM-driven unit location updates, plus tenant-admin field visibility controls; do not expose arbitrary client-side location editing.
