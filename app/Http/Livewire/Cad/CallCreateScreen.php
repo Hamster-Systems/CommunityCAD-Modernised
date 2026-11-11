@@ -18,6 +18,22 @@ class CallCreateScreen extends Component
 
     public $call_natures = CallNatures::NATURECODES;
 
+    protected $listeners = ['resetCallComposer' => 'resetComposer'];
+
+    public function mount(bool $modal = false): void
+    {
+        $this->modal = $modal;
+    }
+
+    public function resetComposer(): void
+    {
+        $this->civilian_search = '';
+        $this->linked_civilians = [];
+        $this->civilians = collect();
+    }
+
+
+
     public function render()
     {
         if (! empty($this->civilian_search)) {
