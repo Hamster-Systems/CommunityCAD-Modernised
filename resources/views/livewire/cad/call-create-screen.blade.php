@@ -6,21 +6,21 @@
         class="{{ $modal ? 'space-y-4 text-white cursor-default' : 'p-2 mt-5 space-y-2 text-white border border-white rounded cursor-default' }}" method="POST">
         @csrf
         <h1 class="text-xl font-semibold">Incident Location</h1>
-        <div class="flex">
-            <div class="w-1/2">
+        <div class="cad-call-address-grid">
+            <div class="cad-call-field">
                 <label class="block mr-2" for="cad-call-location-{{ $modal ? 'modal' : 'page' }}">Incident Address <span class="text-red-300">*</span></label>
                 <input id="cad-call-location-{{ $modal ? 'modal' : 'page' }}" required @unless($modal) autofocus @endunless
                     class="text-input-sm uppercase" name="location" type="text" maxlength="255"
                     placeholder="Street address or nearest landmark" value="{{ old('location') }}">
                 <x-input-error :messages="$errors->get('location')" class="mt-2" />
             </div>
-            <div class="w-1/3 ml-3">
+            <div class="cad-call-field">
                 <label class="block mr-2" for="cad-call-city-{{ $modal ? 'modal' : 'page' }}">City <span class="text-red-300">*</span></label>
                 <input id="cad-call-city-{{ $modal ? 'modal' : 'page' }}" required class="text-input-sm uppercase"
                     name="city" type="text" maxlength="255" placeholder="City / area" value="{{ old('city') }}">
                 <x-input-error :messages="$errors->get('city')" class="mt-2" />
             </div>
-            <div class="w-1/5 ml-3">
+            <div class="cad-call-field">
                 <label class="block mr-2" for="cad-call-postal-{{ $modal ? 'modal' : 'page' }}">Postal</label>
                 <input id="cad-call-postal-{{ $modal ? 'modal' : 'page' }}" class="text-input-sm uppercase"
                     name="postal" type="text" maxlength="64" placeholder="Optional" value="{{ old('postal') }}">
@@ -28,62 +28,52 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-between gap-2">
-            <h1 class="text-xl font-semibold">Caller Information</h1>
-            <span class="text-xs text-slate-400">Optional</span>
-        </div>
-        <div class="flex">
-            <div class="w-full text-white space-y-2">
-                @forelse ($linked_civilians as $id => $name)
-                    <div>
-                        <input checked class="hidden" name="linked_civilians[]" type="checkbox"
-                            value="{{ $id }}">
-                        <label for="">{{ $name }} | <a class="text-red-600 hover:underline"
-                                href="#" wire:click='remove_civilian_from_call("{{ $id }}")'>Remove</a>
-                        </label>
-                        <select class="select-input-sm" id="" name="linked_civilians_types[]">
-                            <option value="RP">REPORTING PARTY</option>
-                            <option value="SUSPECT">SUSPECT</option>
-                            <option value="VICTIM">VICTIM</option>
-                            <option value="WITNESS">WITNESS</option>
-                            <option value="OTHER">OTHER</option>
-                        </select>
-                    </div>
-                @empty
-                    {{-- No linked callers yet. Keep this area compact. --}}
-                @endforelse
+        <section class="cad-call-caller-section">
+            <div class="cad-call-section-heading">
+                <h1 class="text-xl font-semibold">Caller Information</h1>
+                <span class="text-xs text-slate-400">Optional</span>
             </div>
-        </div>
-        <div class="flex justify-between items-baseline">
-            <div class="w-full">
-                <label class="block mr-2">Find and link a person:</label>
-                <input class="text-input-sm uppercase" type="search" placeholder="Search by name (optional)" wire:model.debounce.400ms='civilian_search'>
+            @if (count($linked_civilians))
+                <div class="cad-call-linked-people">
+                    @foreach ($linked_civilians as $id => $name)
+                        <div class="cad-call-linked-person" wire:key="cad-linked-person-{{ $id }}">
+                            <input checked class="hidden" name="linked_civilians[]" type="checkbox" value="{{ $id }}">
+                            <span>{{ $name }}</span>
+                            <select class="select-input-sm" name="linked_civilians_types[]" aria-label="Role for {{ $name }}">
+                                <option value="RP">REPORTING PARTY</option>
+                                <option value="SUSPECT">SUSPECT</option>
+                                <option value="VICTIM">VICTIM</option>
+                                <option value="WITNESS">WITNESS</option>
+                                <option value="OTHER">OTHER</option>
+                            </select>
+                            <button type="button" class="text-red-300 hover:text-red-100"
+                                wire:click='remove_civilian_from_call("{{ $id }}")'>Remove</button>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+            <div class="cad-call-field">
+                <label for="cad-caller-search-{{ $modal ? 'modal' : 'page' }}">Find and link a person</label>
+                <input id="cad-caller-search-{{ $modal ? 'modal' : 'page' }}"
+                    class="text-input-sm uppercase" type="search"
+                    placeholder="Search by name (optional)" wire:model.debounce.400ms="civilian_search">
             </div>
-        </div>
-        <div class="flex">
-            <div class="w-full text-white flex flex-wrap gap-2">
-                @forelse ($civilians as $civilian)
-                    <a class="flex py-2 px-4 shadow-md no-underline rounded-full bg-green-600 text-white font-sans font-semibold text-sm border-green-600 btn-primary hover:text-white hover:bg-green-500 focus:outline-none active:shadow-none mr-2"
-                        href="#"
-                        wire:click='add_civilian_to_call("{{ $civilian->id }}",
-                    "{{ $civilian->name }}")'>
-                        <svg class="w-4 h-4 mr-3" fill="none" stroke-width="1.5" stroke="currentColor"
-                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-
-                        {{ $civilian->name }}
-                    </a>
-                @empty
-                    {{-- No matching caller results. --}}
-                @endforelse
-            </div>
-        </div>
+            @if ($civilians && $civilians->isNotEmpty())
+                <div class="cad-call-search-results" aria-label="Matching people">
+                    @foreach ($civilians as $civilian)
+                        <button type="button" class="rounded-md border border-emerald-600 bg-emerald-900 px-3 py-2 text-sm text-white hover:bg-emerald-800"
+                            wire:key="cad-civilian-result-{{ $civilian->id }}"
+                            wire:click='add_civilian_to_call("{{ $civilian->id }}", "{{ $civilian->name }}")'>
+                            + {{ $civilian->name }}
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </section>
 
         <h1 class="text-xl font-semibold">Incident Details</h1>
-        <div class="flex">
-            <div class="w-3/5">
+        <div class="cad-call-detail-grid">
+            <div class="cad-call-field">
                 <label class="block mr-2 text-lg">Nature:</label>
                 <select class="select-input-sm" name="nature">
                     @foreach ($call_natures as $code => $props)
@@ -92,7 +82,7 @@
                 </select>
                 <x-input-error :messages="$errors->get('nature')" class="mt-2" />
             </div>
-            <div class="w-2/5 ml-3">
+            <div class="cad-call-field">
                 <label class="block mr-2 text-lg">Received via:</label>
                 <select class="select-input-sm" name="source">
                     <option value="911 CALL">911 CALL</option>
@@ -106,8 +96,8 @@
             </div>
         </div>
 
-        <div class="flex">
-            <div class="w-1/3">
+        <div class="cad-call-status-grid">
+            <div class="cad-call-field">
                 <label class="block mr-2 text-lg">Priority:</label>
                 <select class="select-input-sm" name="priority">
                     <option value="1">1</option>
@@ -117,7 +107,7 @@
                     <option value="5">5</option>
                 </select>
             </div>
-            <div class="w-1/3 ml-3">
+            <div class="cad-call-field">
                 <label class="block mr-2 text-lg">Type:</label>
                 <select class="select-input-sm" name="type">
                     <option value="1">Police</option>
@@ -125,7 +115,7 @@
                     <option value="3">EMS</option>
                 </select>
             </div>
-            <div class="w-1/3 ml-3">
+            <div class="cad-call-field">
                 <label class="block mr-2 text-lg">Status:</label>
                 <select class="select-input-sm" name="status">
                     <option value="RCVD">RCVD - RECEIVED</option>
@@ -134,10 +124,10 @@
             </div>
         </div>
 
-        <div class="flex">
-            <div class="w-full">
+        <div class="cad-call-field">
+            <div>
                 <label class="block mr-2 text-lg">Narrative:</label>
-                <textarea class="textarea-input-sm uppercase" name="narrative" placeholder="Briefly describe the situation and information reported by the caller…">{{ old('narrative') }}</textarea>
+                <textarea class="textarea-input-sm uppercase" name="narrative" required placeholder="Briefly describe the situation and information reported by the caller…">{{ old('narrative') }}</textarea>
                 <x-input-error :messages="$errors->get('narrative')" class="mt-2" />
             </div>
         </div>
