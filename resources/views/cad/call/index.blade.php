@@ -5,17 +5,11 @@
         @include('inc.cad.mdt-nav')
     </div>
 
-    <div class="relative max-w-7xl mx-auto" x-data="cadNewCallModal()" @keydown.escape.window="closeModal()" @cad-new-call-cancel.window="closeModal()">
+    <div class="relative max-w-7xl mx-auto" x-data="cadNewCallModal()" @keydown.escape.window="closeModal()" @cad-new-call-cancel.window="closeModal()" @cad-open-new-call.window="showModal()">
         <div :inert="open ? true : null">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h1 class="text-white text-xl">Recent Calls <span class="text-base">(Last 2 days)</span></h1>
-            <button type="button" x-ref="launch" @click="showModal()" title="Create call" aria-label="Create call"
-                class="inline-flex items-center gap-2 rounded-lg border border-sky-500 bg-[#163149] px-3 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400">
-                <svg class="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
-                </svg>
-                <span>New Call</span>
-            </button>
+
         </div>
         <div x-show="createdUrl" x-cloak role="status" class="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-700 bg-emerald-950 p-4 text-emerald-100">
             <span x-text="successMessage"></span>
@@ -143,8 +137,9 @@
         function cadNewCallModal() {
             return {
                 open: false, dirty: false, submitting: false, errorMessage: '', errors: [],
-                createdUrl: '', successMessage: '',
+                createdUrl: '', successMessage: '', trigger: null,
                 showModal() {
+                    this.trigger = document.activeElement;
                     this.errorMessage = ''; this.errors = []; this.dirty = false;
                     this.open = true;
                     this.$nextTick(() => {
@@ -162,7 +157,7 @@
                     if (window.Livewire && typeof window.Livewire.emit === 'function') {
                         window.Livewire.emit('resetCallComposer');
                     }
-                    this.$nextTick(() => this.$refs.launch?.focus());
+                    this.$nextTick(() => this.trigger?.focus());
                 },
                 trapFocus(event) {
                     const elements = [...this.$refs.dialog.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]')]
@@ -208,7 +203,7 @@
                         }
                         this.createdUrl = result.url || '';
                         this.successMessage = result.message || 'Call created successfully.';
-                        this.$nextTick(() => this.$refs.launch?.focus());
+                        this.$nextTick(() => this.trigger?.focus());
                         try { await this.refreshCallLists(); } catch (_) { /* Success link remains available. */ }
                         if (window.Livewire && typeof window.Livewire.emit === 'function') {
                             window.Livewire.emit('incidentUpdated');
