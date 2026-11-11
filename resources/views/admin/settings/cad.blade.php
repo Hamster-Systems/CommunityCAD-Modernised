@@ -70,4 +70,33 @@
             </div>
         </form>
     </div>
+    <section class="card mt-6 rounded-lg border border-slate-600 bg-[#152234] p-5 text-white">
+        <h2 class="text-xl font-bold">CAD Address Directory</h2>
+        <p class="mt-2 text-sm text-slate-300">Import streets and locations for the 911 Call address suggestions. These are locally stored entries, not live geocoding. Dispatch can still type an address manually.</p>
+        <p class="mt-2 text-sm text-sky-300">CSV columns: <code>street,city,postal</code> (also accepts <code>address</code> or <code>location</code> instead of street). City and postal are optional.</p>
+        @if (session('address_import_success'))
+            <p class="mt-3 rounded border border-emerald-600 bg-emerald-950 p-3 text-sm" role="status">{{ session('address_import_success') }}</p>
+        @endif
+        @error('address_file')
+            <p class="mt-3 text-sm text-red-300" role="alert">{{ $message }}</p>
+        @enderror
+        @error('import_mode')
+            <p class="mt-3 text-sm text-red-300" role="alert">{{ $message }}</p>
+        @enderror
+        <p class="mt-2 text-sm text-slate-300">Stored addresses: <strong>{{ \App\Models\Cad\AddressDirectory::count() }}</strong></p>
+        <form method="POST" action="{{ route('admin.settings.cad.addresses.import') }}" enctype="multipart/form-data"
+            class="mt-4 flex flex-col gap-3">
+            @csrf
+            <label class="text-sm font-semibold" for="cad-address-file">Address CSV file (up to 2 MB / 10,000 entries)</label>
+            <input id="cad-address-file" type="file" name="address_file" required accept=".csv,.txt,text/csv,text/plain"
+                class="block w-full rounded border border-slate-500 bg-[#24344a] p-2 text-sm">
+            <label class="text-sm font-semibold" for="cad-address-import-mode">Import behaviour</label>
+            <select id="cad-address-import-mode" name="import_mode" class="rounded border border-slate-500 bg-[#24344a] p-2 text-sm">
+                <option value="append">Add or update imported entries</option>
+                <option value="replace">Replace the entire directory with this file</option>
+            </select>
+            <p class="text-xs text-amber-200">Replace removes previously imported entries. Export or back up the existing directory before replacing it.</p>
+            <button type="submit" class="self-start rounded bg-sky-700 px-4 py-2 text-sm font-semibold hover:bg-sky-600">Import addresses</button>
+        </form>
+    </section>
 @endsection
