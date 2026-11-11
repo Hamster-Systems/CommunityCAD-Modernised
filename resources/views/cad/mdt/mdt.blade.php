@@ -26,7 +26,7 @@
             <span x-text="successMessage"></span>
             <a :href="createdUrl" class="rounded border border-emerald-500 px-3 py-1.5 text-sm font-semibold hover:bg-emerald-800">Open created call</a>
         </div>
-        <div x-show="open" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-2 sm:p-5"
+        <div x-show="open" x-cloak class="cad-mdt-new-call-backdrop fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-2 sm:p-5"
             @click.self="closeModal()" aria-hidden="false">
             <section role="dialog" aria-modal="true" aria-labelledby="cad-new-call-title" aria-describedby="cad-new-call-desc"
                 x-ref="dialog" @keydown.tab="trapFocus($event)" @submit.capture.prevent="submitCall($event)"
@@ -55,6 +55,12 @@
         </div>
         <style>
             [x-cloak] { display:none !important; }
+            /* Guaranteed overlay stacking even before optional Tailwind build. */
+            .cad-mdt-new-call-backdrop {
+                position:fixed; inset:0; z-index:120;
+                display:flex;align-items:center;justify-content:center;
+                padding:12px;background:rgba(0,0,0,.82);
+            }
             .cad-new-call-modal .text-input-sm,
             .cad-new-call-modal .select-input-sm,
             .cad-new-call-modal .textarea-input-sm {
